@@ -8,7 +8,7 @@ import pickle
 import json
 import time
 import os # for JSON path because python is stupid:tm:
-JSON_PATH = "src/json/" # pretent it is like const json_path = "src/json/"; in js
+JSON_PATH = os.path.join("src", "json") #
 CWD = os.path.dirname(__file__) # CWD = Current Working Directory, pretend it is a const too
 from src.assets.python.timetable.display_timetable import Timetable
 class Game:
