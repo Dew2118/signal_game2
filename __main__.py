@@ -1,13 +1,16 @@
-from train import Train
-from signals import Signal
-from display import Display_Class
+from src.assets.python.train.train import Train
+from src.assets.python.layout.signals import Signal
+from src.assets.python.display import Display_Class
 import pygame
 from io import StringIO
-from auto import Auto
+from src.assets.python.layout.auto import Auto
 import pickle
 import json
 import time
-from display_timetable import Timetable
+import os # for JSON path because python is stupid:tm:
+JSON_PATH = "src/json/" # pretent it is like const json_path = "src/json/"; in js
+CWD = os.path.dirname(__file__) # CWD = Current Working Directory, pretend it is a const too
+from src.assets.python.timetable.display_timetable import Timetable
 class Game:
     def __init__(self, text):
         self.text = text
@@ -28,10 +31,12 @@ class Game:
         self.timetable_obj = None
         self.backlog_train_spawn = []
 
-    def load_timetable_and_annotated_segments(self, filename="timetable.json"):
+    #TODO : rework this to work better with file path
+    def load_timetable_and_annotated_segments(self, filename=os.path.join(CWD, JSON_PATH, "timetable.json")):
+        print("  | loading " + filename)
         with open(filename, "r") as f:
             self.timetables = json.load(f)
-        with open("annotated_segments.json", "r") as f:
+        with open(os.path.join(CWD, JSON_PATH, "annotated_segments.json"), "r") as f:
             self.annotated_segments = json.load(f)
         for seg in self.timetables:
             headcode_prefix = seg.get('headcode_prefix', '')
@@ -545,21 +550,28 @@ class Game:
                 self.set_route(self)
             clock.tick(120)
             
-# --- Setup code ---
-target_chars = {'à', 'ø', 'û','ã','â',"ù", "á", "©", "¨"}
-signal_type_map = {'à': 'manual','ã':"manual",'â':"manual", "á":"manual", 'ø': 'automatic', 'û': 'automatic', 'ù': 'automatic','©': 'automatic','¨': 'automatic'}
-direction_map = {'à': 'right', 'ø': 'right', 'â': 'right', 'û': 'left', 'ã': 'left', 'ù': 'left', 'á': 'left', '©': 'right', '¨': 'left'}
-mount_map = {'à': 'up', 'ø': 'up',"á":"up",'ù': 'up', 'û': 'down', 'ã': 'down', 'â': 'down','©':'2-right', '¨':'2-left'}
-buffer_map = {'à': False, 'ø': False, 'û': False, 'ã': False, 'â': False, 'ù': False, 'á': False, '©': True, '¨': True}
-with open("test.txt", "r", encoding="utf-8") as f:
-    text = f.read()
-game = Game(text)
-signals = game.create_signals_from_file(target_chars, signal_type_map, direction_map, mount_map,buffer_map)
 
-game.display_class = Display_Class()
-game.load_timetable_and_annotated_segments("timetable.json")
-game.find_next_signals(signals)
-game.define_switches()
-game.define_auto_buttons()
-# game.spawn_train(6, (1, 10))
-game.run()
+# Python's best practice, only run the code if it is the main script
+def main():
+    # --- Setup code ---
+    target_chars = {'à', 'ø', 'û','ã','â',"ù", "á", "©", "¨"}
+    signal_type_map = {'à': 'manual','ã':"manual",'â':"manual", "á":"manual", 'ø': 'automatic', 'û': 'automatic', 'ù': 'automatic','©': 'automatic','¨': 'automatic'}
+    direction_map = {'à': 'right', 'ø': 'right', 'â': 'right', 'û': 'left', 'ã': 'left', 'ù': 'left', 'á': 'left', '©': 'right', '¨': 'left'}
+    mount_map = {'à': 'up', 'ø': 'up',"á":"up",'ù': 'up', 'û': 'down', 'ã': 'down', 'â': 'down','©':'2-right', '¨':'2-left'}
+    buffer_map = {'à': False, 'ø': False, 'û': False, 'ã': False, 'â': False, 'ù': False, 'á': False, '©': True, '¨': True}
+    #! TODO Rework this to be less tweaking moment
+    with open("test.txt", "r", encoding="utf-8") as f:
+        text = f.read()
+    game = Game(text)
+    signals = game.create_signals_from_file(target_chars, signal_type_map, direction_map, mount_map,buffer_map)
+
+    game.display_class = Display_Class()
+    game.load_timetable_and_annotated_segments(os.path.join(CWD, JSON_PATH, "timetable.json"))
+    game.find_next_signals(signals)
+    game.define_switches()
+    game.define_auto_buttons()
+    # game.spawn_train(6, (1, 10))
+    game.run()
+
+if __name__ == "__main__":
+    main()

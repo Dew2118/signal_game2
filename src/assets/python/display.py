@@ -4,7 +4,7 @@ class Display_Class:
     def __init__(self, signals=None):
         pygame.init()
         self.SCREEN_WIDTH, self.SCREEN_HEIGHT = 1000, 800
-        self.FONT_PATH = "S-box.ttf"
+        self.FONT_PATH = "src/assets/fonts/S-box.ttf"
         self.BASE_FONT_SIZE = 15
         self.WHITE = (255, 255, 255)
         self.BLACK = (0, 0, 0)
@@ -118,6 +118,7 @@ class Display_Class:
 
     def update_and_draw(self,game,signals,autos, text, time):
         # try:
+        
         font = pygame.font.Font(self.FONT_PATH, self.font_size)
         redraw = False
         
@@ -280,4 +281,3 @@ class Display_Class:
                 x1 = x - 1
             self.set_char_color_at_coord(x, y, "light blue", text)
             self.set_char_color_at_coord(x1, y, "light blue", text)
-
