@@ -1,0 +1,938 @@
+[
+    {
+        "left": [
+            214,
+            2
+        ],
+        "right": [
+            218,
+            2
+        ],
+        "type": "platform",
+        "station": "WHITEFIELD",
+        "platform": "1"
+    },
+    {
+        "left": [
+            236,
+            3
+        ],
+        "right": [
+            236,
+            3
+        ],
+        "type": "entrance_exit",
+        "station": "WHITEFIELD SIDING",
+        "platform": "1"
+    },
+    {
+        "left": [
+            346,
+            3
+        ],
+        "right": [
+            346,
+            3
+        ],
+        "type": "entrance_exit",
+        "station": "STEPFORD UFC SIDING",
+        "platform": "1"
+    },
+    {
+        "left": [
+            271,
+            4
+        ],
+        "right": [
+            275,
+            4
+        ],
+        "type": "platform",
+        "station": "HOUGHTON RAKE",
+        "platform": "1"
+    },
+    {
+        "left": [
+            306,
+            4
+        ],
+        "right": [
+            310,
+            4
+        ],
+        "type": "platform",
+        "station": "WOODHEAD LANE",
+        "platform": "1"
+    },
+    {
+        "left": [
+            376,
+            4
+        ],
+        "right": [
+            380,
+            4
+        ],
+        "type": "platform",
+        "station": "STEPFORD UFC",
+        "platform": "1"
+    },
+    {
+        "left": [
+            425,
+            4
+        ],
+        "right": [
+            429,
+            4
+        ],
+        "type": "platform",
+        "station": "WHITEFIELD LIDO",
+        "platform": "1"
+    },
+    {
+        "left": [
+            214,
+            6
+        ],
+        "right": [
+            218,
+            6
+        ],
+        "type": "platform",
+        "station": "WHITEFIELD",
+        "platform": "2-3"
+    },
+    {
+        "left": [
+            444,
+            6
+        ],
+        "right": [
+            448,
+            6
+        ],
+        "type": "platform",
+        "station": "HIGH STREET",
+        "platform": "1-2"
+    },
+    {
+        "left": [
+            271,
+            8
+        ],
+        "right": [
+            275,
+            8
+        ],
+        "type": "platform",
+        "station": "HOUGHTON RAKE",
+        "platform": "2"
+    },
+    {
+        "left": [
+            306,
+            8
+        ],
+        "right": [
+            310,
+            8
+        ],
+        "type": "platform",
+        "station": "WOODHEAD LANE",
+        "platform": "2"
+    },
+    {
+        "left": [
+            376,
+            8
+        ],
+        "right": [
+            380,
+            8
+        ],
+        "type": "platform",
+        "station": "STEPFORD UFC",
+        "platform": "2"
+    },
+    {
+        "left": [
+            425,
+            8
+        ],
+        "right": [
+            429,
+            8
+        ],
+        "type": "platform",
+        "station": "WHITEFIELD LIDO",
+        "platform": "2"
+    },
+    {
+        "left": [
+            376,
+            9
+        ],
+        "right": [
+            380,
+            9
+        ],
+        "type": "platform",
+        "station": "STEPFORD UFC",
+        "platform": "3"
+    },
+    {
+        "left": [
+            361,
+            10
+        ],
+        "right": [
+            361,
+            10
+        ],
+        "type": "entrance_exit",
+        "station": "STEPFORD UFC SIDING",
+        "platform": "2"
+    },
+    {
+        "left": [
+            429,
+            13
+        ],
+        "right": [
+            429,
+            13
+        ],
+        "type": "entrance_exit",
+        "station": "STEPFORD DEPOT",
+        "platform": "1"
+    },
+    {
+        "left": [
+            376,
+            14
+        ],
+        "right": [
+            380,
+            14
+        ],
+        "type": "platform",
+        "station": "STEPFORD UFC",
+        "platform": "4"
+    },
+    {
+        "left": [
+            316,
+            15
+        ],
+        "right": [
+            321,
+            15
+        ],
+        "type": "platform",
+        "station": "STEPFORD CENTRAL",
+        "platform": "0"
+    },
+    {
+        "left": [
+            429,
+            15
+        ],
+        "right": [
+            429,
+            15
+        ],
+        "type": "entrance_exit",
+        "station": "STEPFORD DEPOT",
+        "platform": "2"
+    },
+    {
+        "left": [
+            429,
+            17
+        ],
+        "right": [
+            429,
+            17
+        ],
+        "type": "entrance_exit",
+        "station": "STEPFORD DEPOT",
+        "platform": "3"
+    },
+    {
+        "left": [
+            316,
+            19
+        ],
+        "right": [
+            321,
+            19
+        ],
+        "type": "platform",
+        "station": "STEPFORD CENTRAL",
+        "platform": "1"
+    },
+    {
+        "left": [
+            429,
+            19
+        ],
+        "right": [
+            429,
+            19
+        ],
+        "type": "entrance_exit",
+        "station": "STEPFORD DEPOT",
+        "platform": "4"
+    },
+    {
+        "left": [
+            316,
+            20
+        ],
+        "right": [
+            321,
+            20
+        ],
+        "type": "platform",
+        "station": "STEPFORD CENTRAL",
+        "platform": "2"
+    },
+    {
+        "left": [
+            316,
+            24
+        ],
+        "right": [
+            321,
+            24
+        ],
+        "type": "platform",
+        "station": "STEPFORD CENTRAL",
+        "platform": "3"
+    },
+    {
+        "left": [
+            317,
+            25
+        ],
+        "right": [
+            321,
+            25
+        ],
+        "type": "platform",
+        "station": "STEPFORD CENTRAL",
+        "platform": "4"
+    },
+    {
+        "left": [
+            522,
+            27
+        ],
+        "right": [
+            522,
+            27
+        ],
+        "type": "entrance_exit",
+        "station": "ZONE B",
+        "platform": "1"
+    },
+    {
+        "left": [
+            316,
+            29
+        ],
+        "right": [
+            321,
+            29
+        ],
+        "type": "platform",
+        "station": "STEPFORD CENTRAL",
+        "platform": "5"
+    },
+    {
+        "left": [
+            419,
+            29
+        ],
+        "right": [
+            423,
+            29
+        ],
+        "type": "platform",
+        "station": "STEPFORD EAST",
+        "platform": "1"
+    },
+    {
+        "left": [
+            316,
+            30
+        ],
+        "right": [
+            321,
+            30
+        ],
+        "type": "platform",
+        "station": "STEPFORD CENTRAL",
+        "platform": "6"
+    },
+    {
+        "left": [
+            419,
+            30
+        ],
+        "right": [
+            423,
+            30
+        ],
+        "type": "platform",
+        "station": "STEPFORD EAST",
+        "platform": "2"
+    },
+    {
+        "left": [
+            522,
+            30
+        ],
+        "right": [
+            522,
+            30
+        ],
+        "type": "entrance_exit",
+        "station": "ZONE B",
+        "platform": "2"
+    },
+    {
+        "left": [
+            316,
+            34
+        ],
+        "right": [
+            321,
+            34
+        ],
+        "type": "platform",
+        "station": "STEPFORD CENTRAL",
+        "platform": "7"
+    },
+    {
+        "left": [
+            316,
+            35
+        ],
+        "right": [
+            321,
+            35
+        ],
+        "type": "platform",
+        "station": "STEPFORD CENTRAL",
+        "platform": "8"
+    },
+    {
+        "left": [
+            522,
+            38
+        ],
+        "right": [
+            522,
+            38
+        ],
+        "type": "entrance_exit",
+        "station": "ZONE B",
+        "platform": "3"
+    },
+    {
+        "left": [
+            316,
+            39
+        ],
+        "right": [
+            321,
+            39
+        ],
+        "type": "platform",
+        "station": "STEPFORD CENTRAL",
+        "platform": "9"
+    },
+    {
+        "left": [
+            419,
+            39
+        ],
+        "right": [
+            423,
+            39
+        ],
+        "type": "platform",
+        "station": "STEPFORD EAST",
+        "platform": "3"
+    },
+    {
+        "left": [
+            316,
+            40
+        ],
+        "right": [
+            321,
+            40
+        ],
+        "type": "platform",
+        "station": "STEPFORD CENTRAL",
+        "platform": "10"
+    },
+    {
+        "left": [
+            419,
+            40
+        ],
+        "right": [
+            423,
+            40
+        ],
+        "type": "platform",
+        "station": "STEPFORD EAST",
+        "platform": "4"
+    },
+    {
+        "left": [
+            293,
+            42
+        ],
+        "right": [
+            297,
+            42
+        ],
+        "type": "platform",
+        "station": "CITY HOSPITAL",
+        "platform": "1-2"
+    },
+    {
+        "left": [
+            522,
+            42
+        ],
+        "right": [
+            522,
+            42
+        ],
+        "type": "entrance_exit",
+        "station": "ZONE B",
+        "platform": "4"
+    },
+    {
+        "left": [
+            316,
+            44
+        ],
+        "right": [
+            321,
+            44
+        ],
+        "type": "platform",
+        "station": "STEPFORD CENTRAL",
+        "platform": "11"
+    },
+    {
+        "left": [
+            419,
+            45
+        ],
+        "right": [
+            423,
+            45
+        ],
+        "type": "platform",
+        "station": "STEPFORD EAST",
+        "platform": "5"
+    },
+    {
+        "left": [
+            419,
+            46
+        ],
+        "right": [
+            423,
+            46
+        ],
+        "type": "platform",
+        "station": "STEPFORD EAST",
+        "platform": "6"
+    },
+    {
+        "left": [
+            316,
+            47
+        ],
+        "right": [
+            321,
+            47
+        ],
+        "type": "platform",
+        "station": "STEPFORD CENTRAL",
+        "platform": "12"
+    },
+    {
+        "left": [
+            522,
+            47
+        ],
+        "right": [
+            522,
+            47
+        ],
+        "type": "entrance_exit",
+        "station": "ZONE B",
+        "platform": "5"
+    },
+    {
+        "left": [
+            316,
+            48
+        ],
+        "right": [
+            321,
+            48
+        ],
+        "type": "platform",
+        "station": "STEPFORD CENTRAL",
+        "platform": "13"
+    },
+    {
+        "left": [
+            522,
+            50
+        ],
+        "right": [
+            522,
+            50
+        ],
+        "type": "entrance_exit",
+        "station": "ZONE B",
+        "platform": "6"
+    },
+    {
+        "left": [
+            419,
+            51
+        ],
+        "right": [
+            423,
+            51
+        ],
+        "type": "platform",
+        "station": "STEPFORD EAST",
+        "platform": "7"
+    },
+    {
+        "left": [
+            316,
+            53
+        ],
+        "right": [
+            321,
+            53
+        ],
+        "type": "platform",
+        "station": "STEPFORD CENTRAL",
+        "platform": "14"
+    },
+    {
+        "left": [
+            419,
+            52
+        ],
+        "right": [
+            423,
+            52
+        ],
+        "type": "platform",
+        "station": "STEPFORD EAST",
+        "platform": "8"
+    },
+    {
+        "left": [
+            70,
+            53
+        ],
+        "right": [
+            70,
+            53
+        ],
+        "type": "entrance_exit",
+        "station": "WILLOWFIELD SIDING",
+        "platform": "1"
+    },
+    {
+        "left": [
+            316,
+            54
+        ],
+        "right": [
+            321,
+            54
+        ],
+        "type": "platform",
+        "station": "STEPFORD CENTRAL",
+        "platform": "15"
+    },
+    {
+        "left": [
+            231,
+            54
+        ],
+        "right": [
+            231,
+            54
+        ],
+        "type": "entrance_exit",
+        "station": "BEECHLEY SIDING",
+        "platform": "1"
+    },
+    {
+        "left": [
+            76,
+            55
+        ],
+        "right": [
+            76,
+            55
+        ],
+        "type": "entrance_exit",
+        "station": "WILLOWFIELD SIDING",
+        "platform": "2"
+    },
+    {
+        "left": [
+            14,
+            56
+        ],
+        "right": [
+            18,
+            56
+        ],
+        "type": "platform",
+        "station": "WILLOWFIELD",
+        "platform": "1"
+    },
+    {
+        "left": [
+            234,
+            56
+        ],
+        "right": [
+            234,
+            56
+        ],
+        "type": "entrance_exit",
+        "station": "BEECHLEY SIDING",
+        "platform": "2"
+    },
+    {
+        "left": [
+            406,
+            56
+        ],
+        "right": [
+            410,
+            56
+        ],
+        "type": "platform",
+        "station": "STEPFORD VICTORIA",
+        "platform": "1"
+    },
+    {
+        "left": [
+            14,
+            57
+        ],
+        "right": [
+            18,
+            57
+        ],
+        "type": "platform",
+        "station": "WILLOWFIELD",
+        "platform": "2"
+    },
+    {
+        "left": [
+            134,
+            57
+        ],
+        "right": [
+            138,
+            57
+        ],
+        "type": "platform",
+        "station": "HEMDON PARK",
+        "platform": "1"
+    },
+    {
+        "left": [
+            332,
+            57
+        ],
+        "right": [
+            336,
+            57
+        ],
+        "type": "platform",
+        "station": "FINANCIAL QUARTER",
+        "platform": "1"
+    },
+    {
+        "left": [
+            406,
+            57
+        ],
+        "right": [
+            410,
+            57
+        ],
+        "type": "platform",
+        "station": "STEPFORD VICTORIA",
+        "platform": "2"
+    },
+    {
+        "left": [
+            213,
+            59
+        ],
+        "right": [
+            217,
+            59
+        ],
+        "type": "platform",
+        "station": "BEECHLEY",
+        "platform": "1"
+    },
+    {
+        "left": [
+            213,
+            60
+        ],
+        "right": [
+            217,
+            60
+        ],
+        "type": "platform",
+        "station": "BEECHLEY",
+        "platform": "2"
+    },
+    {
+        "left": [
+            14,
+            62
+        ],
+        "right": [
+            18,
+            62
+        ],
+        "type": "platform",
+        "station": "WILLOWFIELD",
+        "platform": "3"
+    },
+    {
+        "left": [
+            134,
+            62
+        ],
+        "right": [
+            138,
+            62
+        ],
+        "type": "platform",
+        "station": "HEMDON PARK",
+        "platform": "2"
+    },
+    {
+        "left": [
+            332,
+            62
+        ],
+        "right": [
+            336,
+            62
+        ],
+        "type": "platform",
+        "station": "FINANCIAL QUARTER",
+        "platform": "2"
+    },
+    {
+        "left": [
+            406,
+            62
+        ],
+        "right": [
+            410,
+            62
+        ],
+        "type": "platform",
+        "station": "STEPFORD VICTORIA",
+        "platform": "3"
+    },
+    {
+        "left": [
+            406,
+            63
+        ],
+        "right": [
+            410,
+            63
+        ],
+        "type": "platform",
+        "station": "STEPFORD VICTORIA",
+        "platform": "4"
+    },
+    {
+        "left": [
+            213,
+            64
+        ],
+        "right": [
+            217,
+            64
+        ],
+        "type": "platform",
+        "station": "BEECHLEY",
+        "platform": "3"
+    },
+    {
+        "left": [
+            213,
+            65
+        ],
+        "right": [
+            217,
+            65
+        ],
+        "type": "platform",
+        "station": "BEECHLEY",
+        "platform": "4"
+    },
+    {
+        "left": [
+            406,
+            68
+        ],
+        "right": [
+            410,
+            68
+        ],
+        "type": "platform",
+        "station": "STEPFORD VICTORIA",
+        "platform": "5"
+    },
+    {
+        "left": [
+            406,
+            69
+        ],
+        "right": [
+            410,
+            69
+        ],
+        "type": "platform",
+        "station": "STEPFORD VICTORIA",
+        "platform": "6"
+    }
+]
