@@ -38,21 +38,11 @@ class Signal:
             self.color = "red"
             
 
-    def get_coords_to_next_signal(self, exit_signal, game, switches, filename, signals):
+    def get_coords_to_next_signal(self, exit_signal, game, switches, filename, signals, trains):
         try:
             with open(filename, "r", encoding="utf-8") as f:
                 original_text = f.read()
-            right_up = ['k','{']
-            right_down = ["i","o"]
-            left_up = ['h',"n"]
-            left_down = ['j','}']
-            both_up = ["z"]
-            both_down = ["y"]
             switch_stack = deque()
-            skip_parts_horizontal = False
-            skip_parts_vertical = False
-            block_horizontal = False
-            block_vertical = False
             direction = self.direction
             last_char = "F"
             direction_change = None
@@ -70,9 +60,6 @@ class Signal:
             game_text = game.text
             while True:
                 lines = original_text.splitlines()
-                # if not (0 <= y < len(lines) and 0 <= x < len(lines[y])):
-                #     break
-                
                 for i,switch in enumerate(switches):
                     if x == switch[0] and y == switch[1]:
                         if switch[3] == direction:
@@ -82,136 +69,22 @@ class Signal:
                                 print("change switch to normal at ", switch)
                                 # print("switch found")
                         else:
-                            if char != "a":
+                            if last_char != "a":
                                 game_text = game.change_switch(i, switch_direction = "reverse", text=game_text)
                                 print("change trailing switch to reverse at ", switch)
                             else:
                                 game_text = game.change_switch(i, text=game_text)
                                 print("change trailing switch to normal at ", switch)
-                char = lines[y][x]
-                if char == "÷":
-                    if not block_horizontal:
-                        block_horizontal = True
-                    else:
-                        block_horizontal = False
-                        skip_parts_horizontal = False
-                if char == "ö":
-                    if not block_vertical:
-                        # print("block vertical")
-                        block_vertical = True
-                    else:
-                        # print("skip parts false")
-                        block_vertical = False
-                        skip_parts_vertical = False
-                if char in "|ö":
-                    print(direction)
-                    if (last_char in right_up and direction == 'right') or (last_char in left_up and direction == 'left'):
-                        direction = "up"
-                    elif (last_char in right_down and direction == 'right') or (last_char in left_down and direction == 'left'):
-                        print("direction is down")
-                        direction = "down"
-                if direction == "right":
-                    next_char = lines[y][x+1]
-                elif direction == "left":
-                    next_char = lines[y][x-1]
-                elif direction == "up":
-                    next_char = lines[y-1][x]
-                elif direction == "down":
-                    next_char = lines[y+1][x]
-                if next_char == "÷":
-                    skip_parts_horizontal = True
-                elif next_char == "ö":
-                    skip_parts_vertical = True
-                if skip_parts_horizontal:
-                    if direction == 'right':
-                        x += 1
-                    elif direction == 'left':
-                        x -= 1
-                    continue
-                elif skip_parts_vertical:
-                    if direction == 'up':
-                        y -= 1
-                    elif direction == 'down':
-                        y += 1
-                    continue
-                if (char in right_up and direction == 'right') or (char in left_up and direction == 'left'):
-                    y -= 1
-                elif (char in right_down and direction == 'right') or (char in left_down and direction == 'left'):
-                    y += 1
-                elif char in "|ö":
-                    if direction == "up":
-                        y -= 1
-                    elif direction == "down":
-                        y += 1
-                elif direction == "up" or direction == "down":
-                    if char in "ik":
-                        direction = "left"
-                        if direction != self.direction:
-                            direction_change = [(x,y), direction]
-                        x -= 1
-                    elif char in "hj":
-                        direction = "right"
-                        if direction != self.direction:
-                            direction_change = [(x,y), direction]
-                        x += 1
-                else:
-                    # print("move")
-                    if char in both_up:
-                        y -= 1
-                    elif char in both_down:
-                        y += 1
-                    if direction == 'right':
-                        x += 1
-                    elif direction == 'left':
-                        x -= 1
-                coords.append((x, y))
+                
+                x, y, direction, last_char, new_direction_change = game.path_find(lines, x, y, direction, self.direction, last_char)
+                if new_direction_change:
+                    direction_change = new_direction_change
 
-                intersection = []
-                for signal in signals:
-                    if signal != exit_signal and (x, y+1) == signal.coord and signal.direction == direction and signal.mount == "down":
-                        # print(0 <= y < len(lines) and 0 <= x < len(lines[y]))
-                        print(x, exit_signal.coord[0], exit_signal.direction)
-                        last_switch_tuple = switch_stack.pop()
-                        last_switch = last_switch_tuple[0]
-                        direction = last_switch_tuple[2]
-                        print("going back to switch at location", last_switch)
-                        last_switch_index = last_switch_tuple[1]
-                        original_text = game.change_switch(last_switch_index, "reverse",text = original_text)
-                        # game_text = game.change_switch(last_switch_index, "reverse", text=game_text)
-                        print("reversing switch at", last_switch)
-                        x = last_switch[0]
-                        y = last_switch[1]
-                        for i in range(len(coords)):
-                            if coords.pop() == (x,y):
-                                coords.append((x, y))
-                                break
-                    elif signal != exit_signal and (x, y-1) == signal.coord and signal.direction == direction and signal.mount == "up":
-                        # print(0 <= y < len(lines) and 0 <= x < len(lines[y]))
-                        print(x, exit_signal.coord[0], exit_signal.direction)
-                        last_switch_tuple = switch_stack.pop()
-                        last_switch = last_switch_tuple[0]
-                        direction = last_switch_tuple[2]
-                        print("going back to switch at location", last_switch)
-                        last_switch_index = last_switch_tuple[1]
-                        original_text = game.change_switch(last_switch_index, "reverse",text = original_text)
-                        # game_text = game.change_switch(last_switch_index, "reverse", text=game_text)
-                        print("reversing switch at", last_switch)
-                        x = last_switch[0]
-                        y = last_switch[1]
-                        for i in range(len(coords)):
-                            if coords.pop() == (x,y):
-                                coords.append((x, y))
-                                break
-                    if signal == self:
-                        continue
-                    coord_set = set(coords)
-                    if signal.route_coords is None:
-                        continue
-                    signal_coord_set = set(signal.route_coords)
-                    intersection =  coord_set & signal_coord_set
-                    if len(intersection) > 0:
-                        print("intersection", intersection)
-                        break
+                coords.append((x, y))
+                values = self.duplicate_signal_route_check(x, y, exit_signal, direction, switch_stack, game, coords, original_text, signals, trains)
+                # values = self.duplicate_train_route_check(x, y, exit_signal, switch_stack, game, coords, original_text, trains)
+                if values:
+                    x, y, last_switch, switch_stack, direction, original_text, coords = values
                 if (x+2,y) == exit_signal.coord and exit_signal.buffer:
                     break
                 if (x-2,y) == exit_signal.coord and exit_signal.buffer:
@@ -221,27 +94,13 @@ class Signal:
                 elif (x, y-1) == exit_signal.coord:
                     break
                 
-                elif (x > exit_signal.coord[0] and exit_signal.direction == 'right' and direction == 'right') or (x < exit_signal.coord[0] and exit_signal.direction == 'left' and direction == 'left') or (len(intersection) > 0) or not (0 <= y < len(lines) and 0 <= x < len(lines[y])):
-                    # print(0 <= y < len(lines) and 0 <= x < len(lines[y]))
-                    print(x, exit_signal.coord[0], exit_signal.direction)
-                    last_switch_tuple = switch_stack.pop()
-                    last_switch = last_switch_tuple[0]
-                    direction = last_switch_tuple[2]
-                    print("going back to switch at location", last_switch)
-                    last_switch_index = last_switch_tuple[1]
-                    original_text = game.change_switch(last_switch_index, "reverse",text = original_text)
-                    # game_text = game.change_switch(last_switch_index, "reverse", text=game_text)
-                    print("reversing switch at", last_switch)
-                    x = last_switch[0]
-                    y = last_switch[1]
-                    for i in range(len(coords)):
-                        if coords.pop() == (x,y):
-                            coords.append((x, y))
-                            break
-                last_char = char
+                elif (x > exit_signal.coord[0] and exit_signal.direction == 'right' and direction == 'right') or (x < exit_signal.coord[0] and exit_signal.direction == 'left' and direction == 'left') or not (0 <= y < len(lines) and 0 <= x < len(lines[y])):
+                    
+                    x, y, last_switch, switch_stack, direction, original_text, coords = self.go_back_to_last_switch(trains, switch_stack, game, coords, original_text)
+
+
             for switch in switch_stack:
                 switch_index = switch[1]
-                # switch_position = game.get_switch_position(switch_index, original_text)
                 game_text = game.change_switch(switch_index, "normal", text=game_text)
             for coord in coords:
                 x,y = coord
@@ -253,13 +112,58 @@ class Signal:
                         direction_to_test = self.direction
                     if x == switch[0] and y == switch[1] and switch[3] == direction_to_test and (switch,i,direction_to_test) not in switch_stack:
                         game_text = game.change_switch(i, "reverse", text=game_text)
-                    else:
-                        print(switch, i, direction, switch_stack, x, y)
             self.route_coords = coords
             game.text = game_text
             return coords
         except:
             print("route setting failed, please try again")
+
+    def duplicate_train_route_check(self, x, y, trains):
+        for train in trains:
+            if train.route_coords:
+                if (x, y) in train.route_coords:
+                    return True
+            if (x, y) in train.coords:
+                return True
+        return False
+        
+    def duplicate_signal_route_check(self, x, y, exit_signal, direction, switch_stack, game, coords, original_text, signals, trains):
+        intersection = []
+        print("duplicate signal route check")
+        for signal in signals:
+            if signal != exit_signal and (x, y+1) == signal.coord and signal.direction == direction and signal.mount == "down":
+                return (self.go_back_to_last_switch(trains, switch_stack, game, coords, original_text))
+            elif signal != exit_signal and (x, y-1) == signal.coord and signal.direction == direction and signal.mount == "up":
+                return (self.go_back_to_last_switch(trains, switch_stack, game, coords, original_text))
+            coord_set = set(coords)
+            if signal.route_coords is None:
+                continue
+            signal_coord_set = set(signal.route_coords)
+            intersection =  coord_set & signal_coord_set
+            if len(intersection) > 0:
+                print("intersection", intersection)
+                return (self.go_back_to_last_switch(trains, switch_stack, game, coords, original_text))
+
+    def skip_parts(self, character, direction, x, y, lines):
+        passed = False
+        trash = False
+        while passed == False:
+            if direction == 'down':
+                y += 1
+            elif direction == 'up':
+                y -= 1
+            elif direction == 'left':
+                x -= 1
+            elif direction == 'right':
+                x += 1
+            char = lines[y][x]
+            if char == character:
+                if not trash:
+                    trash = True
+                else:
+                    passed = True
+                    break
+        return x, y
 
     def cancel_route(self, display, text, autos, game):
         if self.signal_type == "manual" and self.route_set and self.route_coords:
@@ -275,6 +179,28 @@ class Signal:
                     auto.depressed(text, game)
             self.route_coords = None
 
+    def go_back_to_last_switch(self, trains, switch_stack, game, coords, original_text):
+        result = self.duplicate_train_route_check(x, y, trains)
+        print("called train route check", switch_stack)
+        if result:
+            switch_stack.pop()
+            print('edited', switch_stack)
+        # print(x, exit_signal.coord[0], exit_signal.direction)
+        last_switch_tuple = switch_stack.pop()
+        last_switch = last_switch_tuple[0]
+        direction = last_switch_tuple[2]
+        print("going back to switch at location", last_switch)
+        last_switch_index = last_switch_tuple[1]
+        original_text = game.change_switch(last_switch_index, "reverse",text = original_text)
+        # game_text = game.change_switch(last_switch_index, "reverse", text=game_text)
+        print("reversing switch at", last_switch)
+        x = last_switch[0]
+        y = last_switch[1]
+        for i in range(len(coords)):
+            if coords.pop() == (x,y):
+                coords.append((x, y))
+                break
+        return x, y, last_switch, switch_stack, direction, original_text, coords
 
     def check_for_trains_in_section(self, trains):
         if not self.route_coords:
@@ -284,3 +210,4 @@ class Signal:
                 if train.coords[0] in self.route_coords or train.coords[-1] in self.route_coords:
                     return True
         return False
+        

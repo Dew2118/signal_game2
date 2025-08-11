@@ -120,10 +120,8 @@ class Game:
                 x += 1
             for signal in self.signals:
                 if signal.coord == (x,y-1) and signal.direction == direction and signal.mount == "up":
-                    print("found signal at ",x,y-1)
                     return (x,y)
                 elif signal.coord == (x,y+1) and signal.direction == direction and signal.mount == "down":
-                    print("found signal at ",x,y+1)
                     return (x,y)
 
 
@@ -199,7 +197,6 @@ class Game:
     def check_if_spawnable(self, coord):
         # for coord in coords:
         if self.display_class.get_char_color_at_coord(coord[0], coord[1], self.text) != (128, 128, 128) and self.display_class.get_char_color_at_coord(coord[0], coord[1], self.text) != None:
-            print("cant be spawned")
             return False
         return True
 
@@ -357,14 +354,6 @@ class Game:
     def find_next_signals(self, signals):
         signal_lookup = {(s.coord[0], s.coord[1]): s for s in signals}
         lines = self.text.splitlines()
-        right_up = ['k','{']
-        right_down = ["i","o"]
-        left_up = ['h',"n"]
-        left_down = ['j','}']
-        both_up = ["z"]
-        both_down = ["y"]
-        
-        
         last_char = "F"
         for signal in signals:
             # print(signal)
@@ -378,88 +367,9 @@ class Game:
             elif signal.mount == 'down':
                 y -= 1
             direction = signal.direction
-            skip_parts_horizontal = False
-            skip_parts_vertical = False
-            block_horizontal = False
-            block_vertical = False
-            while 0 <= y < len(lines) and 0 <= x < len(lines[y]):
-                
-                char = lines[y][x]
-                if char == "x":
-                    # signal.next_signal = None
-                    # break
-                    break
-                if char == "÷":
-                    if not block_horizontal:
-                        block_horizontal = True
-                    else:
-                        block_horizontal = False
-                        skip_parts_horizontal = False
-                if char == "ö":
-                    if not block_vertical:
-                        block_vertical = True
-                    else:
-                        block_vertical = False
-                        skip_parts_vertical = False
-                if char in "|ö":
-                    if (last_char in right_up and direction == 'right') or (last_char in left_up and direction == 'left'):
-                        direction = "up"
-                    elif (last_char in right_down and direction == 'right') or (last_char in left_down and direction == 'left'):
-                        direction = "down"
-                if direction == "right":
-                    next_char = lines[y][x+1]
-                elif direction == "left":
-                    next_char = lines[y][x-1]
-                elif direction == "up":
-                    next_char = lines[y-1][x]
-                elif direction == "down":
-                    next_char = lines[y+1][x]
-                if next_char == "÷":
-                    skip_parts_horizontal = True
-                elif next_char == "ö":
-                    skip_parts_vertical = True
-                if skip_parts_horizontal:
-                    if direction == 'right':
-                        x += 1
-                    elif direction == 'left':
-                        x -= 1
-                    continue
-                elif skip_parts_vertical:
-                    if direction == 'up':
-                        y -= 1
-                    elif direction == 'down':
-                        y += 1
-                    continue
-                if (char in right_up and direction == 'right') or (char in left_up and direction == 'left'):
-                    y -= 1
-                elif (char in right_down and direction == 'right') or (char in left_down and direction == 'left'):
-                    y += 1
-                elif char in "|ö":
-
-
-                    if direction == "up":
-                        print("up")
-                        y -= 1
-                    elif direction == "down":
-                        print("down")
-                        y += 1
-                elif direction == "up" or direction == "down":
-                    if char in "ik":
-                        direction = "left"
-                        x -= 1
-                    elif char in "hj":
-                        direction = "right"
-                        x += 1
-                else:
-                    # print("move")
-                    if char in both_up:
-                        y -= 1
-                    elif char in both_down:
-                        y += 1
-                    if direction == 'right':
-                        x += 1
-                    elif direction == 'left':
-                        x -= 1
+            while 0 <= y < len(lines) - 1 and 0 <= x < len(lines[y]) - 1:
+                print(x,y)
+                x, y, direction, last_char, direction_change = self.path_find(lines, x, y, direction, signal.direction, last_char)
 
                 if not (0 <= y < len(lines) and 0 <= x < len(lines[y])):
                     break
@@ -468,17 +378,17 @@ class Game:
                     ny = y + dy
                     if 0 <= ny < len(lines):
                         candidate = signal_lookup.get((x, ny))
-                        if candidate and not skip_parts_horizontal and not skip_parts_vertical:
+                        if candidate and candidate.direction == direction:
                             signal.next_signal = candidate
                             break
                 if signal.next_signal:
                     break
-                last_char = char
+                # last_char = char
 
 
     def set_route(self, game):
         self.display_class.set_char_color_at_coord(self.entry_signal.coord[0], self.entry_signal.coord[1], "gray", self.text)
-        coords = self.entry_signal.get_coords_to_next_signal(self.exit_signal, self, self.switches, "test.txt", self.signals)
+        coords = self.entry_signal.get_coords_to_next_signal(self.exit_signal, self, self.switches, "test.txt", self.signals, self.trains)
         if not coords:
             game.entry_signal = None
             game.exit_signal = None
@@ -503,6 +413,86 @@ class Game:
     def color_entry_signal(self):
         if self.entry_signal:
             self.display_class.set_char_color_at_coord(self.entry_signal.coord[0], self.entry_signal.coord[1], "white", self.text)
+    
+    def path_find(self, lines, x, y, direction, main_direction, last_char):
+        right_up = 'k{'
+        right_down = "io"
+        left_up = "hn"
+        left_down = 'j}'
+        both_up = "z"
+        both_down = "y"
+        vertical = "|ö"
+        direction_change = None
+        char = lines[y][x]
+
+        if char in vertical:
+            print(direction)
+            if (last_char in right_up and direction == 'right') or (last_char in left_up and direction == 'left'):
+                direction = "up"
+            elif (last_char in right_down and direction == 'right') or (last_char in left_down and direction == 'left'):
+                print("direction is down")
+                direction = "down"
+        next_char = self.get_next_char_from_direction(direction, x, y, lines)
+        if next_char == "÷":
+            x, y = self.skip_parts("÷", direction, x, y, lines)
+        elif next_char == "ö":
+            x, y = self.skip_parts("ö", direction, x, y, lines)
+
+        if (char in right_up and direction == 'right') or (char in left_up and direction == 'left'):
+            y -= 1
+        elif (char in right_down and direction == 'right') or (char in left_down and direction == 'left'):
+            y += 1
+
+        elif char in vertical:
+            if direction == "up":
+                y -= 1
+            elif direction == "down":
+                y += 1
+        elif direction == "up" or direction == "down":
+            if char in "ik":
+                direction = "left"
+                if direction != main_direction:
+                    direction_change = [(x,y), direction]
+                x -= 1
+            elif char in "hj":
+                direction = "right"
+                if direction != main_direction:
+                    direction_change = [(x,y), direction]
+                x += 1
+        else:
+            if char in both_up:
+                y -= 1
+            elif char in both_down:
+                y += 1
+            if direction == 'right':
+                x += 1
+            elif direction == 'left':
+                x -= 1
+        last_char = char
+        return x, y, direction, last_char, direction_change
+    
+    def skip_parts(self, character, direction, x, y, lines):
+        passed = False
+        trash = False
+        direction_to_x_y_addition = {"right": (1, 0), "left": (-1, 0), "up": (0, -1), "down": (0, 1)}
+        while passed == False:
+            x_addition, y_addition = direction_to_x_y_addition[direction]
+            x += x_addition
+            y += y_addition
+            
+            char = lines[y][x]
+            if char == character:
+                if not trash:
+                    trash = True
+                else:
+                    passed = True
+                    break
+        return x, y
+    
+    def get_next_char_from_direction(self, direction, x, y, lines):
+        direction_to_x_y_addition = {"right": (1, 0), "left": (-1, 0), "up": (0, -1), "down": (0, 1)}
+        x_addition, y_addition = direction_to_x_y_addition[direction]
+        return lines[y + y_addition][x + x_addition]
     
     def run(self):
         running = True
@@ -535,7 +525,9 @@ class Game:
                     continue
                 train.move(self.text, self, self.signals, self.display_class)
                 # train.station_check(self.text)
+                
                 if train in self.trains:
+                    train.color_route_coords(self.display_class, self.text)
                     train.display_on(self.display_class, self.text)
                 
 
