@@ -39,7 +39,7 @@ class Signal:
             
 
     def get_coords_to_next_signal(self, exit_signal, game, switches, filename, signals, trains):
-        try:
+        # try:
             with open(filename, "r", encoding="utf-8") as f:
                 original_text = f.read()
             switch_stack = deque()
@@ -89,9 +89,9 @@ class Signal:
                     break
                 if (x-2,y) == exit_signal.coord and exit_signal.buffer:
                     break
-                if (x, y+1) == exit_signal.coord:
+                if (x, y+1) == exit_signal.coord and exit_signal.mount == "down":
                     break
-                elif (x, y-1) == exit_signal.coord:
+                elif (x, y-1) == exit_signal.coord and exit_signal.mount == "up":
                     break
                 
                 elif (x > exit_signal.coord[0] and exit_signal.direction == 'right' and direction == 'right') or (x < exit_signal.coord[0] and exit_signal.direction == 'left' and direction == 'left') or not (0 <= y < len(lines) and 0 <= x < len(lines[y])):
@@ -115,8 +115,8 @@ class Signal:
             self.route_coords = coords
             game.text = game_text
             return coords
-        except:
-            print("route setting failed, please try again")
+        # except:
+        #     print("route setting failed, please try again")
 
     def duplicate_train_route_check(self, x, y, trains):
         for train in trains:
@@ -180,6 +180,8 @@ class Signal:
             self.route_coords = None
 
     def go_back_to_last_switch(self, trains, switch_stack, game, coords, original_text):
+        x = switch_stack[0][0]
+        y = switch_stack[0][1]
         result = self.duplicate_train_route_check(x, y, trains)
         print("called train route check", switch_stack)
         if result:

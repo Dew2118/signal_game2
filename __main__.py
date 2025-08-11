@@ -113,16 +113,18 @@ class Game:
         return headcode
     def find_first_spawn_signal(self,spawn_coord, direction):
         x,y = spawn_coord
+        spawn_coords = []
         while True:
             if direction == "left":
                 x -= 1
             else:
                 x += 1
+            spawn_coords.append((x,y))
             for signal in self.signals:
                 if signal.coord == (x,y-1) and signal.direction == direction and signal.mount == "up":
-                    return (x,y)
+                    return spawn_coords
                 elif signal.coord == (x,y+1) and signal.direction == direction and signal.mount == "down":
-                    return (x,y)
+                    return spawn_coords
 
 
     def update_spawn(self):
@@ -177,27 +179,28 @@ class Game:
         if not annotated_segments:
             annotated_segments = self.annotated_segments
         coords = [start_coord for _ in range(length)]
-        signal_coord = self.find_first_spawn_signal(start_coord, direction)
-        if not self.check_if_spawnable(signal_coord):
+        signal_coords = self.find_first_spawn_signal(start_coord, direction)
+        if not self.check_if_spawnable(signal_coords):
             self.backlog_train_spawn.append({"length": length, "coords": coords, "direction": direction, "headcode": headcode, "timetable": timetable, "game_seconds": game_seconds, "annotated_segments": annotated_segments})
             return
-        train = Train(length, coords,direction, headcode, timetable, self.game_seconds, self.annotated_segments)
+        train = Train(length, coords,direction, headcode, timetable, int(self.game_seconds), self.annotated_segments)
         self.trains.append(train)
         return train
 
     def check_backlog_train(self):
         for backlog_train in self.backlog_train_spawn:
             coord = backlog_train["coords"][0]
-            signal_coord = self.find_first_spawn_signal(coord, backlog_train["direction"])
-            if self.check_if_spawnable(signal_coord):
+            signal_coords = self.find_first_spawn_signal(coord, backlog_train["direction"])
+            if self.check_if_spawnable(signal_coords):
                 self.backlog_train_spawn.remove(backlog_train)
                 print('removed')
                 self.spawn_train(backlog_train["length"], backlog_train["coords"][0], backlog_train["direction"], backlog_train["headcode"], backlog_train["timetable"])
 
-    def check_if_spawnable(self, coord):
+    def check_if_spawnable(self, coords):
         # for coord in coords:
-        if self.display_class.get_char_color_at_coord(coord[0], coord[1], self.text) != (128, 128, 128) and self.display_class.get_char_color_at_coord(coord[0], coord[1], self.text) != None:
-            return False
+        for coord in coords:
+            if self.display_class.get_char_color_at_coord(coord[0], coord[1], self.text) != (128, 128, 128) and self.display_class.get_char_color_at_coord(coord[0], coord[1], self.text) != None:
+                return False
         return True
 
     def create_signals_from_file(self, target_chars, signal_type_map, direction_map, mount_map, buffer_map):

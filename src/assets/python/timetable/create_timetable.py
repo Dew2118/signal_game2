@@ -120,17 +120,33 @@ class TimetableCreator:
 
     def input_stops(self):
         print("Enter stops (station and platform names). When done, type 'done'.")
+        last_stop_coord = self.timetable['start_location'][self.timetable['direction']]
+        last_value = 0
         while True:
             station = input("Station name (or 'done' to finish): ").strip()
             if station.lower() == "done":
                 break
             platform = input("Platform name: ").strip()
-            arr = input("Arrival time addition (sec): ").strip()
-            dep = input("Departure time addition (sec): ").strip()
+            second_last_stop_coord = None
+            # if platform == '':
+
+            for seg in self.segments:
+                if seg['station'] == station and (seg['platform'] == platform or platform == ''):
+                    second_last_stop_coord = (seg[self.timetable['direction']][0], seg[self.timetable['direction']][1])
+                    break
+            if second_last_stop_coord is None:
+                print("location invalid please retry")
+                continue
+            travel_time = int(input(f"Arrival time addition (sec) travel time is ({abs(last_stop_coord[0] - second_last_stop_coord[0])+abs(last_stop_coord[1] - second_last_stop_coord[1])}): ").strip())
+            stop_time = int(input("Stop time (sec): ").strip())
+            last_value += travel_time
+            arr = last_value
+            last_value += stop_time
+            dep = last_value
             reverse = input("Reverse direction here? (y/n): ").strip().lower() == "y"
             change_tt = False
             despawn = False
-
+            last_stop_coord = second_last_stop_coord
             # Will handle these only at last stop after finishing input
 
             try:

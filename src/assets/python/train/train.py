@@ -116,14 +116,14 @@ class Train:
         Before moving, check for blocking signals above/below.
         """
         
-        now = game.game_seconds
+        now = int(game.game_seconds)
         if now - self.last_move_time < self.wait_time:
             return  # Don't move yet
         if self.wait_time == 2:
             self.wait_time = 1
         if not self.coords:
             return
-
+        print(now)
         # 🚦 Timetable departure check
         if self.timetable and self.current_stop_index < len(self.timetable):
             if not self.timetable_check(game, text, display):
