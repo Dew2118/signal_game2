@@ -3,7 +3,7 @@ import pygame
 class Display_Class:
     def __init__(self, signals=None):
         pygame.init()
-        self.SCREEN_WIDTH, self.SCREEN_HEIGHT = 1000, 800
+        self.SCREEN_WIDTH, self.SCREEN_HEIGHT = 1000, 600
         self.FONT_PATH = "src/assets/fonts/S-box.ttf"
         self.BASE_FONT_SIZE = 15
         self.WHITE = (255, 255, 255)
@@ -15,7 +15,10 @@ class Display_Class:
         self.signals = signals if signals is not None else []
         self.font_size = self.BASE_FONT_SIZE
         self.font_size = max(8, min(200, round(self.font_size / 4) * 4))
-        self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
+        self.screen = pygame.display.set_mode(
+            (self.SCREEN_WIDTH, self.SCREEN_HEIGHT),
+            pygame.RESIZABLE
+        )
         pygame.display.set_caption("Scrollable & Zoomable Text Display")
         self.scroll_x = 0
         self.scroll_y = 0
@@ -30,6 +33,8 @@ class Display_Class:
         self.last_pair_time = pygame.time.get_ticks()
         self.pair_delay = 1000  # ms (1 second)
         self.line_height = 16
+        self.log_lines = []  # List of log messages
+        self.max_log_lines = 4  # 4 below game_time, totaling 5 lines
 
     def color_name_to_rgb(self, name):
         colors = {
@@ -116,9 +121,15 @@ class Display_Class:
         game_time_surface = font.render(game_time_text, True, (255, 255, 255))  # White color
         self.screen.blit(game_time_surface, (0, 0))  # Top-left corner with a small padding of 10 pixels
 
+    def add_log(self, *args):
+        message = " ".join(str(arg) for arg in args).upper()
+        self.log_lines.append(message)
+        if len(self.log_lines) > self.max_log_lines:
+            self.log_lines.pop(0)
+
     def update_and_draw(self,game,signals,autos, text, time):
         # try:
-        
+        reserved_height = self.line_height * (self.max_log_lines + 1)
         font = pygame.font.Font(self.FONT_PATH, self.font_size)
         redraw = False
         
@@ -158,7 +169,8 @@ class Display_Class:
                         max_scroll_x = max(0, text_width - self.SCREEN_WIDTH)
                         self.scroll_x = min(self.scroll_x + self.scroll_speed, max_scroll_x)
                     else:
-                        max_scroll_y = max(0, text_height - self.SCREEN_HEIGHT)
+                        # max_scroll_y = max(0, text_height - self.SCREEN_HEIGHT)
+                        max_scroll_y = max(0, text_height - (self.SCREEN_HEIGHT - reserved_height))
                         self.scroll_y = min(self.scroll_y + self.scroll_speed, max_scroll_y)
                     redraw = True
 
@@ -177,7 +189,8 @@ class Display_Class:
                 mod = pygame.key.get_mods()
                 shift_held = mod & pygame.KMOD_SHIFT
                 if shift_held:
-                    max_scroll_y = max(0, text_height - self.SCREEN_HEIGHT)
+                    # max_scroll_y = max(0, text_height - self.SCREEN_HEIGHT)
+                    max_scroll_y = max(0, text_height - (self.SCREEN_HEIGHT - reserved_height))
                     self.scroll_y = min(max(self.scroll_y - event.y * self.scroll_speed, 0), max_scroll_y)                    
                 else:
                     max_scroll_x = max(0, text_width - self.SCREEN_WIDTH)
@@ -198,7 +211,7 @@ class Display_Class:
                 if clicked_idx is not None:
                     for signal in signals:
                         x = adjusted_x//(font.size('M')[0]+self.char_spacing)
-                        y = adjusted_y//self.line_height
+                        y = adjusted_y//self.line_height - (self.max_log_lines + 1)
                         if signal.coord == (x, y) or signal.coord == (x+1, y) or signal.coord == (x-1, y):
                             if game.entry_signal is None and signal.signal_type == "manual":
                                 game.entry_signal = signal
@@ -216,7 +229,7 @@ class Display_Class:
                                 redraw = True
                             break
                     for train in game.trains:
-                        if (adjusted_x//(font.size('M')[0]+self.char_spacing), adjusted_y//self.line_height) in train.coords:
+                        if (adjusted_x//(font.size('M')[0]+self.char_spacing), adjusted_y//self.line_height - 5) in train.coords:
                             game.open_timetable_window(train)
                             break
                 mx, my = event.pos
@@ -232,7 +245,7 @@ class Display_Class:
                         break
                 if clicked_idx is not None:
                     x = adjusted_x//(font.size('M')[0]+self.char_spacing)
-                    y = adjusted_y//self.line_height
+                    y = adjusted_y//self.line_height - (self.max_log_lines + 1)
                     for signal in signals:
                         if signal.coord == (x, y) or signal.coord == (x+1, y) or signal.coord == (x-1, y):
                             if signal.signal_type == "manual":
@@ -247,6 +260,9 @@ class Display_Class:
                             auto.depressed(text, game)
                             redraw = True
                             break
+            elif event.type == pygame.VIDEORESIZE:
+                self.SCREEN_WIDTH, self.SCREEN_HEIGHT = event.w, event.h
+                self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pygame.RESIZABLE)
 
 
         # Always redraw after events
@@ -255,8 +271,25 @@ class Display_Class:
         
         self.screen.fill(self.BLACK)  # Fill the screen with black first
         
-        self.screen.blit(text_surface, (-self.scroll_x, -self.scroll_y))  # Blit the text surface
+        # self.screen.blit(text_surface, (-self.scroll_x, -self.scroll_y))  # Blit the text surface
+        reserved_height = self.line_height * 5
+
+        # Create a subsurface for the area below the reserved top
+        text_display_area = pygame.Rect(0, reserved_height, self.SCREEN_WIDTH, self.SCREEN_HEIGHT - reserved_height)
+
+        # Clip the blit area so we don't overwrite the top 5 lines
+        self.screen.set_clip(text_display_area)
+
+        # Now blit the text surface (with scrolling)
+        self.screen.blit(text_surface, (-self.scroll_x, reserved_height - self.scroll_y))
+
+        # Remove clipping so logs/game_time can draw above again
+        self.screen.set_clip(None)
         self.display_game_time(time, font)
+        # Draw log lines below game_time
+        for i, line in enumerate(self.log_lines):
+            log_surface = font.render(line, True, (200, 200, 200))  # Light gray
+            self.screen.blit(log_surface, (0, self.line_height * (i + 1)))  # +1 to start below game_time
         pygame.display.flip() 
         return True  # Continue main loop
         # except:

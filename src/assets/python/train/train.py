@@ -75,21 +75,21 @@ class Train:
                 self.start_to_stop_time = time_since_spawn
             dep_offset = current_stop.get('departure_offset', 0)
             if "change_timetable" in current_stop:
-                print("found change tt")
+                # print("found change tt")
                 tt_index = current_stop["change_timetable"]
                 self.timetable, tt_headcode_prefix, new_direction = game.get_tt_from_index(tt_index)
                 if self.direction != new_direction:
                     self.direction = new_direction
                     self.coords.reverse()
                     self.real_first_coord = self.coords[0]
-                print("headcode prefix is ", tt_headcode_prefix)
+                # print("headcode prefix is ", tt_headcode_prefix)
                 self.headcode = game.get_headcode_from_prefix(tt_headcode_prefix)
                 self.current_stop_index = 0
                 self.game_seconds_at_spawn += dep_offset
                 time_since_spawn = current_game_time - self.game_seconds_at_spawn
                 self.start_to_stop_time = time_since_spawn
                 self.set_headcode(text, game)
-                print("new game second at spawn is ", self.game_seconds_at_spawn)
+                # print("new game second at spawn is ", self.game_seconds_at_spawn)
             if current_stop.get("reverse_direction"):
                 self.direction = "left" if self.direction == "right" else "right"
                 self.coords.reverse()
@@ -140,7 +140,7 @@ class Train:
                             if not self.notified:
                                 # winsound.PlaySound(NOTIFIED_SOUND, winsound.SND_FILENAME)
                                 self.notified = True
-                                print(f"train {self.headcode} stopped at red signal at {signal.coord}")
+                                display.add_log(f"train {self.headcode} stopped at red signal at {signal.coord}")
                             return
                         self.notified = False
                         # print("train in block true")
@@ -264,7 +264,7 @@ class Train:
         lines = f.readlines()
         grid = [list(line.rstrip('\n')) for line in lines]
         if x <= 0 or x > len(lines[y]):
-            print("failed bounds check")
+            display.add_log("failed bounds check")
             self.despawn_train(text, display, game)
             return False
         return True

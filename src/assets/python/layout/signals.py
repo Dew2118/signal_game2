@@ -128,7 +128,7 @@ class Signal:
             game.text = game_text
             return coords
         except:
-            print("route setting failed, please try again")
+            game.display_class.add_log("route setting failed, please try again")
 
     def duplicate_train_route_check(self, x, y, trains):
         for train in trains:

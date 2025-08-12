@@ -14,7 +14,7 @@ SPAWN_SOUND = r"C:\Windows\Media\Speech On.wav"
 CWD = os.path.dirname(__file__) # CWD = Current Working Directory, pretend it is a const too
 from src.assets.python.timetable.display_timetable import Timetable
 class Game:
-    def __init__(self, text):
+    def __init__(self, text, display_class):
         self.text = text
         self.trains = []
         self.signals = []  # Add signals to Game, not Display_Class
@@ -32,10 +32,11 @@ class Game:
         self.timetables = None
         self.timetable_obj = None
         self.backlog_train_spawn = []
+        self.display_class = display_class
 
     #TODO : rework this to work better with file path
     def load_timetable_and_annotated_segments(self, filename=os.path.join(CWD, JSON_PATH, "timetable.json")):
-        print("  | loading " + filename)
+        self.display_class.add_log("  | loading " + filename)
         with open(filename, "r") as f:
             self.timetables = json.load(f)
         with open(os.path.join(CWD, JSON_PATH, "annotated_segments.json"), "r") as f:
@@ -48,7 +49,7 @@ class Game:
     def get_tt_from_index(self, index):
         for template in self.timetables:
             if template.get("index") == index:
-                print("found tt from index")
+                # self.display_class.add_log("found tt from index")
                 return template["stops"], template["headcode_prefix"], template["direction"]
     def save_game(self, filename="save.pkl"):
         data = {
@@ -73,7 +74,7 @@ class Game:
 
         with open(filename, "wb") as f:
             pickle.dump(data, f)
-        print("Game saved.")
+        self.display_class.add_log("Game saved.")
 
     def load_game(self,filename="save.pkl"):
         with open(filename, "rb") as f:
@@ -97,7 +98,7 @@ class Game:
         self.timetables = data.get("timetables", None)
         self.timetable_obj = None
 
-        print("Game loaded.")
+        self.display_class.add_log("Game loaded.")
         # return game
 
     def get_headcode_from_prefix(self, headcode_prefix):
@@ -121,7 +122,7 @@ class Game:
                 x -= 1
             else:
                 x += 1
-            # print(x,y)
+            # self.display_class.add_log(x,y)
             spawn_coords.append((x,y))
             for signal in self.signals:
                 if signal.coord == (x,y-1) and signal.direction == direction and signal.mount == "up":
@@ -187,7 +188,7 @@ class Game:
             self.backlog_train_spawn.append({"length": length, "coords": coords, "direction": direction, "headcode": headcode, "timetable": timetable, "game_seconds": game_seconds, "annotated_segments": annotated_segments})
             return
         # winsound.PlaySound(SPAWN_SOUND, winsound.SND_FILENAME)
-        print(f"train {headcode} spawned at {start_coord}")
+        self.display_class.add_log(f"train {headcode} spawned at {start_coord}")
         train = Train(length, coords,direction, headcode, timetable, int(self.game_seconds), self.annotated_segments)
         self.trains.append(train)
         return train
@@ -198,7 +199,7 @@ class Game:
             signal_coords = self.find_first_spawn_signal(coord, backlog_train["direction"])
             if self.check_if_spawnable(signal_coords):
                 self.backlog_train_spawn.remove(backlog_train)
-                print('removed')
+                self.display_class.add_log('removed')
                 self.spawn_train(backlog_train["length"], backlog_train["coords"][0], backlog_train["direction"], backlog_train["headcode"], backlog_train["timetable"])
 
     def check_if_spawnable(self, coords):
@@ -230,7 +231,7 @@ class Game:
                             continue
                     elif direction == "left" and not buffer:
                         if lines[y][x-1] in "sr":
-                            print("shunt to the left")
+                            self.display_class.add_log("shunt to the left")
                             shunt = True
                         elif lines[y][x-1] not in "q":
                             continue
@@ -267,7 +268,7 @@ class Game:
                     char_two_to_the_left = line[x-2]
                     char_three_to_the_left = line[x-3]
                 if char == "p" or char == "q":
-                    # print("char to the right are", char_to_the_right)
+                    # self.display_class.add_log("char to the right are", char_to_the_right)
                     if char_to_the_right == "A":
                         if char_two_to_the_right in target_chars:
                             signal_coord = (x + 2, y)
@@ -318,19 +319,19 @@ class Game:
                 if (char == "i" or char == "{") and char_below == "a":
                     self.switches.append([x,y+1, "h", "left"])
                     if char == "{":
-                        print(x,y+1, "{")
+                        self.display_class.add_log(x,y+1, "{")
                 if (char == "h" or char == "}") and char_above == "a":
                     self.switches.append([x,y-1, "i", "right"])
                     if char == "}":
-                        print(x,y-1, "}")
+                        self.display_class.add_log(x,y-1, "}")
                 if (char == "j" or char == "n" or char == "}") and char_below == "a":
                     self.switches.append([x,y+1, "k","right"])
                     if char == "}":
-                        print(x,y+1, "}")
+                        self.display_class.add_log(x,y+1, "}")
                 if (char == "k" or char == "o" or char == "{") and char_above == "a":
                     self.switches.append([x,y-1, "j","left"])
                     if char == "{":
-                        print(x,y-1, "{")
+                        self.display_class.add_log(x,y-1, "{")
 
     def change_switch(self, switch_index, switch_direction = "normal", text = None):
         # Convert lines to a list of lists (mutable)
@@ -371,7 +372,7 @@ class Game:
         lines = self.text.splitlines()
         last_char = "F"
         for signal in signals:
-            # print(signal)
+            # self.display_class.add_log(signal)
             if signal.signal_type != "automatic":
                 continue
             if signal.buffer:
@@ -383,7 +384,7 @@ class Game:
                 y -= 1
             direction = signal.direction
             while 0 <= y < len(lines) - 1 and 0 <= x < len(lines[y]) - 1:
-                print(x,y)
+                self.display_class.add_log(x,y)
                 x, y, direction, last_char, direction_change = self.path_find(lines, x, y, direction, signal.direction, last_char)
 
                 if not (0 <= y < len(lines) and 0 <= x < len(lines[y])):
@@ -419,7 +420,7 @@ class Game:
 
     def despawn_train(self, train):
         self.trains.remove(train)
-        print("train removed")
+        self.display_class.add_log("train removed")
 
     def open_timetable_window(self, train):
         self.timetable_obj = Timetable(train)
@@ -441,11 +442,11 @@ class Game:
         char = lines[y][x]
 
         if char in vertical:
-            print(direction)
+            # self.display_class.add_log(direction)
             if (last_char in right_up and direction == 'right') or (last_char in left_up and direction == 'left'):
                 direction = "up"
             elif (last_char in right_down and direction == 'right') or (last_char in left_down and direction == 'left'):
-                print("direction is down")
+                # self.display_class.add_log("direction is down")
                 direction = "down"
         next_char = self.get_next_char_from_direction(direction, x, y, lines)
         if next_char == "÷":
@@ -569,10 +570,10 @@ def main():
     #! TODO Rework this to be less tweaking moment
     with open("test.txt", "r", encoding="utf-8") as f:
         text = f.read()
-    game = Game(text)
+    game = Game(text, Display_Class())
     signals = game.create_signals_from_file(target_chars, signal_type_map, direction_map, mount_map,buffer_map)
 
-    game.display_class = Display_Class()
+    # game.display_class = 
     game.load_timetable_and_annotated_segments(os.path.join(CWD, JSON_PATH, "timetable.json"))
     game.find_next_signals(signals)
     game.define_switches()
