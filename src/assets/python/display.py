@@ -177,11 +177,12 @@ class Display_Class:
                 mod = pygame.key.get_mods()
                 shift_held = mod & pygame.KMOD_SHIFT
                 if shift_held:
+                    max_scroll_y = max(0, text_height - self.SCREEN_HEIGHT)
+                    self.scroll_y = min(max(self.scroll_y - event.y * self.scroll_speed, 0), max_scroll_y)                    
+                else:
                     max_scroll_x = max(0, text_width - self.SCREEN_WIDTH)
                     self.scroll_x = min(max(self.scroll_x - event.y * self.scroll_speed, 0), max_scroll_x)
-                else:
-                    max_scroll_y = max(0, text_height - self.SCREEN_HEIGHT)
-                    self.scroll_y = min(max(self.scroll_y - event.y * self.scroll_speed, 0), max_scroll_y)
+
                 redraw = True
             
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -196,7 +197,9 @@ class Display_Class:
                         break
                 if clicked_idx is not None:
                     for signal in signals:
-                        if signal.coord == (adjusted_x//(font.size('M')[0]+self.char_spacing), adjusted_y//self.line_height):
+                        x = adjusted_x//(font.size('M')[0]+self.char_spacing)
+                        y = adjusted_y//self.line_height
+                        if signal.coord == (x, y) or signal.coord == (x+1, y) or signal.coord == (x-1, y):
                             if game.entry_signal is None and signal.signal_type == "manual":
                                 game.entry_signal = signal
                                 print("entry signal selected")
@@ -204,7 +207,7 @@ class Display_Class:
                                 game.exit_signal = signal
                                 print("exit signal selected")
                     for auto in autos:
-                        if auto.coord == (adjusted_x//(font.size('M')[0]+self.char_spacing), adjusted_y//self.line_height):
+                        if auto.coord == (x, y) or auto.coord == (x+1, y) or auto.coord == (x-1, y):
                             if not auto.signal.route_set:
                                 print("route not set on signal")
                             else:
@@ -228,15 +231,17 @@ class Display_Class:
                         clicked_idx = idx
                         break
                 if clicked_idx is not None:
+                    x = adjusted_x//(font.size('M')[0]+self.char_spacing)
+                    y = adjusted_y//self.line_height
                     for signal in signals:
-                        if signal.coord == (adjusted_x//(font.size('M')[0]+self.char_spacing), adjusted_y//self.line_height):
+                        if signal.coord == (x, y) or signal.coord == (x+1, y) or signal.coord == (x-1, y):
                             if signal.signal_type == "manual":
                                 print("canceling route for signal at", signal.coord)
                                 signal.cancel_route(self, text, autos, game)
                                 redraw = True
                     for auto in autos:
                         
-                        if auto.coord == (adjusted_x//(font.size('M')[0]+self.char_spacing), adjusted_y//self.line_height):
+                        if auto.coord == (x, y) or auto.coord == (x+1, y) or auto.coord == (x-1, y):
                             
                             print("auto button depressed at", auto.coord)
                             auto.depressed(text, game)

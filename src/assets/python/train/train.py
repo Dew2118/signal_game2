@@ -1,6 +1,7 @@
-import pygame
 from collections import deque
 from io import StringIO
+import winsound
+NOTIFIED_SOUND = r"C:\Windows\Media\chord.wav"
 class Train:
     def __init__(self, length, coords, direction, headcode, timetable, game_seconds_at_spawn,annotated_segments):
         self.length = length
@@ -24,6 +25,7 @@ class Train:
         self.block_horizontal = False
         self.block_vertical = False
         self.route_coords = []
+        self.notified = False
 
     def _get_stop_coord(self, stop):
         """
@@ -123,7 +125,6 @@ class Train:
             self.wait_time = 1
         if not self.coords:
             return
-        print(now)
         # 🚦 Timetable departure check
         if self.timetable and self.current_stop_index < len(self.timetable):
             if not self.timetable_check(game, text, display):
@@ -136,8 +137,13 @@ class Train:
                 for signal in signals:
                     if self.signal_condition_check(signal, x, y):
                         if signal.color == "red":
+                            if not self.notified:
+                                winsound.PlaySound(NOTIFIED_SOUND, winsound.SND_FILENAME)
+                                self.notified = True
+                                print(f"train {self.headcode} stopped at red signal at {signal.coord}")
                             return
-                        print("train in block true")
+                        self.notified = False
+                        # print("train in block true")
                         signal.train_in_block = True
                         if not signal.auto:
                             signal.route_set = False
@@ -150,7 +156,7 @@ class Train:
                     elif self.signal_condition_check(signal, self.coords[-1][0], self.coords[-1][1]) and len(self.last_signal) > 1:
                             last_signal = self.last_signal.popleft()
                             last_signal.train_in_block = False
-                            print("train in block false of ", last_signal.coord, signal.mount, signal.direction, self.direction, len(self.last_signal))
+                            # print("train in block false of ", last_signal.coord, signal.mount, signal.direction, self.direction, len(self.last_signal))
 
 
             self.last_move_time = now  # Update timestamp
@@ -164,7 +170,7 @@ class Train:
             # Check bounds
             if 0 <= y < len(lines) and -10 <= x < len(lines[y]) + 10:
                 new_head = (x, y)
-                if self.route_coords:
+                if self.route_coords and new_head in self.route_coords:
                     self.route_coords.remove(new_head)
                 self.real_first_coord = new_head
                 self.coords.insert(0, new_head)

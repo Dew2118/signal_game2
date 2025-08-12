@@ -8,7 +8,9 @@ import pickle
 import json
 import time
 import os # for JSON path because python is stupid:tm:
+import winsound
 JSON_PATH = os.path.join("src", "json") #
+SPAWN_SOUND = r"C:\Windows\Media\Speech On.wav"
 CWD = os.path.dirname(__file__) # CWD = Current Working Directory, pretend it is a const too
 from src.assets.python.timetable.display_timetable import Timetable
 class Game:
@@ -183,6 +185,8 @@ class Game:
         if not self.check_if_spawnable(signal_coords):
             self.backlog_train_spawn.append({"length": length, "coords": coords, "direction": direction, "headcode": headcode, "timetable": timetable, "game_seconds": game_seconds, "annotated_segments": annotated_segments})
             return
+        winsound.PlaySound(SPAWN_SOUND, winsound.SND_FILENAME)
+        print(f"train {headcode} spawned at {start_coord}")
         train = Train(length, coords,direction, headcode, timetable, int(self.game_seconds), self.annotated_segments)
         self.trains.append(train)
         return train
@@ -213,14 +217,22 @@ class Game:
         for y, line in enumerate(lines):
             for x, char in enumerate(line.rstrip('\n')):
                 if char in target_chars:
+                    shunt = False
                     signal_type = signal_type_map.get(char, "automatic")
                     color = "red"  # Force all signals to be red
                     direction = direction_map.get(char, "right")
                     buffer = buffer_map.get(char, False)
-                    if (direction == "right" and lines[y][x+1] not in "qsr") and not buffer:
-                        continue
-                    elif (direction == "left" and lines[y][x-1] not in "qsr") and not buffer:
-                        continue
+                    if direction == "right" and not buffer:
+                        if lines[y][x+1] in "sr":
+                            shunt = True
+                        elif lines[y][x+1] not in "q":
+                            continue
+                    elif direction == "left" and not buffer:
+                        if lines[y][x-1] in "sr":
+                            print("shunt to the left")
+                            shunt = True
+                        elif lines[y][x-1] not in "q":
+                            continue
                     mount = mount_map.get(char, "up")
                     
                     name = f"i"
@@ -231,7 +243,8 @@ class Game:
                         color=color,
                         direction=direction,
                         mount=mount,
-                        buffer=buffer
+                        buffer=buffer,
+                        shunt = shunt
                     )
                     signals.append(signal)
                     i += 1
@@ -255,7 +268,6 @@ class Game:
                 if char == "p" or char == "q":
                     # print("char to the right are", char_to_the_right)
                     if char_to_the_right == "A":
-                        print("A to the right")
                         if char_two_to_the_right in target_chars:
                             signal_coord = (x + 2, y)
                             for s in self.signals:
@@ -265,7 +277,6 @@ class Game:
                             self.autos.append(auto)
                         elif char_three_to_the_right in target_chars:
                             signal_coord = (x + 3, y)
-                            print("looking at at ",signal_coord)
                             for s in self.signals:
                                 if s.coord == signal_coord:
                                     signal = s

@@ -2,7 +2,7 @@ from collections import deque
 class Signal:
     def __init__(
         self, name, coord, signal_type, color, direction, mount,
-        possible_next_signals=None, next_signal=None, train_in_block=False, buffer = False
+        possible_next_signals=None, next_signal=None, train_in_block=False, buffer = False, shunt = False
     ):
         self.name = name  # string
         self.coord = coord  # tuple (x, y)
@@ -15,6 +15,7 @@ class Signal:
         self.train_in_block = train_in_block  # New attribute
         self.route_set = False
         self.buffer = buffer
+        self.shunt = shunt
         self.route_coords = None
         self.auto = False
 
@@ -31,15 +32,21 @@ class Signal:
             if (self.signal_type == "automatic" and self.train_in_block) or (self.signal_type == "manual" and trains_in_section):
                 self.color = "red"
             elif self.next_signal and self.next_signal.color == "red":
-                self.color = "yellow"
+                if self.shunt:
+                    self.color = "white"
+                else:
+                    self.color = "yellow"
             else:
-                self.color = "green"
+                if self.shunt:
+                    self.color = "white"
+                else:
+                    self.color = "green"
         else:
             self.color = "red"
             
 
     def get_coords_to_next_signal(self, exit_signal, game, switches, filename, signals, trains):
-        # try:
+        try:
             with open(filename, "r", encoding="utf-8") as f:
                 original_text = f.read()
             switch_stack = deque()
@@ -102,12 +109,17 @@ class Signal:
             for switch in switch_stack:
                 switch_index = switch[1]
                 game_text = game.change_switch(switch_index, "normal", text=game_text)
+            direction_to_test_change = False
             for coord in coords:
                 x,y = coord
-                direction_to_test_change = False
+                
                 for i,switch in enumerate(switches):
                     if direction_change and ((x,y) == direction_change[0] or direction_to_test_change):
-                        direction_to_test = ["left","right"].remove(self.direction)
+                        if self.direction == "left":
+                            direction_to_test = "right"
+                        else:
+                            direction_to_test = "left"
+                        direction_to_test_change = True
                     else:
                         direction_to_test = self.direction
                     if x == switch[0] and y == switch[1] and switch[3] == direction_to_test and (switch,i,direction_to_test) not in switch_stack:
@@ -115,8 +127,8 @@ class Signal:
             self.route_coords = coords
             game.text = game_text
             return coords
-        # except:
-        #     print("route setting failed, please try again")
+        except:
+            print("route setting failed, please try again")
 
     def duplicate_train_route_check(self, x, y, trains):
         for train in trains:
@@ -129,7 +141,6 @@ class Signal:
         
     def duplicate_signal_route_check(self, x, y, exit_signal, direction, switch_stack, game, coords, original_text, signals, trains):
         intersection = []
-        print("duplicate signal route check")
         for signal in signals:
             if signal != exit_signal and (x, y+1) == signal.coord and signal.direction == direction and signal.mount == "down":
                 return (self.go_back_to_last_switch(trains, switch_stack, game, coords, original_text))
@@ -141,7 +152,6 @@ class Signal:
             signal_coord_set = set(signal.route_coords)
             intersection =  coord_set & signal_coord_set
             if len(intersection) > 0:
-                print("intersection", intersection)
                 return (self.go_back_to_last_switch(trains, switch_stack, game, coords, original_text))
 
     def skip_parts(self, character, direction, x, y, lines):
@@ -183,19 +193,16 @@ class Signal:
         x = switch_stack[0][0]
         y = switch_stack[0][1]
         result = self.duplicate_train_route_check(x, y, trains)
-        print("called train route check", switch_stack)
         if result:
             switch_stack.pop()
-            print('edited', switch_stack)
         # print(x, exit_signal.coord[0], exit_signal.direction)
         last_switch_tuple = switch_stack.pop()
         last_switch = last_switch_tuple[0]
         direction = last_switch_tuple[2]
-        print("going back to switch at location", last_switch)
+        # print("going back to switch at location", last_switch)
         last_switch_index = last_switch_tuple[1]
         original_text = game.change_switch(last_switch_index, "reverse",text = original_text)
-        # game_text = game.change_switch(last_switch_index, "reverse", text=game_text)
-        print("reversing switch at", last_switch)
+        # print("reversing switch at", last_switch)
         x = last_switch[0]
         y = last_switch[1]
         for i in range(len(coords)):
