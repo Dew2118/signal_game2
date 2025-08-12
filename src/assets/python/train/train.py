@@ -138,7 +138,7 @@ class Train:
                     if self.signal_condition_check(signal, x, y):
                         if signal.color == "red":
                             if not self.notified:
-                                winsound.PlaySound(NOTIFIED_SOUND, winsound.SND_FILENAME)
+                                # winsound.PlaySound(NOTIFIED_SOUND, winsound.SND_FILENAME)
                                 self.notified = True
                                 print(f"train {self.headcode} stopped at red signal at {signal.coord}")
                             return

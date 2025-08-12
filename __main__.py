@@ -121,6 +121,7 @@ class Game:
                 x -= 1
             else:
                 x += 1
+            # print(x,y)
             spawn_coords.append((x,y))
             for signal in self.signals:
                 if signal.coord == (x,y-1) and signal.direction == direction and signal.mount == "up":
@@ -185,7 +186,7 @@ class Game:
         if not self.check_if_spawnable(signal_coords):
             self.backlog_train_spawn.append({"length": length, "coords": coords, "direction": direction, "headcode": headcode, "timetable": timetable, "game_seconds": game_seconds, "annotated_segments": annotated_segments})
             return
-        winsound.PlaySound(SPAWN_SOUND, winsound.SND_FILENAME)
+        # winsound.PlaySound(SPAWN_SOUND, winsound.SND_FILENAME)
         print(f"train {headcode} spawned at {start_coord}")
         train = Train(length, coords,direction, headcode, timetable, int(self.game_seconds), self.annotated_segments)
         self.trains.append(train)

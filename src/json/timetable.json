@@ -570,5 +570,243 @@
         ],
         "spawn_times": [],
         "index": 5
+    },
+    {
+        "headcode_prefix": "3C",
+        "start_location": {
+            "left": [
+                429,
+                16
+            ],
+            "right": [
+                429,
+                16
+            ],
+            "type": "entrance_exit",
+            "station": "STEPFORD DEPOT",
+            "platform": "3"
+        },
+        "direction": "left",
+        "stops": [
+            {
+                "station": "STEPFORD CENTRAL",
+                "platform": "11",
+                "arrival_offset": 140,
+                "departure_offset": 150,
+                "reverse_direction": false,
+                "despawn": false,
+                "change_timetable": 7
+            }
+        ],
+        "spawn_times": [
+            "0:01:00",
+            "0:10:00",
+            "0:15:00",
+            "0:20:00",
+            "0:25:00",
+            "0:30:00",
+            "0:35:00",
+            "0:40:00",
+            "0:45:00",
+            "0:50:00",
+            "0:55:00",
+            "1:00:00",
+            "1:05:00",
+            "1:10:00",
+            "1:15:00",
+            "1:20:00",
+            "1:25:00",
+            "1:30:00",
+            "1:35:00",
+            "1:40:00",
+            "1:45:00",
+            "1:50:00",
+            "1:55:00",
+            "2:00:00",
+            "2:05:00",
+            "2:10:00",
+            "2:15:00",
+            "2:20:00",
+            "2:25:00",
+            "2:30:00",
+            "2:35:00",
+            "2:40:00",
+            "2:45:00",
+            "2:50:00",
+            "2:55:00",
+            "3:00:00",
+            "3:05:00",
+            "3:10:00",
+            "3:15:00",
+            "3:20:00",
+            "3:25:00",
+            "3:30:00",
+            "3:35:00",
+            "3:40:00",
+            "3:45:00",
+            "3:50:00",
+            "3:55:00",
+            "4:00:00",
+            "4:05:00",
+            "4:10:00",
+            "4:15:00",
+            "4:20:00",
+            "4:25:00",
+            "4:30:00",
+            "4:35:00",
+            "4:40:00",
+            "4:45:00",
+            "4:50:00",
+            "4:55:00",
+            "5:00:00",
+            "5:05:00",
+            "5:10:00",
+            "5:15:00",
+            "5:20:00",
+            "5:25:00",
+            "5:30:00",
+            "5:35:00",
+            "5:40:00",
+            "5:45:00",
+            "5:50:00",
+            "5:55:00",
+            "6:00:00",
+            "6:05:00",
+            "6:10:00",
+            "6:15:00",
+            "6:20:00",
+            "6:25:00",
+            "6:30:00",
+            "6:35:00",
+            "6:40:00",
+            "6:45:00",
+            "6:50:00",
+            "6:55:00",
+            "7:00:00",
+            "7:05:00",
+            "7:10:00",
+            "7:15:00",
+            "7:20:00",
+            "7:25:00",
+            "7:30:00",
+            "7:35:00",
+            "7:40:00",
+            "7:45:00",
+            "7:50:00",
+            "7:55:00",
+            "8:00:00",
+            "8:05:00",
+            "8:10:00",
+            "8:15:00",
+            "8:20:00"
+        ],
+        "index": 6
+    },
+    {
+        "headcode_prefix": "2C",
+        "start_location": {
+            "left": [
+                316,
+                44
+            ],
+            "right": [
+                321,
+                44
+            ],
+            "type": "platform",
+            "station": "STEPFORD CENTRAL",
+            "platform": "11"
+        },
+        "direction": "left",
+        "stops": [
+            {
+                "station": "STEPFORD CENTRAL",
+                "platform": "11",
+                "arrival_offset": 0,
+                "departure_offset": 10,
+                "reverse_direction": false,
+                "despawn": false
+            },
+            {
+                "station": "CITY HOSPITAL",
+                "platform": "",
+                "arrival_offset": 40,
+                "departure_offset": 50,
+                "reverse_direction": false,
+                "despawn": false
+            },
+            {
+                "station": "BEECHLEY",
+                "platform": "",
+                "arrival_offset": 160,
+                "departure_offset": 170,
+                "reverse_direction": false,
+                "despawn": false,
+                "change_timetable": 8
+            }
+        ],
+        "spawn_times": [],
+        "index": 7
+    },
+    {
+        "headcode_prefix": "2M",
+        "start_location": {
+            "left": [
+                211,
+                64
+            ],
+            "right": [
+                217,
+                64
+            ],
+            "type": "platform",
+            "station": "BEECHLEY",
+            "platform": "3"
+        },
+        "direction": "right",
+        "stops": [
+            {
+                "station": "BEECHLEY",
+                "platform": "",
+                "arrival_offset": 0,
+                "departure_offset": 10,
+                "reverse_direction": false,
+                "despawn": false
+            },
+            {
+                "station": "CITY HOSPITAL",
+                "platform": "",
+                "arrival_offset": 110,
+                "departure_offset": 120,
+                "reverse_direction": false,
+                "despawn": false
+            },
+            {
+                "station": "STEPFORD CENTRAL",
+                "platform": "10",
+                "arrival_offset": 150,
+                "departure_offset": 160,
+                "reverse_direction": false,
+                "despawn": false
+            },
+            {
+                "station": "STEPFORD EAST",
+                "platform": "",
+                "arrival_offset": 280,
+                "departure_offset": 290,
+                "reverse_direction": false,
+                "despawn": false
+            },
+            {
+                "station": "ZONE B",
+                "platform": "3",
+                "arrival_offset": 380,
+                "departure_offset": 390,
+                "reverse_direction": false,
+                "despawn": true
+            }
+        ],
+        "spawn_times": [],
+        "index": 8
     }
 ]

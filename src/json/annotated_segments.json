@@ -197,11 +197,11 @@
     {
         "left": [
             429,
-            13
+            12
         ],
         "right": [
             429,
-            13
+            12
         ],
         "type": "entrance_exit",
         "station": "STEPFORD DEPOT",
@@ -236,11 +236,11 @@
     {
         "left": [
             429,
-            15
+            14
         ],
         "right": [
             429,
-            15
+            14
         ],
         "type": "entrance_exit",
         "station": "STEPFORD DEPOT",
@@ -249,11 +249,11 @@
     {
         "left": [
             429,
-            17
+            16
         ],
         "right": [
             429,
-            17
+            16
         ],
         "type": "entrance_exit",
         "station": "STEPFORD DEPOT",
@@ -275,11 +275,11 @@
     {
         "left": [
             429,
-            19
+            18
         ],
         "right": [
             429,
-            19
+            18
         ],
         "type": "entrance_exit",
         "station": "STEPFORD DEPOT",
