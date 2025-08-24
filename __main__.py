@@ -99,9 +99,16 @@ class Game:
         self.headcode_suffix = data.get("headcode_suffix", {})
         self.timetables = data.get("timetables", None)
         self.timetable_obj = None
-
+        for signal in self.signals:
+            signal.deactivate_TRTS(self, self.display_class, self.text)
+            if signal.route_coords:
+                for coord in signal.route_coords:
+                    self.display_class.set_char_color_at_coord(coord[0], coord[1], "white", self.text)
+        for train in self.trains:
+            if train.route_coords:
+                for coord in train.route_coords:
+                    self.display_class.set_char_color_at_coord(coord[0], coord[1], "white", self.text)
         self.display_class.add_log("Game loaded.")
-        # return game
 
     def get_headcode_from_prefix(self, headcode_prefix):
         
