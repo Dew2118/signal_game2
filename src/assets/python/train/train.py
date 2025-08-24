@@ -33,6 +33,7 @@ class Train:
         self.last_action = "remove train tail"
         self.notify_TRTS = False
         self.last_last_signal = None
+        self.last_colored_route_coords = []
 
     def _get_stop_coord(self, stop):
         """
@@ -326,11 +327,14 @@ class Train:
         return True
     
     def color_route_coords(self, display, text):
+        if self.last_colored_route_coords == self.route_coords:
+            return
         for coord in self.route_coords:
             if coord:
                 x, y = coord
                 if display.get_char_color_at_coord(x, y, text) == (255, 255, 255):
                     display.set_char_color_at_coord(x, y, "white",text)
+        self.last_colored_route_coords = self.route_coords.copy()
     
     def despawn_train(self, text, display, game):
         f = StringIO(text)

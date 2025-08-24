@@ -4,6 +4,7 @@ class Auto:
         self.coord = coord
         self.signal = signal
         self.direction = direction
+        self.colored = False
     
     def pressed(self, text, game):
         x,y = self.coord

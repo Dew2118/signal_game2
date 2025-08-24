@@ -10,9 +10,13 @@ import time
 import os # for JSON path because python is stupid:tm:
 import winsound
 import threading
+import easygui
+import datetime
 JSON_PATH = os.path.join("src", "json") #
 SPAWN_SOUND = r"C:\Windows\Media\Speech On.wav"
-
+# Create a "saves" folder in the current directory if it doesn't exist
+if not os.path.exists('saves'):
+    os.makedirs('saves')
 CWD = os.path.dirname(__file__) # CWD = Current Working Directory, pretend it is a const too
 from src.assets.python.timetable.display_timetable import Timetable
 class Game:
@@ -35,6 +39,7 @@ class Game:
         self.timetable_obj = None
         self.backlog_train_spawn = []
         self.display_class = display_class
+        self.snapshot = False
 
     #TODO : rework this to work better with file path
     def load_timetable_and_annotated_segments(self, filename=os.path.join(CWD, JSON_PATH, "timetable.json")):
@@ -53,62 +58,95 @@ class Game:
             if template.get("index") == index:
                 # self.display_class.add_log("found tt from index")
                 return template["stops"], template["headcode_prefix"], template["direction"]
-    def save_game(self, filename="save.pkl"):
-        data = {
-            "trains": self.trains,
-            "signals": self.signals,
-            "autos": self.autos,
-            "text": self.text,
-            "entry_signal": self.entry_signal,
-            "exit_signal": self.exit_signal,
-            "switches": self.switches,
-            "spawned_train": self.spawned_train,
-            # "display_class": self.display_class
-            "game_seconds": self.game_seconds,
-            "time_speed": self.time_speed,
-            "paused": self.paused,
-            "_last_real_time": self._last_real_time,
-            "last_spawn_time": self.last_spawn_time,
-            "headcode_suffix": self.headcode_suffix,
-            "timetables": self.timetables,
-            # "timetable_obj": self.timetable_obj
-        }
 
-        with open(filename, "wb") as f:
-            pickle.dump(data, f)
-        self.display_class.add_log("Game saved.")
 
-    def load_game(self,filename="save.pkl"):
-        with open(filename, "rb") as f:
-            data = pickle.load(f)
-        self.text = data["text"]
-        # game = Game(text)
-        self.trains = data["trains"]
-        self.signals = data["signals"]
-        self.autos = data["autos"]
-        self.entry_signal = data["entry_signal"]
-        self.exit_signal = data["exit_signal"]
-        self.switches = data["switches"]
-        self.spawned_train = data["spawned_train"]
-        self.display_class = Display_Class()
-        self.game_seconds = data.get("game_seconds", 0.0)
-        self.time_speed = data.get("time_speed", 1.0)
-        self.paused = data.get("paused", False)
-        self._last_real_time = time.time()
-        self.last_spawn_time = data.get("last_spawn_time", 0)
-        self.headcode_suffix = data.get("headcode_suffix", {})
-        self.timetables = data.get("timetables", None)
-        self.timetable_obj = None
-        for signal in self.signals:
-            signal.deactivate_TRTS(self, self.display_class, self.text)
-            if signal.route_coords:
-                for coord in signal.route_coords:
-                    self.display_class.set_char_color_at_coord(coord[0], coord[1], "white", self.text)
-        for train in self.trains:
-            if train.route_coords:
-                for coord in train.route_coords:
-                    self.display_class.set_char_color_at_coord(coord[0], coord[1], "white", self.text)
-        self.display_class.add_log("Game loaded.")
+    # Function to save the game, defaulting to the "saves" folder
+    def save_game(self, name=None):
+        # Set the default directory to 'saves' folder
+        default_directory = os.path.join(os.getcwd(), 'saves')
+
+        # Open save file dialog with the default directory
+        if name:
+            filename = os.path.join(default_directory, name)
+        else:
+            filename = easygui.filesavebox(default=os.path.join(default_directory, "game_save.pkl"),
+                                            filetypes=["*.pkl"])
+        
+        if filename:  # Check if the user selected a file (not canceled)
+            data = {
+                "trains": self.trains,
+                "signals": self.signals,
+                "autos": self.autos,
+                "text": self.text,
+                "entry_signal": self.entry_signal,
+                "exit_signal": self.exit_signal,
+                "switches": self.switches,
+                "spawned_train": self.spawned_train,
+                "game_seconds": self.game_seconds,
+                "time_speed": self.time_speed,
+                "paused": self.paused,
+                "_last_real_time": self._last_real_time,
+                "last_spawn_time": self.last_spawn_time,
+                "headcode_suffix": self.headcode_suffix,
+                "timetables": self.timetables,
+            }
+
+            with open(filename, "wb") as f:
+                pickle.dump(data, f)
+            self.display_class.add_log(f"Game saved.")
+
+    # Function to load the game, defaulting to the "saves" folder
+    def load_game(self):
+        # Set the default directory to 'saves' folder
+        default_directory = os.path.join(os.getcwd(), 'saves', "*.pkl")
+
+        # Open open file dialog with the default directory
+        print(default_directory)
+        filename = easygui.fileopenbox(default=default_directory)
+        
+        if filename:  # Check if the user selected a file (not canceled)
+            try:
+                with open(filename, "rb") as f:
+                    data = pickle.load(f)
+
+                self.text = data["text"]
+                self.trains = data["trains"]
+                self.signals = data["signals"]
+                self.autos = data["autos"]
+                self.entry_signal = data["entry_signal"]
+                self.exit_signal = data["exit_signal"]
+                self.switches = data["switches"]
+                self.spawned_train = data["spawned_train"]
+                self.display_class = Display_Class()
+                self.game_seconds = data.get("game_seconds", 0.0)
+                self.time_speed = data.get("time_speed", 1.0)
+                self.paused = data.get("paused", False)
+                self._last_real_time = time.time()
+                self.last_spawn_time = data.get("last_spawn_time", 0)
+                self.headcode_suffix = data.get("headcode_suffix", {})
+                self.timetables = data.get("timetables", None)
+                self.timetable_obj = None
+
+                for signal in self.signals:
+                    signal.last_colored_color = None
+                    signal.deactivate_TRTS(self, self.display_class, self.text)
+                    if signal.route_coords:
+                        for coord in signal.route_coords:
+                            self.display_class.set_char_color_at_coord(coord[0], coord[1], "white", self.text)
+
+                for train in self.trains:
+                    train.last_colored_route_coords = []
+                    train.move_headcode(self.text, self, self.signals, self.display_class)
+                    if train.route_coords:
+                        for coord in train.route_coords:
+                            self.display_class.set_char_color_at_coord(coord[0], coord[1], "white", self.text)
+                for auto in self.autos:
+                    auto.colored = False
+                self.display_class.add_log(f"Game loaded")
+            
+            except FileNotFoundError:
+                self.display_class.add_log(f"Error: file not found!")
+                
 
     def get_headcode_from_prefix(self, headcode_prefix):
         
@@ -567,6 +605,12 @@ class Game:
             if not self.paused:
                 self.game_seconds += delta_real * self.time_speed
             # Move all trains
+            if round(self.game_seconds) % (5*60) == 0 and not self.snapshot:
+                current_datetime = datetime.datetime.now()
+                self.save_game(f"snapshot_{hours:02d}{minutes:02d}{seconds:02d}_{current_datetime.strftime('%Y%m%d_%H%M%S')}.pkl")
+                self.snapshot = True
+            else:
+                self.snapshot = False
             self.update_spawn()
             for train in self.trains:
                 if not train.bounds_check(self.text, self.display_class, self):

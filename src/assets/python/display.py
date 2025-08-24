@@ -117,7 +117,6 @@ class Display_Class:
             idx += 1
             y += line_height
         return surf, width, height, char_rects
-    
     def display_game_time(self, game_time_text, font):
         game_time_surface = font.render(game_time_text, True, (255, 255, 255))  # White color
         self.screen.blit(game_time_surface, (0, 0))  # Top-left corner with a small padding of 10 pixels
@@ -304,15 +303,20 @@ class Display_Class:
         for signal in signals:
             if signal.buffer:
                 continue
+            if signal.last_colored_color and signal.last_colored_color == signal.color:
+                continue
             x, y = signal.coord
             if signal.direction == "right":
                 x += 1
             elif signal.direction == "left":
                 x -= 1
             self.set_char_color_at_coord(x, y, signal.color, text)
+            signal.last_colored_color = signal.color
 
     def display_auto_button_color(self, autos, text):
         for auto in autos:
+            if auto.colored:
+                continue
             x, y = auto.coord
             if auto.direction == "right":
                 x1 = x + 1
@@ -320,3 +324,4 @@ class Display_Class:
                 x1 = x - 1
             self.set_char_color_at_coord(x, y, "light blue", text)
             self.set_char_color_at_coord(x1, y, "light blue", text)
+            auto.colored = True

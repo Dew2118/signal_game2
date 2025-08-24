@@ -6,11 +6,13 @@ class Timetable:
         self.train = train
         self.window.title(f"Timetable - {train.headcode}")
         self.window.geometry("500x400")
+        self.window.wm_attributes("-topmost", 1)
         self.tree = ttk.Treeview(self.window, columns=("Station", "Platform", "Arrival", "Departure"), show="headings")
         self.tree_items = []
         self.stops = train.timetable
         self.current_index = getattr(train, "current_stop_index", 0)
         self.window.protocol("WM_DELETE_WINDOW", self.on_close)
+        
         style = ttk.Style(self.window)
         style.configure("Treeview", font=("JetBrain Mono", 10))
         style.configure("Treeview.Heading", font=("JetBrain Mono", 10, "bold"))
@@ -66,14 +68,3 @@ class Timetable:
 
             self.tree.item(self.tree_items[i], values=(stop["station"], stop["platform"], arr_str, dep_str))
         self.window.update()
-
-        # self.window.after(1000, self.update_table)
-        
-
-    # window.after(1000, update_table)
-    # try:
-    #     populate_table()
-    #     update_table()
-    #     window.mainloop()
-    # except tk.TclError:
-    #     print("Window closed error")

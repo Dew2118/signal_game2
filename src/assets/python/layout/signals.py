@@ -20,6 +20,7 @@ class Signal:
         self.auto = False
         self.overlap = (0,0)
         self.TRTS_button_coord = None
+        self.last_colored_color = None
 
     def __repr__(self):
         return (f"Signal(name={self.name!r}, coord={self.coord}, "
