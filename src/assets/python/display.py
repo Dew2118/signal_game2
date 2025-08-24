@@ -150,19 +150,19 @@ class Display_Class:
                 # Press P to toggle pause state
                 if event.key == pygame.K_p:
                     game.paused = not game.paused  # Toggle pause state
-                    print(f"Game paused: {game.paused}")
+                    self.add_log(f"Game paused: {game.paused}")
                     redraw = True
 
                 # Press + to increase time_speed
                 elif event.key == pygame.K_PLUS or event.key == pygame.K_KP_PLUS:
                     game.time_speed += 1  # Increase time speed by 1
-                    print(f"Time speed increased: {game.time_speed}")
+                    self.add_log(f"Time speed increased: {game.time_speed}")
                     redraw = True
 
                 # Press - to decrease time_speed, but don't go below 1
                 elif event.key == pygame.K_MINUS or event.key == pygame.K_KP_MINUS:
                     game.time_speed = max(1, game.time_speed - 1)  # Decrease time speed but not below 1
-                    print(f"Time speed decreased: {game.time_speed}")
+                    self.add_log(f"Time speed decreased: {game.time_speed}")
                     redraw = True
                 elif event.key == pygame.K_DOWN:
                     if shift_held:
@@ -176,15 +176,15 @@ class Display_Class:
 
                 if (pygame.key.get_mods() & pygame.KMOD_CTRL) and event.key == pygame.K_s:
                     game.save_game()
-                    print("Game saved.")
+                    self.add_log("Game saved.")
 
                 # Load game with Ctrl+L
                 elif (pygame.key.get_mods() & pygame.KMOD_CTRL) and event.key == pygame.K_l:
                     try:
                         game.load_game()
-                        print("Game loaded.")
+                        self.add_log("Game loaded.")
                     except FileNotFoundError:
-                        print("No saved game found.")
+                        self.add_log("No saved game found.")
             elif event.type == pygame.MOUSEWHEEL:
                 mod = pygame.key.get_mods()
                 shift_held = mod & pygame.KMOD_SHIFT
@@ -215,21 +215,21 @@ class Display_Class:
                         if signal.coord == (x, y) or signal.coord == (x+1, y) or signal.coord == (x-1, y):
                             if game.entry_signal is None and signal.signal_type == "manual":
                                 game.entry_signal = signal
-                                print("entry signal selected")
+                                self.add_log("entry signal selected")
                             else:
                                 game.exit_signal = signal
-                                print("exit signal selected")
+                                self.add_log("exit signal selected")
                     for auto in autos:
                         if auto.coord == (x, y) or auto.coord == (x+1, y) or auto.coord == (x-1, y):
                             if not auto.signal.route_set:
-                                print("route not set on signal")
+                                self.add_log("route not set on signal")
                             else:
-                                print("auto button pressed at", auto.coord)
+                                self.add_log("auto button pressed at", auto.coord)
                                 auto.pressed(text, game)
                                 redraw = True
                             break
                     for train in game.trains:
-                        if (adjusted_x//(font.size('M')[0]+self.char_spacing), adjusted_y//self.line_height - 5) in train.coords:
+                        if (adjusted_x//(font.size('M')[0]+self.char_spacing), adjusted_y//self.line_height - 5) in train.coords[0]:
                             game.open_timetable_window(train)
                             break
                 mx, my = event.pos
@@ -249,14 +249,14 @@ class Display_Class:
                     for signal in signals:
                         if signal.coord == (x, y) or signal.coord == (x+1, y) or signal.coord == (x-1, y):
                             if signal.signal_type == "manual":
-                                print("canceling route for signal at", signal.coord)
+                                self.add_log("canceling route for signal at", signal.coord)
                                 signal.cancel_route(self, text, autos, game)
                                 redraw = True
                     for auto in autos:
                         
                         if auto.coord == (x, y) or auto.coord == (x+1, y) or auto.coord == (x-1, y):
                             
-                            print("auto button depressed at", auto.coord)
+                            self.add_log("auto button depressed at", auto.coord)
                             auto.depressed(text, game)
                             redraw = True
                             break
@@ -293,7 +293,7 @@ class Display_Class:
         pygame.display.flip() 
         return True  # Continue main loop
         # except:
-        #     print("error in event get")
+        #     self.add_log("error in event get")
     def display_signal_color(self, signals, text):
         """
         Loop through each signal, get the coord of the signal.

@@ -18,6 +18,7 @@ class Signal:
         self.shunt = shunt
         self.route_coords = None
         self.auto = False
+        self.overlap = (0,0)
 
     def __repr__(self):
         return (f"Signal(name={self.name!r}, coord={self.coord}, "
@@ -56,13 +57,8 @@ class Signal:
             if not exit_signal:
                 return []
 
-            x, y = self.coord
+            x,y = self.overlap
             coords = deque()
-            
-            if self.mount == 'up':
-                y += 1
-            elif self.mount == 'down':
-                y -= 1
             last_switch = None
             game_text = game.text
             while True:
@@ -89,19 +85,15 @@ class Signal:
 
                 coords.append((x, y))
                 values = self.duplicate_signal_route_check(x, y, exit_signal, direction, switch_stack, game, coords, original_text, signals, trains)
-                # values = self.duplicate_train_route_check(x, y, exit_signal, switch_stack, game, coords, original_text, trains)
                 if values:
                     x, y, last_switch, switch_stack, direction, original_text, coords = values
                 if (x+2,y) == exit_signal.coord and exit_signal.buffer:
                     break
                 if (x-2,y) == exit_signal.coord and exit_signal.buffer:
                     break
-                if (x, y+1) == exit_signal.coord and exit_signal.mount == "down":
+                if (x,y) == exit_signal.overlap and exit_signal.direction == direction:
                     break
-                elif (x, y-1) == exit_signal.coord and exit_signal.mount == "up":
-                    break
-                
-                elif (x > exit_signal.coord[0] and exit_signal.direction == 'right' and direction == 'right') or (x < exit_signal.coord[0] and exit_signal.direction == 'left' and direction == 'left') or not (0 <= y < len(lines) and 0 <= x < len(lines[y])):
+                elif (x > (exit_signal.coord[0] + 10) and exit_signal.direction == 'right' and direction == 'right') or (x < (exit_signal.coord[0] - 10) and exit_signal.direction == 'left' and direction == 'left') or not (0 <= y < len(lines) and 0 <= x < len(lines[y])):
                     
                     x, y, last_switch, switch_stack, direction, original_text, coords = self.go_back_to_last_switch(trains, switch_stack, game, coords, original_text)
 

@@ -125,9 +125,7 @@ class Game:
             # self.display_class.add_log(x,y)
             spawn_coords.append((x,y))
             for signal in self.signals:
-                if signal.coord == (x,y-1) and signal.direction == direction and signal.mount == "up":
-                    return spawn_coords
-                elif signal.coord == (x,y+1) and signal.direction == direction and signal.mount == "down":
+                if signal.overlap == (x,y) and signal.direction == direction:
                     return spawn_coords
 
 
@@ -182,14 +180,14 @@ class Game:
             game_seconds = self.game_seconds
         if not annotated_segments:
             annotated_segments = self.annotated_segments
-        coords = [start_coord for _ in range(length)]
+        # coords = [start_coord for _ in range(length)]
         signal_coords = self.find_first_spawn_signal(start_coord, direction)
         if not self.check_if_spawnable(signal_coords):
-            self.backlog_train_spawn.append({"length": length, "coords": coords, "direction": direction, "headcode": headcode, "timetable": timetable, "game_seconds": game_seconds, "annotated_segments": annotated_segments})
+            self.backlog_train_spawn.append({"length": length, "start_coord": start_coord, "direction": direction, "headcode": headcode, "timetable": timetable, "game_seconds": game_seconds, "annotated_segments": annotated_segments})
             return
-        # winsound.PlaySound(SPAWN_SOUND, winsound.SND_FILENAME)
+        winsound.PlaySound(SPAWN_SOUND, winsound.SND_FILENAME)
         self.display_class.add_log(f"train {headcode} spawned at {start_coord}")
-        train = Train(length, coords,direction, headcode, timetable, int(self.game_seconds), self.annotated_segments)
+        train = Train(length, start_coord,direction, headcode, timetable, int(self.game_seconds), self.annotated_segments)
         self.trains.append(train)
         return train
 
@@ -200,7 +198,7 @@ class Game:
             if self.check_if_spawnable(signal_coords):
                 self.backlog_train_spawn.remove(backlog_train)
                 self.display_class.add_log('removed')
-                self.spawn_train(backlog_train["length"], backlog_train["coords"][0], backlog_train["direction"], backlog_train["headcode"], backlog_train["timetable"])
+                self.spawn_train(backlog_train["length"], backlog_train["start_coord"], backlog_train["direction"], backlog_train["headcode"], backlog_train["timetable"])
 
     def check_if_spawnable(self, coords):
         # for coord in coords:
@@ -373,9 +371,19 @@ class Game:
         last_char = "F"
         for signal in signals:
             # self.display_class.add_log(signal)
-            if signal.signal_type != "automatic":
-                continue
+            # if signal.signal_type != "automatic":
+            #     continue
             if signal.buffer:
+                x,y = signal.coord
+                if signal.mount == "up":
+                    y += 1
+                elif signal.mount == "down":
+                    y -= 1
+                if signal.direction == "right":
+                    x -= 2
+                elif signal.direction == "left":
+                    x += 2
+                signal.overlap = (x,y)
                 continue
             x, y = signal.coord
             if signal.mount == 'up':
@@ -389,13 +397,17 @@ class Game:
 
                 if not (0 <= y < len(lines) and 0 <= x < len(lines[y])):
                     break
-
+                if (lines[y][x] == "[" and signal.direction == "left") or (lines[y][x] == "]" and signal.direction == "right"):
+                    signal.overlap = (x,y)
+                    if signal.signal_type != "automatic":
+                        break
                 for dy in [-1, 0, 1]:
                     ny = y + dy
                     if 0 <= ny < len(lines):
                         candidate = signal_lookup.get((x, ny))
                         if candidate and candidate.direction == direction:
-                            signal.next_signal = candidate
+                            if signal.signal_type == "automatic":
+                                signal.next_signal = candidate
                             break
                 if signal.next_signal:
                     break
@@ -440,11 +452,12 @@ class Game:
         vertical = "|ö"
         direction_change = None
         char = lines[y][x]
-
+        # print("char is", char)
         if char in vertical:
             # self.display_class.add_log(direction)
             if (last_char in right_up and direction == 'right') or (last_char in left_up and direction == 'left'):
                 direction = "up"
+                print("direction is up")
             elif (last_char in right_down and direction == 'right') or (last_char in left_down and direction == 'left'):
                 # self.display_class.add_log("direction is down")
                 direction = "down"
@@ -472,6 +485,7 @@ class Game:
                 x -= 1
             elif char in "hj":
                 direction = "right"
+                print("direction is right")
                 if direction != main_direction:
                     direction_change = [(x,y), direction]
                 x += 1
