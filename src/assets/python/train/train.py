@@ -1,7 +1,9 @@
 from collections import deque
 from io import StringIO
 import winsound
+import threading
 NOTIFIED_SOUND = r"C:\Windows\Media\chord.wav"
+TRTS_SOUND = r"C:\Windows\Media\Windows Notify.wav"
 class Train:
     def __init__(self, length, head_coord, direction, headcode, timetable, game_seconds_at_spawn,annotated_segments):
         self.length = length
@@ -29,6 +31,8 @@ class Train:
         self.route_coords = []
         self.notified = False
         self.last_action = "remove train tail"
+        self.notify_TRTS = False
+        self.last_last_signal = None
 
     def _get_stop_coord(self, stop):
         """
@@ -71,12 +75,17 @@ class Train:
         return False
     
     def TRTS(self, time_difference, signals, game, display, text):
+        
         if time_difference >= 10:
             return
         if signals:
             x, y = self.coords[0][0]
             for signal in signals:
                 if self.signal_condition_check(signal, x, y, self.direction):
+                    if not self.notify_TRTS:
+                        threading.Thread(target=winsound.PlaySound, args=(TRTS_SOUND, winsound.SND_FILENAME)).start()
+                        display.add_log(f"train {self.headcode} TRTS at {signal.coord}")
+                        self.notify_TRTS = True
                     if int(time_difference) % 2 == 1:
                         signal.activate_TRTS(game, display, text)
                     else:
@@ -151,6 +160,7 @@ class Train:
         if self.timetable and self.current_stop_index < len(self.timetable):
             if not self.timetable_check(game, text, display):
                 return
+            self.notify_TRTS = False
             x, y = self.coords[0][0]  # Head of the train
             # Check for blocking signals above (y+1) and below (y-1)
             if signals:
@@ -158,7 +168,7 @@ class Train:
                     if self.signal_condition_check(signal, x, y, self.direction):
                         if signal.color == "red" and self.last_action == "remove train tail":
                             if not self.notified:
-                                winsound.PlaySound(NOTIFIED_SOUND, winsound.SND_FILENAME)
+                                threading.Thread(target=winsound.PlaySound, args=(NOTIFIED_SOUND, winsound.SND_FILENAME)).start()
                                 self.notified = True
                                 display.add_log(f"train {self.headcode} stopped at red signal at {signal.coord}")
                             return
@@ -176,8 +186,8 @@ class Train:
                             break
                     
                     elif self.signal_condition_check(signal, self.coords[-1][0][0], self.coords[-1][0][1], self.direction) and len(self.last_signal) > 1:
-                        last_signal = self.last_signal.popleft()
-                        last_signal.train_in_block = False
+                        self.last_last_signal = self.last_signal.popleft()
+                        self.last_last_signal.train_in_block = False
             self.last_move_time = now  # Update timestamp
             lines = text.splitlines()
             self.move_headcode(text, game, signals, display)
@@ -194,7 +204,10 @@ class Train:
             return
         coords = self.coords.pop()
         for coord in coords:
-            display.set_char_color_at_coord(coord[0], coord[1], "gray", game.text)
+            if self.last_last_signal and self.last_last_signal.route_set:
+                display.set_char_color_at_coord(coord[0], coord[1], "white", game.text)
+            else:
+                display.set_char_color_at_coord(coord[0], coord[1], "gray", game.text)
 
     def move_train(self,x, y, lines, game, signals, display):
         if len(self.coords) >= 2:

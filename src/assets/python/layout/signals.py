@@ -73,7 +73,7 @@ class Signal:
                                 print("change switch to normal at ", switch)
                                 # print("switch found")
                         else:
-                            if last_char != "a":
+                            if last_char not in "a[]bc":
                                 game_text = game.change_switch(i, switch_direction = "reverse", text=game_text)
                                 print("change trailing switch to reverse at ", switch)
                             else:
@@ -102,6 +102,7 @@ class Signal:
             for switch in switch_stack:
                 switch_index = switch[1]
                 game_text = game.change_switch(switch_index, "normal", text=game_text)
+                print("afterwards changing switch to normal at ", switch)
             direction_to_test_change = False
             for coord in coords:
                 x,y = coord
@@ -117,6 +118,7 @@ class Signal:
                         direction_to_test = self.direction
                     if x == switch[0] and y == switch[1] and switch[3] == direction_to_test and (switch,i,direction_to_test) not in switch_stack:
                         game_text = game.change_switch(i, "reverse", text=game_text)
+                        print("finally changing switch to reverse at ", switch)
             self.route_coords = coords
             game.text = game_text
             return coords
@@ -209,7 +211,9 @@ class Signal:
             return False
         if self.signal_type == "manual":
             for train in trains:
-                if train.coords[0] in self.route_coords or train.coords[-1] in self.route_coords:
+                flattened_train_coords = set([coord for sublist in train.coords for coord in sublist])
+                route_coords_set = set(self.route_coords)
+                if flattened_train_coords & route_coords_set:
                     return True
         return False
     

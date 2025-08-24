@@ -9,8 +9,10 @@ import json
 import time
 import os # for JSON path because python is stupid:tm:
 import winsound
+import threading
 JSON_PATH = os.path.join("src", "json") #
 SPAWN_SOUND = r"C:\Windows\Media\Speech On.wav"
+
 CWD = os.path.dirname(__file__) # CWD = Current Working Directory, pretend it is a const too
 from src.assets.python.timetable.display_timetable import Timetable
 class Game:
@@ -185,7 +187,7 @@ class Game:
         if not self.check_if_spawnable(signal_coords):
             self.backlog_train_spawn.append({"length": length, "start_coord": start_coord, "direction": direction, "headcode": headcode, "timetable": timetable, "game_seconds": game_seconds, "annotated_segments": annotated_segments})
             return
-        winsound.PlaySound(SPAWN_SOUND, winsound.SND_FILENAME)
+        threading.Thread(target=winsound.PlaySound, args=(SPAWN_SOUND, winsound.SND_FILENAME)).start()
         self.display_class.add_log(f"train {headcode} spawned at {start_coord}")
         train = Train(length, start_coord,direction, headcode, timetable, int(self.game_seconds), self.annotated_segments)
         self.trains.append(train)
