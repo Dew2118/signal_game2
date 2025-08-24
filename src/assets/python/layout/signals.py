@@ -19,6 +19,7 @@ class Signal:
         self.route_coords = None
         self.auto = False
         self.overlap = (0,0)
+        self.TRTS_button_coord = None
 
     def __repr__(self):
         return (f"Signal(name={self.name!r}, coord={self.coord}, "
@@ -211,4 +212,25 @@ class Signal:
                 if train.coords[0] in self.route_coords or train.coords[-1] in self.route_coords:
                     return True
         return False
-        
+    
+    def activate_TRTS(self, game, display, text):
+        if not self.TRTS_button_coord:
+            return
+        lines = text.splitlines()
+        grid = [list(line.rstrip('\n')) for line in lines]
+        x,y = self.TRTS_button_coord
+        grid[y][x] = "q"
+        display.set_char_color_at_coord(x, y, "white", text)
+        modified_text = '\n'.join(''.join(row) for row in grid)
+        game.text = modified_text
+
+    def deactivate_TRTS(self, game, display, text):
+        if not self.TRTS_button_coord:
+            return
+        lines = text.splitlines()
+        grid = [list(line.rstrip('\n')) for line in lines]
+        x,y = self.TRTS_button_coord
+        grid[y][x] = "p"
+        display.set_char_color_at_coord(x, y, "orange", text)
+        modified_text = '\n'.join(''.join(row) for row in grid)
+        game.text = modified_text

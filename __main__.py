@@ -193,7 +193,7 @@ class Game:
 
     def check_backlog_train(self):
         for backlog_train in self.backlog_train_spawn:
-            coord = backlog_train["coords"][0]
+            coord = backlog_train["start_coord"]
             signal_coords = self.find_first_spawn_signal(coord, backlog_train["direction"])
             if self.check_if_spawnable(signal_coords):
                 self.backlog_train_spawn.remove(backlog_train)
@@ -251,7 +251,7 @@ class Game:
         self.signals = signals  # Store signals in Game
         return signals
 
-    def define_auto_buttons(self):
+    def define_auto_and_TRTS_buttons(self):
         target_chars = {'à', 'ø', 'û','ã','â',"ù", "á", "©"}
         f = StringIO(self.text)
         lines = f.readlines()
@@ -298,9 +298,18 @@ class Game:
                                     signal = s
                             auto = Auto((x,y),signal, "left")
                             self.autos.append(auto)
+                    elif char == "p":
+                        if char_three_to_the_left in target_chars:
+                            signal_coord = (x - 3, y)
+                            for s in self.signals:
+                                if s.coord == signal_coord:
+                                    s.TRTS_button_coord = (x,y)
+                        elif char_three_to_the_right in target_chars:
+                            signal_coord = (x + 3, y)
+                            for s in self.signals:
+                                if s.coord == signal_coord:
+                                    s.TRTS_button_coord = (x,y)
                 
-
-
     def define_switches(self):
         f = StringIO(self.text)
         lines = f.readlines()
@@ -527,7 +536,8 @@ class Game:
     def run(self):
         running = True
         clock = pygame.time.Clock()
-        
+        for signal in self.signals:
+            signal.deactivate_TRTS(self, self.display_class, self.text)
         # try:
         while running:
             total_seconds = int(self.game_seconds)
@@ -591,7 +601,7 @@ def main():
     game.load_timetable_and_annotated_segments(os.path.join(CWD, JSON_PATH, "timetable.json"))
     game.find_next_signals(signals)
     game.define_switches()
-    game.define_auto_buttons()
+    game.define_auto_and_TRTS_buttons()
     # game.spawn_train(6, (1, 10))
     game.run()
 

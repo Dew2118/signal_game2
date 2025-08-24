@@ -70,6 +70,18 @@ class Train:
                     return True
         return False
     
+    def TRTS(self, time_difference, signals, game, display, text):
+        if time_difference >= 10:
+            return
+        if signals:
+            x, y = self.coords[0][0]
+            for signal in signals:
+                if self.signal_condition_check(signal, x, y, self.direction):
+                    if int(time_difference) % 2 == 1:
+                        signal.activate_TRTS(game, display, text)
+                    else:
+                        signal.deactivate_TRTS(game, display, text)
+    
     def timetable_check(self, game, text, display):
         current_stop = self.timetable[self.current_stop_index]
         stop_coords = self._get_stop_coord(current_stop)  # defined below
@@ -108,10 +120,12 @@ class Train:
                 game.despawn_train(self)
                 return False
             if time_since_spawn < dep_offset:
+                self.TRTS(dep_offset-time_since_spawn, game.signals, game, display, text)
                 return False # ⛔ Guard: Not time to leave yet
             
             elif (time_since_spawn - self.start_to_stop_time) < 2:
                 # print(time_since_spawn, self.start_to_stop_time)
+                self.TRTS(dep_offset-time_since_spawn, game.signals, game, display, text)
                 return False
             # ✅ Time to leave, move to next stop
             self.current_stop_index += 1
@@ -143,7 +157,6 @@ class Train:
                 for signal in signals:
                     if self.signal_condition_check(signal, x, y, self.direction):
                         if signal.color == "red" and self.last_action == "remove train tail":
-                            print("stopping at red signal")
                             if not self.notified:
                                 winsound.PlaySound(NOTIFIED_SOUND, winsound.SND_FILENAME)
                                 self.notified = True
@@ -209,7 +222,6 @@ class Train:
             if self.last_char == "x":
                 self.coords.insert(0, coords)
                 return
-            # elif self.last_char == "c"
                 
 
     def signal_condition_check(self, signal, x, y, direction):
@@ -314,18 +326,10 @@ class Train:
         for coords in self.coords:
             for i,coord in enumerate(coords):
                 x, y = coord
-                if i >= 1 and i <= 4:
-                    char = self.headcode_element.pop()
-                    grid[y][x] = char
-            modified_text = '\n'.join(''.join(row) for row in grid)
-            game.text = modified_text
-        for coords in self.coords:
-            for i,coord in enumerate(coords):
-                x, y = coord
                 if self.last_signal and self.last_signal[0].route_set:
-                    display.set_char_color_at_coord(x, y, "white",modified_text)
+                    display.set_char_color_at_coord(x, y, "white",text)
                 else:
-                    display.set_char_color_at_coord(x, y, "gray",modified_text)
+                    display.set_char_color_at_coord(x, y, "gray",text)
         
         for last_signal in self.last_signal:
             last_signal.train_in_block = False

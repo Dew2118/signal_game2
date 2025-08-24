@@ -47,6 +47,7 @@ class Display_Class:
             "white": (255, 255, 255),
             "black": (0, 0, 0),
             "gray": (128, 128, 128),
+            "orange": (255, 165, 0),
         }
         return colors.get(name.lower(), (255, 255, 255))
 
@@ -229,7 +230,7 @@ class Display_Class:
                                 redraw = True
                             break
                     for train in game.trains:
-                        if (adjusted_x//(font.size('M')[0]+self.char_spacing), adjusted_y//self.line_height - 5) in train.coords[0]:
+                        if (adjusted_x//(font.size('M')[0]+self.char_spacing), adjusted_y//self.line_height - 5) in train.headcode_coords:
                             game.open_timetable_window(train)
                             break
                 mx, my = event.pos
