@@ -219,15 +219,18 @@ class Train:
         lines = text.splitlines()
         grid = [list(line.rstrip('\n')) for line in lines]
         direction = self.direction
-        for i,element in enumerate(self.headcode_element):
-            x,y = self.headcode_coords[i]
-            grid[y][x] = element
-            display.set_char_color_at_coord(x, y, "gray", text)
-        modified_text = '\n'.join(''.join(row) for row in grid)
-        game.text = modified_text
-        text = modified_text
-        lines = text.splitlines()
-        grid = [list(line.rstrip('\n')) for line in lines]
+        if len(self.headcode_coords) >= 4:
+            for i,element in enumerate(self.headcode_element):
+                x,y = self.headcode_coords[i]
+                grid[y][x] = element
+                display.set_char_color_at_coord(x, y, "gray", text)
+            modified_text = '\n'.join(''.join(row) for row in grid)
+            game.text = modified_text
+            self.headcode_coords = []
+            self.headcode_element = []
+            text = modified_text
+            lines = text.splitlines()
+            grid = [list(line.rstrip('\n')) for line in lines]
         if self.last_signal:
             (x,y) = self.last_signal[-1].overlap
             last_char = "a"
