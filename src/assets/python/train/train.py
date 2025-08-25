@@ -34,6 +34,7 @@ class Train:
         self.notify_TRTS = False
         self.last_last_signal = None
         self.last_colored_route_coords = []
+        self.last_last_coord = [(0,0)]
 
     def _get_stop_coord(self, stop):
         """
@@ -102,8 +103,10 @@ class Train:
             if not self.start_to_stop_time:
                 self.start_to_stop_time = time_since_spawn
             dep_offset = current_stop.get('departure_offset', 0)
-            self.delete_train_tail(display, game)
-            self.last_action = "remove train tail"
+            if self.last_action == "move train":
+                self.last_last_signal_check()
+                self.delete_train_tail(display, game)
+                self.last_action = "remove train tail"
             if "change_timetable" in current_stop:
                 # print("found change tt")
                 tt_index = current_stop["change_timetable"]
@@ -165,7 +168,11 @@ class Train:
             x, y = self.coords[0][0]  # Head of the train
             # Check for blocking signals above (y+1) and below (y-1)
             if signals:
+                # print("coord", self.coords[-1][0])
                 for signal in signals:
+                    # if signal.buffer:
+                        # print(signal.overlap)
+                        
                     if self.signal_condition_check(signal, x, y, self.direction):
                         if signal.color == "red" and self.last_action == "remove train tail":
                             if not self.notified:
@@ -185,10 +192,7 @@ class Train:
                                     self.route_coords = []
                             self.last_signal.append(signal)
                             break
-                    
-                    elif self.signal_condition_check(signal, self.coords[-1][0][0], self.coords[-1][0][1], self.direction) and len(self.last_signal) > 1:
-                        self.last_last_signal = self.last_signal.popleft()
-                        self.last_last_signal.train_in_block = False
+            self.last_last_signal_check()
             self.last_move_time = now  # Update timestamp
             lines = text.splitlines()
             self.move_headcode(text, game, signals, display)
@@ -199,12 +203,18 @@ class Train:
                 self.move_train(x, y, lines, game, signals, display)
                 self.last_action = "move train"
 
-            
+    def last_last_signal_check(self):
+        if len(self.last_signal) > 0 and self.signal_condition_check(self.last_signal[0], self.last_last_coord[0][0], self.last_last_coord[0][1], self.direction) and self.last_action == "move train":
+            self.last_last_signal = self.last_signal.popleft()
+            self.last_last_signal.train_in_block = False
+
     def delete_train_tail(self, display, game):
         if len(self.coords) < 2:
             return
-        coords = self.coords.pop()
-        for coord in coords:
+        self.last_last_coord = self.coords.pop()
+
+        for coord in self.last_last_coord:
+            
             if self.last_last_signal and self.last_last_signal.route_set:
                 display.set_char_color_at_coord(coord[0], coord[1], "white", game.text)
             else:
