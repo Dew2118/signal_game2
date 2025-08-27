@@ -541,7 +541,6 @@ class Game:
                 x -= 1
             elif char in "hj":
                 direction = "right"
-                print("direction is right")
                 if direction != main_direction:
                     direction_change = [(x,y), direction]
                 x += 1
@@ -606,8 +605,8 @@ class Game:
                 self.game_seconds += delta_real * self.time_speed
             # Move all trains
             if round(self.game_seconds) % (5*60) == 0 and not self.snapshot:
-                current_datetime = datetime.datetime.now()
-                self.save_game(f"snapshot_{hours:02d}{minutes:02d}{seconds:02d}_{current_datetime.strftime('%Y%m%d_%H%M%S')}.pkl")
+                # current_datetime = datetime.datetime.now()
+                self.save_game(f"snapshot_{hours:02d}{minutes:02d}{seconds:02d}.pkl")
                 self.snapshot = True
             else:
                 self.snapshot = False

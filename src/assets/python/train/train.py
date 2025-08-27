@@ -4,6 +4,9 @@ import winsound
 import threading
 NOTIFIED_SOUND = r"C:\Windows\Media\chord.wav"
 TRTS_SOUND = r"C:\Windows\Media\Windows Notify.wav"
+
+
+
 class Train:
     def __init__(self, length, head_coord, direction, headcode, timetable, game_seconds_at_spawn,annotated_segments):
         self.length = length
@@ -35,6 +38,7 @@ class Train:
         self.last_last_signal = None
         self.last_colored_route_coords = []
         self.last_last_coord = [(0,0)]
+        self.direction_change = None
 
     def _get_stop_coord(self, stop):
         """
@@ -195,24 +199,36 @@ class Train:
             self.last_last_signal_check()
             self.last_move_time = now  # Update timestamp
             lines = text.splitlines()
-            self.move_headcode(text, game, signals, display)
+            
             if self.last_action == "move train":
                 self.delete_train_tail(display, game)
                 self.last_action = "remove train tail"
             elif self.last_action == "remove train tail":
                 self.move_train(x, y, lines, game, signals, display)
                 self.last_action = "move train"
+            self.move_headcode(text, game, signals, display)
 
     def last_last_signal_check(self):
-        if len(self.last_signal) > 0 and self.signal_condition_check(self.last_signal[0], self.last_last_coord[0][0], self.last_last_coord[0][1], self.direction) and self.last_action == "move train":
+        # print("train headcode is ", self.headcode, "its direction is ", self.direction)
+        if self.direction_change:
+            if self.direction == "right":
+                direction = "left"
+            else:
+                direction = "right"
+        else:
+            direction = self.direction
+        if len(self.last_signal) > 0 and self.signal_condition_check(self.last_signal[0], self.last_last_coord[0][0], self.last_last_coord[0][1], direction) and self.last_action == "move train":
             self.last_last_signal = self.last_signal.popleft()
+            print("last last signal check passed ", self.last_last_signal.coord)
             self.last_last_signal.train_in_block = False
 
     def delete_train_tail(self, display, game):
         if len(self.coords) < 2:
             return
         self.last_last_coord = self.coords.pop()
-
+        if self.direction_change and self.direction_change[0] in self.last_last_coord:
+            print("direction change removed")
+            self.direction_change = None
         for coord in self.last_last_coord:
             
             if self.last_last_signal and self.last_last_signal.route_set:
@@ -227,6 +243,9 @@ class Train:
         while True:
             x, y, self.direction, self.last_char, direction_change = game.path_find(lines, x, y, self.direction, self.direction, self.last_char)
             coords.insert(0,(x,y))
+            if direction_change:
+                self.direction_change = direction_change
+                print("direction change is ", direction_change)
             if self.direction == "right":
                 amended_x = x+1
                 opposite_direction = "left"
@@ -267,16 +286,11 @@ class Train:
             text = modified_text
             lines = text.splitlines()
             grid = [list(line.rstrip('\n')) for line in lines]
-        if self.last_signal:
-            (x,y) = self.last_signal[-1].overlap
-            last_char = "a"
-        else:
-            (x,y) = self.coords[0][-1]
-            
-            last_char = self.last_char
+        (x,y) = self.coords[0][5 if len(self.coords[0]) > 5 else -1]
+        last_char = self.last_char
         
         while True:
-            x, y, direction, last_char, direction_change = game.path_find(lines, x, y, direction, direction, last_char)
+            x, y, direction, last_char, direction_change = game.path_find(lines, x, y, direction, self.direction, last_char)
             for signal in signals:
                 if ((signal.coord == (x,y-1) and signal.mount == "up") or (signal.coord == (x,y+1) and signal.mount == "down") or ((signal.coord == (x+2,y) or signal.coord == (x-2,y)) and signal.buffer)) and signal.direction == direction:
                     if direction == "left":
