@@ -11,7 +11,7 @@ import os # for JSON path because python is stupid:tm:
 import winsound
 import threading
 import easygui
-import datetime
+import math
 JSON_PATH = os.path.join("src", "json") #
 SPAWN_SOUND = r"C:\Windows\Media\Speech On.wav"
 # Create a "saves" folder in the current directory if it doesn't exist
@@ -577,6 +577,7 @@ class Game:
     def get_next_char_from_direction(self, direction, x, y, lines):
         direction_to_x_y_addition = {"right": (1, 0), "left": (-1, 0), "up": (0, -1), "down": (0, 1)}
         x_addition, y_addition = direction_to_x_y_addition[direction]
+        # print(x,y)
         return lines[y + y_addition][x + x_addition]
     
     def run(self):
@@ -604,11 +605,11 @@ class Game:
             if not self.paused:
                 self.game_seconds += delta_real * self.time_speed
             # Move all trains
-            if round(self.game_seconds) % (5*60) == 0 and not self.snapshot:
+            if math.floor(self.game_seconds) % (5*60) == 0 and not self.snapshot:
                 # current_datetime = datetime.datetime.now()
                 self.save_game(f"snapshot_{hours:02d}{minutes:02d}{seconds:02d}.pkl")
                 self.snapshot = True
-            else:
+            elif math.floor(self.game_seconds) % (5*60) != 0:
                 self.snapshot = False
             self.update_spawn()
             for train in self.trains:
@@ -638,11 +639,11 @@ class Game:
 # Python's best practice, only run the code if it is the main script
 def main():
     # --- Setup code ---
-    target_chars = {'à', 'ø', 'û','ã','â',"ù", "á", "©", "¨"}
-    signal_type_map = {'à': 'manual','ã':"manual",'â':"manual", "á":"manual", 'ø': 'automatic', 'û': 'automatic', 'ù': 'automatic','©': 'automatic','¨': 'automatic'}
-    direction_map = {'à': 'right', 'ø': 'right', 'â': 'right', 'û': 'left', 'ã': 'left', 'ù': 'left', 'á': 'left', '©': 'right', '¨': 'left'}
-    mount_map = {'à': 'up', 'ø': 'up',"á":"up",'ù': 'up', 'û': 'down', 'ã': 'down', 'â': 'down','©':'2-right', '¨':'2-left'}
-    buffer_map = {'à': False, 'ø': False, 'û': False, 'ã': False, 'â': False, 'ù': False, 'á': False, '©': True, '¨': True}
+    target_chars = {'à', 'ø', 'û','ã','â',"ù", "á", "©", "¨", "ú"}
+    signal_type_map = {'à': 'manual','ã':"manual",'â':"manual", "á":"manual", 'ø': 'automatic', 'û': 'automatic', 'ù': 'automatic', 'ú':"automatic",'©': 'automatic','¨': 'automatic'}
+    direction_map = {'à': 'right', 'ø': 'right', 'â': 'right', 'û': 'left', 'ã': 'left', 'ù': 'left', "ú": 'right', 'á': 'left', '©': 'right', '¨': 'left'}
+    mount_map = {'à': 'up', 'ø': 'up',"á":"up",'ù': 'up', 'û': 'down', 'ã': 'down', 'â': 'down',"ú":"down",'©':'2-right', '¨':'2-left'}
+    buffer_map = {'à': False, 'ø': False, 'û': False, 'ã': False, 'â': False, 'ù': False, 'á': False, 'ú': False, '©': True, '¨': True}
     #! TODO Rework this to be less tweaking moment
     with open("test.txt", "r", encoding="utf-8") as f:
         text = f.read()

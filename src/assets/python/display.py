@@ -176,7 +176,7 @@ class Display_Class:
 
                 if (pygame.key.get_mods() & pygame.KMOD_CTRL) and event.key == pygame.K_s:
                     game.save_game()
-                    self.add_log("Game saved.")
+                    # self.add_log("Game saved.")
 
                 # Load game with Ctrl+L
                 elif (pygame.key.get_mods() & pygame.KMOD_CTRL) and event.key == pygame.K_l:

@@ -60,7 +60,7 @@ def validate_stations(json_data):
 if __name__ == "__main__":
     # Read the JSON data from the file
     try:
-        with open('annotated_segments.json', 'r') as f:
+        with open('../../json/annotated_segments.json', 'r') as f:
             data = json.load(f)
         
         validate_stations(data)

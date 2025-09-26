@@ -84,7 +84,6 @@ class Signal:
                 x, y, direction, last_char, new_direction_change = game.path_find(lines, x, y, direction, self.direction, last_char)
                 if new_direction_change:
                     direction_change = new_direction_change
-
                 coords.append((x, y))
                 values = self.duplicate_signal_route_check(x, y, exit_signal, direction, switch_stack, game, coords, original_text, signals, trains)
                 if values:

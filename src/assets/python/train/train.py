@@ -39,6 +39,7 @@ class Train:
         self.last_colored_route_coords = []
         self.last_last_coord = [(0,0)]
         self.direction_change = None
+        self.last_three_directions = deque(maxlen=3)
 
     def _get_stop_coord(self, stop):
         """
@@ -112,15 +113,13 @@ class Train:
                 self.delete_train_tail(display, game)
                 self.last_action = "remove train tail"
             if "change_timetable" in current_stop:
-                # print("found change tt")
                 tt_index = current_stop["change_timetable"]
                 self.timetable, tt_headcode_prefix, new_direction = game.get_tt_from_index(tt_index)
                 if self.direction != new_direction:
                     self.direction = new_direction
                     self.real_first_coord = self.coords[0][0]
-                self.coords[0].reverse()
-                self.last_signal = deque()
-                # print("headcode prefix is ", tt_headcode_prefix)
+                    self.coords[0].reverse()
+                # self.last_signal = deque()
                 self.headcode = game.get_headcode_from_prefix(tt_headcode_prefix)
                 self.current_stop_index = 0
                 self.game_seconds_at_spawn += dep_offset
@@ -130,14 +129,20 @@ class Train:
                 self.move_headcode(text, game, game.signals, display)
                 # print("new game second at spawn is ", self.game_seconds_at_spawn)
             if current_stop.get("reverse_direction"):
-                self.direction = "left" if self.direction == "right" else "right"
+                if self.direction == "right":
+                    self.direction = "left"
+                else:
+                    self.direction = "right"
+                print("train direction reversed to ", self.direction)
                 self.real_first_coord = self.coords[0][0]
+                self.coords[0].reverse()
             if current_stop.get("despawn"):
                 self.despawn_train(text, display, game)
                 game.despawn_train(self)
                 return False
+            self.TRTS(dep_offset-time_since_spawn, game.signals, game, display, text)
             if time_since_spawn < dep_offset:
-                self.TRTS(dep_offset-time_since_spawn, game.signals, game, display, text)
+                
                 return False # ⛔ Guard: Not time to leave yet
             
             elif (time_since_spawn - self.start_to_stop_time) < 2:
@@ -211,15 +216,13 @@ class Train:
     def last_last_signal_check(self):
         # print("train headcode is ", self.headcode, "its direction is ", self.direction)
         if self.direction_change:
-            if self.direction == "right":
-                direction = "left"
-            else:
-                direction = "right"
+            direction = self.last_three_directions[0]
+            # print("the last direction is ", direction)
         else:
             direction = self.direction
         if len(self.last_signal) > 0 and self.signal_condition_check(self.last_signal[0], self.last_last_coord[0][0], self.last_last_coord[0][1], direction) and self.last_action == "move train":
             self.last_last_signal = self.last_signal.popleft()
-            print("last last signal check passed ", self.last_last_signal.coord)
+            # print("last last signal check passed ", self.last_last_signal.coord)
             self.last_last_signal.train_in_block = False
 
     def delete_train_tail(self, display, game):
@@ -242,20 +245,22 @@ class Train:
         coords = []
         while True:
             x, y, self.direction, self.last_char, direction_change = game.path_find(lines, x, y, self.direction, self.direction, self.last_char)
+            print("move train x, y, is ", x, y)
             coords.insert(0,(x,y))
             if direction_change:
                 self.direction_change = direction_change
                 print("direction change is ", direction_change)
+            self.add_last_direction()
             if self.direction == "right":
                 amended_x = x+1
                 opposite_direction = "left"
-                if (lines[y][x] == "b" or lines[y][amended_x] == "c"):
+                if (amended_x >= len(lines[y])) or (lines[y][x] in "b" or lines[y][amended_x] in "c"):
                     self.coords.insert(0, coords)
                     return
             else:
                 amended_x = x-1
                 opposite_direction = "right"
-                if (lines[y][x] == "c" or lines[y][amended_x] == "b"):
+                if (amended_x < 0) or (lines[y][x] in "c" or lines[y][amended_x] in "b"):
                     self.coords.insert(0, coords)
                     return
             for signal in signals:
@@ -375,5 +380,8 @@ class Train:
         for last_signal in self.last_signal:
             last_signal.train_in_block = False
         
+    def add_last_direction(self):
+        if not self.last_three_directions or self.direction != self.last_three_directions[-1]:
+            self.last_three_directions.append(self.direction)
         
         

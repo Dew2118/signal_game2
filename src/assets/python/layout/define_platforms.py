@@ -5,7 +5,7 @@ class DefinePlatforms:
     def __init__(self, layout_file="test.txt"):
         pygame.init()
         self.SCREEN_WIDTH, self.SCREEN_HEIGHT = 1000, 750
-        self.FONT_PATH = "S-box.ttf"
+        self.FONT_PATH = "../../fonts/S-box.ttf"
         self.FONT_SIZE = 20
         self.BLACK = (0, 0, 0)
         self.GRAY = (180, 180, 180)
@@ -17,7 +17,7 @@ class DefinePlatforms:
         self.scroll_y = 0
         self.scroll_speed = 20
         self.line_height = 16
-        self.layout_file = layout_file
+        self.layout_file = "../../../../" + layout_file
         self.layout_text = self.read_layout()
         self.segments = self.extract_segments(self.layout_text)
         self.annotated_segments = []
@@ -34,6 +34,7 @@ class DefinePlatforms:
         self.current_segment_data = {}
 
     def read_layout(self):
+
         with open(self.layout_file, "r", encoding='utf-8') as file:
             return file.read()
 
@@ -150,7 +151,7 @@ class DefinePlatforms:
             self.screen.blit(input_surf, (10, self.SCREEN_HEIGHT - 28))
 
     def save_to_json(self, filename="annotated_segments.json"):
-        with open(filename, "w") as f:
+        with open("../../../json/"+filename, "w") as f:
             json.dump(self.annotated_segments, f, indent=4)
         print(f"Saved annotated segments to {filename}")
 
