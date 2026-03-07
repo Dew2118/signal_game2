@@ -245,6 +245,8 @@ class Train:
         coords = []
         while True:
             x, y, self.direction, self.last_char, direction_change = game.path_find(lines, x, y, self.direction, self.direction, self.last_char)
+            if x == -1:
+                return
             print("move train x, y, is ", x, y)
             coords.insert(0,(x,y))
             if direction_change:
@@ -296,6 +298,8 @@ class Train:
         
         while True:
             x, y, direction, last_char, direction_change = game.path_find(lines, x, y, direction, self.direction, last_char)
+            if x == -1:
+                return
             for signal in signals:
                 if ((signal.coord == (x,y-1) and signal.mount == "up") or (signal.coord == (x,y+1) and signal.mount == "down") or ((signal.coord == (x+2,y) or signal.coord == (x-2,y)) and signal.buffer)) and signal.direction == direction:
                     if direction == "left":

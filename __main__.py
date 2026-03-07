@@ -549,10 +549,13 @@ class Game:
                 y -= 1
             elif char in both_down:
                 y += 1
-            if direction == 'right':
-                x += 1
-            elif direction == 'left':
-                x -= 1
+            elif char != " ":
+                if direction == 'right':
+                    x += 1
+                elif direction == 'left':
+                    x -= 1
+            else:
+                return -1,-1,None,None,None
         last_char = char
         return x, y, direction, last_char, direction_change
     

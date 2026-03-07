@@ -82,8 +82,11 @@ class Signal:
                                 print("change trailing switch to normal at ", switch)
                 
                 x, y, direction, last_char, new_direction_change = game.path_find(lines, x, y, direction, self.direction, last_char)
+                if x == -1:
+                    x, y, last_switch, switch_stack, direction, original_text, coords = self.go_back_to_last_switch(trains, switch_stack, game, coords, original_text)
                 if new_direction_change:
                     direction_change = new_direction_change
+                print(x,y)
                 coords.append((x, y))
                 values = self.duplicate_signal_route_check(x, y, exit_signal, direction, switch_stack, game, coords, original_text, signals, trains)
                 if values:
