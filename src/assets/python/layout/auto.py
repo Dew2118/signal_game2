@@ -19,6 +19,7 @@ class Auto:
         # Convert back to string
         new_text = '\n'.join(''.join(line) for line in grid)
         game.text = new_text
+        game.update_lines()
     
     def depressed(self, text, game):
         x,y = self.coord
@@ -33,3 +34,4 @@ class Auto:
         # Convert back to string
         new_text = '\n'.join(''.join(line) for line in grid)
         game.text = new_text
+        game.update_lines()

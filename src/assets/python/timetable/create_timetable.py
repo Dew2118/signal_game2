@@ -182,7 +182,7 @@ class TimetableCreator:
 
 
 
-    def save_timetable(self, filename=os.path.join(CWD, JSON_PATH, "timetable.json")):
+    def save_timetable(self, filename=os.path.join(CWD, JSON_PATH, "zone_A_timetable.json")):
         all_timetables = []
 
         # Step 1: Load existing data if the file exists

@@ -1,3 +1,5 @@
+from tkinter import font
+
 import pygame
 
 class Display_Class:
@@ -35,6 +37,14 @@ class Display_Class:
         self.line_height = 16
         self.log_lines = []  # List of log messages
         self.max_log_lines = 4  # 4 below game_time, totaling 5 lines
+        self.char_cache = {}
+        self.font = pygame.font.Font(self.FONT_PATH, self.font_size)
+        self.cached_surface = None
+        self.cached_width = 0
+        self.cached_height = 0
+        self.cached_char_rects = None
+        self.cached_text = None
+        self.cached_color_state = None
 
     def color_name_to_rgb(self, name):
         colors = {
@@ -61,9 +71,9 @@ class Display_Class:
         idx = sum(len(l) + 1 for l in lines[:y]) + x
         self.char_colors[idx] = self.color_name_to_rgb(color_name)
 
-    def get_char_color_at_coord(self, x, y, text):
+    def get_char_color_at_coord(self, x, y, lines):
         
-        lines = text.splitlines()
+        # lines = text.splitlines()
         if y < 0 or y >= len(lines):
             return
         line = lines[y]
@@ -73,50 +83,92 @@ class Display_Class:
         if idx not in self.char_colors:
             return None
         return self.char_colors[idx]
-    def render_text_surface(self, font, text):
-        lines = text.splitlines()
-        # line_height = font.get_linesize()
+    
+    def get_rendered_surface(self, font, text, lines):
+
+        color_state = tuple(sorted(self.char_colors.items()))
+
+        if (
+            text == self.cached_text
+            and color_state == self.cached_color_state
+            and self.cached_surface is not None
+        ):
+            return (
+                self.cached_surface,
+                self.cached_width,
+                self.cached_height,
+                self.cached_char_rects,
+            )
+
+        surf, width, height, rects = self.render_text_surface(font, lines)
+
+        self.cached_text = text
+        self.cached_color_state = color_state
+        self.cached_surface = surf
+        self.cached_width = width
+        self.cached_height = height
+        self.cached_char_rects = rects
+
+        return surf, width, height, rects
+
+    def render_text_surface(self, font, lines):
+        # lines = text.splitlines()
+
         line_height = self.line_height
         char_width = font.size('M')[0]
+
         max_line_length = max(len(line) for line in lines) if lines else 0
         width = (char_width + self.char_spacing) * max_line_length
         height = line_height * len(lines)
+
         surf = pygame.Surface((width, height), pygame.SRCALPHA)
         surf.fill(self.BLACK)
+
         char_rects = []
         idx = 0
         y = 0
+
         for line in lines:
             x = 0
-            
+
             for char in line:
-                # if y == 0 and x <= 10:
-                #     continue
                 if idx in self.char_colors:
                     color = self.char_colors[idx]
                 elif char == self.orange_char:
                     color = (255, 165, 0)
-                # elif idx in self.green_indices:
-                #     color = (0, 255, 0)
                 else:
-                    color = (128, 128, 128)  # Gray instead of white for default
-                char_surf = font.render(char, True, color)
-                char_rect = char_surf.get_rect(center=(x + char_width // 2, y + line_height // 2))
+                    color = (128, 128, 128)
+
+                # cached render
+                key = (char, color)
+                if key not in self.char_cache:
+                    self.char_cache[key] = font.render(char, True, color)
+                char_surf = self.char_cache[key]
+
                 char_rects.append((idx, pygame.Rect(x, y, char_width, line_height)))
-                surf.blit(char_surf, char_rect.topleft)
+
+                # direct blit (no get_rect)
+                surf.blit(char_surf, (x, y))
+
                 x += char_width + self.char_spacing
                 idx += 1
+
             while x < width:
-                # if y == 0 and x <= 10:
-                #     continue
-                char_surf = font.render(' ', True, (128, 128, 128))  # Gray for empty space
-                char_rect = char_surf.get_rect(center=(x + char_width // 2, y + line_height // 2))
-                surf.blit(char_surf, char_rect.topleft)
+                key = (' ', (128, 128, 128))
+                if key not in self.char_cache:
+                    self.char_cache[key] = font.render(' ', True, (128, 128, 128))
+                char_surf = self.char_cache[key]
+
+                surf.blit(char_surf, (x, y))
+
                 x += char_width + self.char_spacing
                 idx += 1
+
             idx += 1
             y += line_height
+
         return surf, width, height, char_rects
+    
     def display_game_time(self, game_time_text, font):
         game_time_surface = font.render(game_time_text, True, (255, 255, 255))  # White color
         self.screen.blit(game_time_surface, (0, 0))  # Top-left corner with a small padding of 10 pixels
@@ -127,173 +179,247 @@ class Display_Class:
         if len(self.log_lines) > self.max_log_lines:
             self.log_lines.pop(0)
 
-    def update_and_draw(self,game,signals,autos, text, time):
-        # try:
+    def update_and_draw(self, game, signals, autos, text, lines, time):
+
+        font = self.font
+
+        # text_surface, text_width, text_height, char_rects = self.render_text_surface(font, text)
+        text_surface, text_width, text_height, char_rects = self.get_rendered_surface(font, text, lines)
+
+        if not self.handle_events(game, signals, autos, text, lines, text_width, text_height, char_rects, font):
+            return False
+
+        self.draw(text_surface, text_width, text_height, time, font)
+
+        return True
+
+
+    def handle_events(self, game, signals, autos, text, lines, text_width, text_height, char_rects, font):
+
         reserved_height = self.line_height * (self.max_log_lines + 1)
-        font = pygame.font.Font(self.FONT_PATH, self.font_size)
-        redraw = False
-        
-        text_surface, text_width, text_height, char_rects = self.render_text_surface(font, text)
+
         for event in pygame.event.get():
+
             if event.type == pygame.QUIT:
                 return False
+
             elif event.type == pygame.KEYDOWN:
-                mod = pygame.key.get_mods()
-                shift_held = mod & pygame.KMOD_SHIFT
-                if event.key == pygame.K_UP:
-                    if shift_held:
-                        self.scroll_x = max(self.scroll_x - self.scroll_speed, 0)
-                    else:
-                        self.scroll_y = max(self.scroll_y - self.scroll_speed, 0)
-                    redraw = True
+                self.handle_keydown(event, game, text_width, text_height, reserved_height)
 
-                # Press P to toggle pause state
-                if event.key == pygame.K_p:
-                    game.paused = not game.paused  # Toggle pause state
-                    self.add_log(f"Game paused: {game.paused}")
-                    redraw = True
-
-                # Press + to increase time_speed
-                elif event.key == pygame.K_PLUS or event.key == pygame.K_KP_PLUS:
-                    game.time_speed += 1  # Increase time speed by 1
-                    self.add_log(f"Time speed increased: {game.time_speed}")
-                    redraw = True
-
-                # Press - to decrease time_speed, but don't go below 1
-                elif event.key == pygame.K_MINUS or event.key == pygame.K_KP_MINUS:
-                    game.time_speed = max(1, game.time_speed - 1)  # Decrease time speed but not below 1
-                    self.add_log(f"Time speed decreased: {game.time_speed}")
-                    redraw = True
-                elif event.key == pygame.K_DOWN:
-                    if shift_held:
-                        max_scroll_x = max(0, text_width - self.SCREEN_WIDTH)
-                        self.scroll_x = min(self.scroll_x + self.scroll_speed, max_scroll_x)
-                    else:
-                        # max_scroll_y = max(0, text_height - self.SCREEN_HEIGHT)
-                        max_scroll_y = max(0, text_height - (self.SCREEN_HEIGHT - reserved_height))
-                        self.scroll_y = min(self.scroll_y + self.scroll_speed, max_scroll_y)
-                    redraw = True
-
-                if (pygame.key.get_mods() & pygame.KMOD_CTRL) and event.key == pygame.K_s:
-                    game.save_game()
-                    # self.add_log("Game saved.")
-
-                # Load game with Ctrl+L
-                elif (pygame.key.get_mods() & pygame.KMOD_CTRL) and event.key == pygame.K_l:
-                    try:
-                        game.load_game()
-                        self.add_log("Game loaded.")
-                    except FileNotFoundError:
-                        self.add_log("No saved game found.")
             elif event.type == pygame.MOUSEWHEEL:
-                mod = pygame.key.get_mods()
-                shift_held = mod & pygame.KMOD_SHIFT
-                if shift_held:
-                    # max_scroll_y = max(0, text_height - self.SCREEN_HEIGHT)
-                    max_scroll_y = max(0, text_height - (self.SCREEN_HEIGHT - reserved_height))
-                    self.scroll_y = min(max(self.scroll_y - event.y * self.scroll_speed, 0), max_scroll_y)                    
-                else:
-                    max_scroll_x = max(0, text_width - self.SCREEN_WIDTH)
-                    self.scroll_x = min(max(self.scroll_x - event.y * self.scroll_speed, 0), max_scroll_x)
+                self.handle_mousewheel(event, text_width, text_height, reserved_height)
 
-                redraw = True
-            
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                
-                mx, my = event.pos
-                adjusted_x = mx + self.scroll_x
-                adjusted_y = my + self.scroll_y
-                clicked_idx = None
-                for idx, rect in char_rects:
-                    if rect.collidepoint(adjusted_x, adjusted_y):
-                        clicked_idx = idx
-                        break
-                if clicked_idx is not None:
-                    for signal in signals:
-                        x = adjusted_x//(font.size('M')[0]+self.char_spacing)
-                        y = adjusted_y//self.line_height - (self.max_log_lines + 1)
-                        if signal.coord == (x, y) or signal.coord == (x+1, y) or signal.coord == (x-1, y):
-                            if game.entry_signal is None and signal.signal_type == "manual":
-                                game.entry_signal = signal
-                                self.add_log("entry signal selected")
-                            else:
-                                game.exit_signal = signal
-                                self.add_log("exit signal selected")
-                    for auto in autos:
-                        if auto.coord == (x, y) or auto.coord == (x+1, y) or auto.coord == (x-1, y):
-                            if not auto.signal.route_set:
-                                self.add_log("route not set on signal")
-                            else:
-                                self.add_log("auto button pressed at", auto.coord)
-                                auto.pressed(text, game)
-                                redraw = True
-                            break
-                    for train in game.trains:
-                        if (adjusted_x//(font.size('M')[0]+self.char_spacing), adjusted_y//self.line_height - 5) in train.headcode_coords:
-                            game.open_timetable_window(train)
-                            break
-                mx, my = event.pos
-                redraw = True
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
-                mx, my = event.pos
-                adjusted_x = mx + self.scroll_x
-                adjusted_y = my + self.scroll_y
-                clicked_idx = None
-                for idx, rect in char_rects:
-                    if rect.collidepoint(adjusted_x, adjusted_y):
-                        clicked_idx = idx
-                        break
-                if clicked_idx is not None:
-                    x = adjusted_x//(font.size('M')[0]+self.char_spacing)
-                    y = adjusted_y//self.line_height - (self.max_log_lines + 1)
-                    for signal in signals:
-                        if signal.coord == (x, y) or signal.coord == (x+1, y) or signal.coord == (x-1, y):
-                            if signal.signal_type == "manual":
-                                self.add_log("canceling route for signal at", signal.coord)
-                                signal.cancel_route(self, text, autos, game)
-                                redraw = True
-                    for auto in autos:
-                        
-                        if auto.coord == (x, y) or auto.coord == (x+1, y) or auto.coord == (x-1, y):
-                            
-                            self.add_log("auto button depressed at", auto.coord)
-                            auto.depressed(text, game)
-                            redraw = True
-                            break
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+
+                if event.button == 1:
+                    self.handle_left_click(event, game, signals, autos, text, char_rects, font)
+
+                elif event.button == 3:
+                    self.handle_right_click(event, game, signals, autos, text, lines, char_rects, font)
+
             elif event.type == pygame.VIDEORESIZE:
                 self.SCREEN_WIDTH, self.SCREEN_HEIGHT = event.w, event.h
-                self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pygame.RESIZABLE)
+                self.screen = pygame.display.set_mode(
+                    (self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pygame.RESIZABLE
+                )
+
+        return True
 
 
-        # Always redraw after events
-        font = pygame.font.Font(self.FONT_PATH, self.font_size)
-        # text_surface, text_width, text_height, char_rects = self.render_text_surface(font, text)
-        
-        self.screen.fill(self.BLACK)  # Fill the screen with black first
-        
-        # self.screen.blit(text_surface, (-self.scroll_x, -self.scroll_y))  # Blit the text surface
+    def handle_keydown(self, event, game, text_width, text_height, reserved_height):
+
+        mod = pygame.key.get_mods()
+        shift_held = mod & pygame.KMOD_SHIFT
+
+        if event.key == pygame.K_UP:
+
+            if shift_held:
+                self.scroll_x = max(self.scroll_x - self.scroll_speed, 0)
+            else:
+                self.scroll_y = max(self.scroll_y - self.scroll_speed, 0)
+
+        elif event.key == pygame.K_DOWN:
+
+            if shift_held:
+                max_scroll_x = max(0, text_width - self.SCREEN_WIDTH)
+                self.scroll_x = min(self.scroll_x + self.scroll_speed, max_scroll_x)
+
+            else:
+                max_scroll_y = max(0, text_height - (self.SCREEN_HEIGHT - reserved_height))
+                self.scroll_y = min(self.scroll_y + self.scroll_speed, max_scroll_y)
+
+        elif event.key == pygame.K_p:
+            game.paused = not game.paused
+            self.add_log(f"Game paused: {game.paused}")
+
+        elif event.key in (pygame.K_PLUS, pygame.K_KP_PLUS):
+            game.time_speed += 1
+            self.add_log(f"Time speed increased: {game.time_speed}")
+
+        elif event.key in (pygame.K_MINUS, pygame.K_KP_MINUS):
+            game.time_speed = max(1, game.time_speed - 1)
+            self.add_log(f"Time speed decreased: {game.time_speed}")
+
+        elif (pygame.key.get_mods() & pygame.KMOD_CTRL) and event.key == pygame.K_s:
+            game.save_game()
+
+        elif (pygame.key.get_mods() & pygame.KMOD_CTRL) and event.key == pygame.K_l:
+
+            try:
+                game.load_game()
+                self.add_log("Game loaded")
+
+            except FileNotFoundError:
+                self.add_log("No saved game found")
+
+
+    def handle_mousewheel(self, event, text_width, text_height, reserved_height):
+
+        mod = pygame.key.get_mods()
+        shift_held = mod & pygame.KMOD_SHIFT
+
+        if shift_held:
+
+            max_scroll_y = max(0, text_height - (self.SCREEN_HEIGHT - reserved_height))
+            self.scroll_y = min(
+                max(self.scroll_y - event.y * self.scroll_speed, 0),
+                max_scroll_y
+            )
+
+        else:
+
+            max_scroll_x = max(0, text_width - self.SCREEN_WIDTH)
+            self.scroll_x = min(
+                max(self.scroll_x - event.y * self.scroll_speed, 0),
+                max_scroll_x
+            )
+
+
+    def handle_left_click(self, event, game, signals, autos, text, char_rects, font):
+
+        mx, my = event.pos
+
+        adjusted_x = mx + self.scroll_x
+        adjusted_y = my + self.scroll_y
+
+        clicked_idx = None
+
+        for idx, rect in char_rects:
+            if rect.collidepoint(adjusted_x, adjusted_y):
+                clicked_idx = idx
+                break
+
+        if clicked_idx is None:
+            return
+
+        x = adjusted_x // (font.size('M')[0] + self.char_spacing)
+        y = adjusted_y // self.line_height - (self.max_log_lines + 1)
+
+        for signal in signals:
+
+            if signal.coord in [(x, y), (x + 1, y), (x - 1, y)]:
+
+                if game.entry_signal is None and signal.signal_type == "manual":
+                    game.entry_signal = signal
+                    self.add_log("entry signal selected")
+
+                else:
+                    game.exit_signal = signal
+                    self.add_log("exit signal selected")
+
+        for auto in autos:
+
+            if auto.coord in [(x, y), (x + 1, y), (x - 1, y)]:
+
+                if not auto.signal.route_set:
+                    self.add_log("route not set on signal")
+
+                else:
+                    self.add_log("auto button pressed at", auto.coord)
+                    auto.pressed(text, game)
+
+                break
+
+        for train in game.trains:
+
+            if (adjusted_x // (font.size('M')[0] + self.char_spacing),
+                adjusted_y // self.line_height - 5) in train.headcode_coords:
+
+                game.open_timetable_window(train)
+                break
+
+
+    def handle_right_click(self, event, game, signals, autos, text, lines, char_rects, font):
+
+        mx, my = event.pos
+
+        adjusted_x = mx + self.scroll_x
+        adjusted_y = my + self.scroll_y
+
+        clicked_idx = None
+
+        for idx, rect in char_rects:
+            if rect.collidepoint(adjusted_x, adjusted_y):
+                clicked_idx = idx
+                break
+
+        if clicked_idx is None:
+            return
+
+        x = adjusted_x // (font.size('M')[0] + self.char_spacing)
+        y = adjusted_y // self.line_height - (self.max_log_lines + 1)
+
+        for signal in signals:
+
+            if signal.coord in [(x, y), (x + 1, y), (x - 1, y)]:
+
+                if signal.signal_type == "manual":
+                    self.add_log("canceling route for signal at", signal.coord)
+                    signal.cancel_route(self, text, lines, autos, game)
+
+        for auto in autos:
+
+            if auto.coord in [(x, y), (x + 1, y), (x - 1, y)]:
+                self.add_log("auto button depressed at", auto.coord)
+                auto.depressed(text, game)
+                break
+
+
+    def draw(self, text_surface, text_width, text_height, time, font):
+
+        self.screen.fill(self.BLACK)
+
         reserved_height = self.line_height * 5
 
-        # Create a subsurface for the area below the reserved top
-        text_display_area = pygame.Rect(0, reserved_height, self.SCREEN_WIDTH, self.SCREEN_HEIGHT - reserved_height)
+        text_display_area = pygame.Rect(
+            0,
+            reserved_height,
+            self.SCREEN_WIDTH,
+            self.SCREEN_HEIGHT - reserved_height
+        )
 
-        # Clip the blit area so we don't overwrite the top 5 lines
         self.screen.set_clip(text_display_area)
 
-        # Now blit the text surface (with scrolling)
-        self.screen.blit(text_surface, (-self.scroll_x, reserved_height - self.scroll_y))
+        self.screen.blit(
+            text_surface,
+            (-self.scroll_x, reserved_height - self.scroll_y)
+        )
 
-        # Remove clipping so logs/game_time can draw above again
         self.screen.set_clip(None)
+
         self.display_game_time(time, font)
-        # Draw log lines below game_time
+
         for i, line in enumerate(self.log_lines):
-            log_surface = font.render(line, True, (200, 200, 200))  # Light gray
-            self.screen.blit(log_surface, (0, self.line_height * (i + 1)))  # +1 to start below game_time
-        pygame.display.flip() 
-        return True  # Continue main loop
-        # except:
-        #     self.add_log("error in event get")
+
+            log_surface = font.render(line, True, (200, 200, 200))
+
+            self.screen.blit(
+                log_surface,
+                (0, self.line_height * (i + 1))
+            )
+
+        pygame.display.flip()
+
     def display_signal_color(self, signals, text):
         """
         Loop through each signal, get the coord of the signal.

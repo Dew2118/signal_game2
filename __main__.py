@@ -1,3 +1,5 @@
+import cProfile
+
 from src.assets.python.train.train import Train
 from src.assets.python.layout.signals import Signal
 from src.assets.python.display import Display_Class
@@ -14,6 +16,11 @@ import easygui
 import math
 JSON_PATH = os.path.join("src", "json") #
 SPAWN_SOUND = r"C:\Windows\Media\Speech On.wav"
+
+LAYOUT_FILE = "test.txt"
+TIMETABLE_FILE = "timetable.json"
+ANNOTATED_SEGMENTS_FILE = "annotated_segments.json"
+
 # Create a "saves" folder in the current directory if it doesn't exist
 if not os.path.exists('saves'):
     os.makedirs('saves')
@@ -40,13 +47,16 @@ class Game:
         self.backlog_train_spawn = []
         self.display_class = display_class
         self.snapshot = False
+        self.lines = self.text.splitlines()
+
+
 
     #TODO : rework this to work better with file path
-    def load_timetable_and_annotated_segments(self, filename=os.path.join(CWD, JSON_PATH, "timetable.json")):
+    def load_timetable_and_annotated_segments(self, filename=os.path.join(CWD, JSON_PATH, TIMETABLE_FILE)):
         self.display_class.add_log("  | loading " + filename)
         with open(filename, "r") as f:
             self.timetables = json.load(f)
-        with open(os.path.join(CWD, JSON_PATH, "annotated_segments.json"), "r") as f:
+        with open(os.path.join(CWD, JSON_PATH, ANNOTATED_SEGMENTS_FILE), "r") as f:
             self.annotated_segments = json.load(f)
         for seg in self.timetables:
             headcode_prefix = seg.get('headcode_prefix', '')
@@ -129,7 +139,7 @@ class Game:
 
                 for signal in self.signals:
                     signal.last_colored_color = None
-                    signal.deactivate_TRTS(self, self.display_class, self.text)
+                    signal.deactivate_TRTS(self, self.display_class, self.text, self.lines)
                     if signal.route_coords:
                         for coord in signal.route_coords:
                             self.display_class.set_char_color_at_coord(coord[0], coord[1], "white", self.text)
@@ -147,6 +157,8 @@ class Game:
             except FileNotFoundError:
                 self.display_class.add_log(f"Error: file not found!")
                 
+    def update_lines(self):
+        self.lines = self.text.splitlines()
 
     def get_headcode_from_prefix(self, headcode_prefix):
         
@@ -250,7 +262,7 @@ class Game:
     def check_if_spawnable(self, coords):
         # for coord in coords:
         for coord in coords:
-            if self.display_class.get_char_color_at_coord(coord[0], coord[1], self.text) != (128, 128, 128) and self.display_class.get_char_color_at_coord(coord[0], coord[1], self.text) != None:
+            if self.display_class.get_char_color_at_coord(coord[0], coord[1], self.lines) != (128, 128, 128) and self.display_class.get_char_color_at_coord(coord[0], coord[1], self.lines) != None:
                 return False
         return True
 
@@ -423,7 +435,6 @@ class Game:
 
     def find_next_signals(self, signals):
         signal_lookup = {(s.coord[0], s.coord[1]): s for s in signals}
-        lines = self.text.splitlines()
         last_char = "F"
         for signal in signals:
             # self.display_class.add_log(signal)
@@ -447,19 +458,19 @@ class Game:
             elif signal.mount == 'down':
                 y -= 1
             direction = signal.direction
-            while 0 <= y < len(lines) - 1 and 0 <= x < len(lines[y]) - 1:
+            while 0 <= y < len(self.lines) - 1 and 0 <= x < len(self.lines[y]) - 1:
                 self.display_class.add_log(x,y)
-                x, y, direction, last_char, direction_change = self.path_find(lines, x, y, direction, signal.direction, last_char)
+                x, y, direction, last_char, direction_change = self.path_find(self.lines, x, y, direction, signal.direction, last_char)
 
-                if not (0 <= y < len(lines) and 0 <= x < len(lines[y])):
+                if not (0 <= y < len(self.lines) and 0 <= x < len(self.lines[y])):
                     break
-                if (lines[y][x] == "[" and signal.direction == "left") or (lines[y][x] == "]" and signal.direction == "right"):
+                if (self.lines[y][x] == "[" and signal.direction == "left") or (self.lines[y][x] == "]" and signal.direction == "right"):
                     signal.overlap = (x,y)
                     if signal.signal_type != "automatic":
                         break
                 for dy in [-1, 0, 1]:
                     ny = y + dy
-                    if 0 <= ny < len(lines):
+                    if 0 <= ny < len(self.lines):
                         candidate = signal_lookup.get((x, ny))
                         if candidate and candidate.direction == direction:
                             if signal.signal_type == "automatic":
@@ -472,18 +483,24 @@ class Game:
 
     def set_route(self, game):
         self.display_class.set_char_color_at_coord(self.entry_signal.coord[0], self.entry_signal.coord[1], "gray", self.text)
-        coords = self.entry_signal.get_coords_to_next_signal(self.exit_signal, self, self.switches, "test.txt", self.signals, self.trains)
+        coords = self.entry_signal.get_coords_to_next_signal(self.exit_signal, self, self.switches, LAYOUT_FILE, self.signals, self.trains)
         if not coords:
             game.entry_signal = None
             game.exit_signal = None
             return
         self.entry_signal.next_signal = self.exit_signal
         self.entry_signal.route_set = True
-        
-        for coord in coords:
+        train_coords = []
+        for train in self.trains:
+            for coord_list in train.coords:
+                train_coords.extend(coord_list)
+            train_coords.extend(train.route_coords)
+        filtered_coords = set(coords) - set(train_coords)
+        for coord in filtered_coords:
             self.display_class.set_char_color_at_coord(coord[0], coord[1], "white", self.text)
         self.entry_signal = None
         self.exit_signal = None
+        self.update_signals()
 
 
     def despawn_train(self, train):
@@ -547,8 +564,10 @@ class Game:
         else:
             if char in both_up:
                 y -= 1
+                x += 1 if direction == "right" else -1
             elif char in both_down:
                 y += 1
+                x += 1 if direction == "right" else -1
             elif char != " ":
                 if direction == 'right':
                     x += 1
@@ -583,60 +602,70 @@ class Game:
         # print(x,y)
         return lines[y + y_addition][x + x_addition]
     
+    def update_signals(self):
+        for signal in self.signals:
+            signal.update_color(self.trains)
+        self.display_class.display_signal_color(self.signals, self.text)
+
     def run(self):
         running = True
         clock = pygame.time.Clock()
         for signal in self.signals:
-            signal.deactivate_TRTS(self, self.display_class, self.text)
+            signal.deactivate_TRTS(self, self.display_class, self.text, self.lines)
         # try:
+        for i in range(2):
+            self.update_signals()
         while running:
-            total_seconds = int(self.game_seconds)
-            hours = total_seconds // 3600
-            minutes = (total_seconds % 3600) // 60
-            seconds = total_seconds % 60
-            time_str = f"{hours:02d}:{minutes:02d}:{seconds:02d} *{self.time_speed}"
-            running = self.display_class.update_and_draw(self, self.signals, self.autos, self.text, time_str)
-            if self.paused:
-                continue
-            self.check_backlog_train()
-            self.color_entry_signal()
-            now = time.time()
-            delta_real = now - self._last_real_time
-            self._last_real_time = now
-            if self.timetable_obj:
-                self.timetable_obj.window.update()
-            if not self.paused:
-                self.game_seconds += delta_real * self.time_speed
-            # Move all trains
-            if math.floor(self.game_seconds) % (5*60) == 0 and not self.snapshot:
-                # current_datetime = datetime.datetime.now()
-                self.save_game(f"snapshot_{hours:02d}{minutes:02d}{seconds:02d}.pkl")
-                self.snapshot = True
-            elif math.floor(self.game_seconds) % (5*60) != 0:
-                self.snapshot = False
-            self.update_spawn()
-            for train in self.trains:
-                if not train.bounds_check(self.text, self.display_class, self):
-                    self.despawn_train(train)
+            try:
+                total_seconds = int(self.game_seconds)
+                hours = total_seconds // 3600
+                minutes = (total_seconds % 3600) // 60
+                seconds = total_seconds % 60
+                time_str = f"{hours:02d}:{minutes:02d}:{seconds:02d} *{self.time_speed}"
+                running = self.display_class.update_and_draw(self, self.signals, self.autos, self.text, self.lines, time_str)
+                if self.paused:
                     continue
-                train.move(self.text, self, self.signals, self.display_class)
-                # train.station_check(self.text)
-                
-                if train in self.trains:
-                    train.color_route_coords(self.display_class, self.text)
-                    train.display_on(self.display_class, self.text)
-                
+                self.check_backlog_train()
+                self.color_entry_signal()
+                now = time.time()
+                delta_real = now - self._last_real_time
+                self._last_real_time = now
+                if self.timetable_obj:
+                    self.timetable_obj.window.update()
+                if not self.paused:
+                    self.game_seconds += delta_real * self.time_speed
+                # Move all trains
+                if math.floor(self.game_seconds) % (5*60) == 0 and not self.snapshot:
+                    # current_datetime = datetime.datetime.now()
+                    self.save_game(f"snapshot_{hours:02d}{minutes:02d}{seconds:02d}.pkl")
+                    self.snapshot = True
+                elif math.floor(self.game_seconds) % (5*60) != 0:
+                    self.snapshot = False
+                self.update_spawn()
+                for train in self.trains:
+                    if not train.bounds_check(self.text, self.display_class, self):
+                        self.despawn_train(train)
+                        continue
+                    train.move(self.text, self.lines, self, self.signals, self.display_class)
+                    # train.station_check(self.text)
+                    
+                    if train in self.trains:
+                        train.color_route_coords(self.display_class, self.text)
+                        train.display_on(self.display_class, self.text, self.lines)
+                    
 
-            # Draw signal colors using self.signals
-            for signal in self.signals:
-                signal.update_color(self.trains)
-            self.display_class.display_signal_color(self.signals, self.text)
-            self.display_class.display_auto_button_color(self.autos, self.text)
-            # Draw and handle events
-            
-            if self.entry_signal and self.exit_signal:
-                self.set_route(self)
-            clock.tick(120)
+                # Draw signal colors using self.signals
+                for signal in self.signals:
+                    signal.update_color(self.trains)
+                # self.display_class.display_signal_color(self.signals, self.text)
+                self.display_class.display_auto_button_color(self.autos, self.text)
+                # Draw and handle events
+                
+                if self.entry_signal and self.exit_signal:
+                    self.set_route(self)
+                clock.tick(120)
+            except Exception as e:
+                print("error in main loop:", e)
             
 
 # Python's best practice, only run the code if it is the main script
@@ -648,18 +677,19 @@ def main():
     mount_map = {'à': 'up', 'ø': 'up',"á":"up",'ù': 'up', 'û': 'down', 'ã': 'down', 'â': 'down',"ú":"down",'©':'2-right', '¨':'2-left'}
     buffer_map = {'à': False, 'ø': False, 'û': False, 'ã': False, 'â': False, 'ù': False, 'á': False, 'ú': False, '©': True, '¨': True}
     #! TODO Rework this to be less tweaking moment
-    with open("test.txt", "r", encoding="utf-8") as f:
+    with open(LAYOUT_FILE, "r", encoding="utf-8") as f:
         text = f.read()
     game = Game(text, Display_Class())
     signals = game.create_signals_from_file(target_chars, signal_type_map, direction_map, mount_map,buffer_map)
 
     # game.display_class = 
-    game.load_timetable_and_annotated_segments(os.path.join(CWD, JSON_PATH, "timetable.json"))
+    game.load_timetable_and_annotated_segments(os.path.join(CWD, JSON_PATH, TIMETABLE_FILE))
     game.find_next_signals(signals)
     game.define_switches()
     game.define_auto_and_TRTS_buttons()
     # game.spawn_train(6, (1, 10))
     game.run()
 
+# cProfile.run("main()")
 if __name__ == "__main__":
     main()
