@@ -24,7 +24,7 @@ class Display_Class:
         pygame.display.set_caption("Scrollable & Zoomable Text Display")
         self.scroll_x = 0
         self.scroll_y = 0
-        self.scroll_speed = 20
+        self.scroll_speed = 70
         self.signal_paths = []
         self.current_path_index = 0
         self.current_step_index = 0

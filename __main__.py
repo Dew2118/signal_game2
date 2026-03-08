@@ -14,12 +14,16 @@ import winsound
 import threading
 import easygui
 import math
+import tkinter as tk
+import os
+import glob
+
 JSON_PATH = os.path.join("src", "json") #
 SPAWN_SOUND = r"C:\Windows\Media\Speech On.wav"
 
-LAYOUT_FILE = "test.txt"
-TIMETABLE_FILE = "timetable.json"
-ANNOTATED_SEGMENTS_FILE = "annotated_segments.json"
+# LAYOUT_FILE = "test.txt"
+# TIMETABLE_FILE = "timetable.json"
+# ANNOTATED_SEGMENTS_FILE = "annotated_segments.json"
 
 # Create a "saves" folder in the current directory if it doesn't exist
 if not os.path.exists('saves'):
@@ -27,7 +31,7 @@ if not os.path.exists('saves'):
 CWD = os.path.dirname(__file__) # CWD = Current Working Directory, pretend it is a const too
 from src.assets.python.timetable.display_timetable import Timetable
 class Game:
-    def __init__(self, text, display_class):
+    def __init__(self, text, display_class, layout_file):
         self.text = text
         self.trains = []
         self.signals = []  # Add signals to Game, not Display_Class
@@ -48,15 +52,14 @@ class Game:
         self.display_class = display_class
         self.snapshot = False
         self.lines = self.text.splitlines()
-
-
+        self.layout_file = layout_file
 
     #TODO : rework this to work better with file path
-    def load_timetable_and_annotated_segments(self, filename=os.path.join(CWD, JSON_PATH, TIMETABLE_FILE)):
+    def load_timetable_and_annotated_segments(self, filename, annnotated_segments_file):
         self.display_class.add_log("  | loading " + filename)
         with open(filename, "r") as f:
             self.timetables = json.load(f)
-        with open(os.path.join(CWD, JSON_PATH, ANNOTATED_SEGMENTS_FILE), "r") as f:
+        with open(os.path.join(CWD, JSON_PATH, annnotated_segments_file), "r") as f:
             self.annotated_segments = json.load(f)
         for seg in self.timetables:
             headcode_prefix = seg.get('headcode_prefix', '')
@@ -481,12 +484,12 @@ class Game:
                 # last_char = char
 
 
-    def set_route(self, game):
+    def set_route(self):
         self.display_class.set_char_color_at_coord(self.entry_signal.coord[0], self.entry_signal.coord[1], "gray", self.text)
-        coords = self.entry_signal.get_coords_to_next_signal(self.exit_signal, self, self.switches, LAYOUT_FILE, self.signals, self.trains)
+        coords = self.entry_signal.get_coords_to_next_signal(self.exit_signal, self, self.switches, self.layout_file, self.signals, self.trains)
         if not coords:
-            game.entry_signal = None
-            game.exit_signal = None
+            self.entry_signal = None
+            self.exit_signal = None
             return
         self.entry_signal.next_signal = self.exit_signal
         self.entry_signal.route_set = True
@@ -501,7 +504,6 @@ class Game:
         self.entry_signal = None
         self.exit_signal = None
         self.update_signals()
-
 
     def despawn_train(self, train):
         self.trains.remove(train)
@@ -662,7 +664,7 @@ class Game:
                 # Draw and handle events
                 
                 if self.entry_signal and self.exit_signal:
-                    self.set_route(self)
+                    self.set_route()
                 clock.tick(120)
             except Exception as e:
                 print("error in main loop:", e)
@@ -670,6 +672,43 @@ class Game:
 
 # Python's best practice, only run the code if it is the main script
 def main():
+    # Find scenario map files
+    map_files = glob.glob("*_map.txt")
+
+    # Extract scenario names
+    scenarios = [os.path.basename(f).replace("_map.txt", "") for f in map_files]
+
+    selected = {"name": None}
+
+    def choose(name):
+        selected["name"] = name
+        root.destroy()
+
+    root = tk.Tk()
+    root.title("Select Scenario")
+    root.geometry("300x200")
+
+    tk.Label(root, text="Choose a scenario:", font=("Arial", 12)).pack(pady=10)
+
+    for name in scenarios:
+        tk.Button(root, text=name, width=20, command=lambda n=name: choose(n)).pack(pady=2)
+
+    root.mainloop()
+
+    # After window closes
+    scenario = selected["name"]
+
+    if scenario:
+        # global LAYOUT_FILE, TIMETABLE_FILE, ANNOTATED_SEGMENTS_FILE
+        layout_file = f"{scenario}_map.txt"
+        timetable_file = f"{scenario}_timetable.json"
+        annotated_segments_file = f"{scenario}_annotated_segments.json"
+
+        print("LAYOUT_FILE =", layout_file)
+        print("TIMETABLE_FILE =", timetable_file)
+        print("ANNOTATED_SEGMENTS =", annotated_segments_file)
+    else:
+        print("No scenario selected")
     # --- Setup code ---
     target_chars = {'à', 'ø', 'û','ã','â',"ù", "á", "©", "¨", "ú"}
     signal_type_map = {'à': 'manual','ã':"manual",'â':"manual", "á":"manual", 'ø': 'automatic', 'û': 'automatic', 'ù': 'automatic', 'ú':"automatic",'©': 'automatic','¨': 'automatic'}
@@ -677,13 +716,13 @@ def main():
     mount_map = {'à': 'up', 'ø': 'up',"á":"up",'ù': 'up', 'û': 'down', 'ã': 'down', 'â': 'down',"ú":"down",'©':'2-right', '¨':'2-left'}
     buffer_map = {'à': False, 'ø': False, 'û': False, 'ã': False, 'â': False, 'ù': False, 'á': False, 'ú': False, '©': True, '¨': True}
     #! TODO Rework this to be less tweaking moment
-    with open(LAYOUT_FILE, "r", encoding="utf-8") as f:
+    with open(layout_file, "r", encoding="utf-8") as f:
         text = f.read()
-    game = Game(text, Display_Class())
+    game = Game(text, Display_Class(), layout_file)
     signals = game.create_signals_from_file(target_chars, signal_type_map, direction_map, mount_map,buffer_map)
 
     # game.display_class = 
-    game.load_timetable_and_annotated_segments(os.path.join(CWD, JSON_PATH, TIMETABLE_FILE))
+    game.load_timetable_and_annotated_segments(os.path.join(CWD, JSON_PATH, timetable_file), annotated_segments_file)
     game.find_next_signals(signals)
     game.define_switches()
     game.define_auto_and_TRTS_buttons()
