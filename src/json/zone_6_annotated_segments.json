@@ -23,7 +23,7 @@
         ],
         "type": "platform",
         "station": "BENTON BRIDGE",
-        "platform": "1"
+        "platform": "1-2"
     },
     {
         "left": [
@@ -191,7 +191,7 @@
             24
         ],
         "type": "entrance_exit",
-        "station": "ZONE 7",
+        "station": "ZONE 5",
         "platform": "WL 1"
     },
     {
@@ -282,7 +282,7 @@
             33
         ],
         "type": "entrance_exit",
-        "station": "ZONE C",
+        "station": "ZONE 3",
         "platform": "SLOW 1"
     },
     {
@@ -504,7 +504,7 @@
         ],
         "type": "entrance_exit",
         "station": "ZONE 3",
-        "platform": "WL GREENSLADE 1"
+        "platform": "WL 1"
     },
     {
         "left": [
@@ -517,7 +517,7 @@
         ],
         "type": "entrance_exit",
         "station": "ZONE 3",
-        "platform": "WL GREENSLADE 2"
+        "platform": "WL 2"
     },
     {
         "left": [

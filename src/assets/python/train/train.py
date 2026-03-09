@@ -37,7 +37,7 @@ class Train:
         self.last_action = "remove train tail"
         self.notify_TRTS = False
         self.last_last_signal = None
-        self.last_colored_route_coords = []
+        # self.last_colored_route_coords = []
         self.last_last_coord = [(0,0)]
         self.direction_change = None
         self.last_three_directions = deque(maxlen=3)
@@ -84,7 +84,7 @@ class Train:
     
     def TRTS(self, time_difference, signals, game, display, text, lines):
         
-        if time_difference >= 10:
+        if time_difference >= 30:
             return
         if signals:
             x, y = self.coords[0][0]
@@ -199,9 +199,10 @@ class Train:
                         self.notified = False
                         if self.last_action == "remove train tail":
                             signal.train_in_block = True
-                            game.update_signals()
+                            # game.update_signals()
                             if not signal.auto:
                                 signal.route_set = False
+                                # game.update_signals()
                                 if signal.route_coords:
                                     self.route_coords = signal.route_coords.copy()
                                     signal.route_coords = []
@@ -232,7 +233,7 @@ class Train:
             self.last_last_signal = self.last_signal.popleft()
             # print("last last signal check passed ", self.last_last_signal.coord)
             self.last_last_signal.train_in_block = False
-            game.update_signals()
+            # game.update_signals()
             
 
     def delete_train_tail(self, display, game):
@@ -242,12 +243,34 @@ class Train:
         if self.direction_change and self.direction_change[0] in self.last_last_coord:
             print("direction change removed")
             self.direction_change = None
+        # print("deleting train tail at coords ", self.last_last_coord)
         for coord in self.last_last_coord:
             
+            if coord in self.route_coords:
+                self.route_coords.remove(coord)
+                # print("removed ", coord, " from route coords, now ", self.route_coords)
+            # if coord in self.last_colored_route_coords:
+            #     self.last_colored_route_coords.remove(coord)
             if self.last_last_signal and self.last_last_signal.route_set and coord in self.last_last_signal.route_coords:
                 display.set_char_color_at_coord(coord[0], coord[1], "white", game.text)
+            
             else:
-                display.set_char_color_at_coord(coord[0], coord[1], "gray", game.text)
+                
+                set_to_white = False
+                for signal in game.signals:
+                    if signal.route_set and coord in signal.route_coords:
+                        display.set_char_color_at_coord(coord[0], coord[1], "white", game.text)
+                        set_to_white = True
+                        break
+                # for train in game.trains:
+                #     # print("checking train ", train == self, train.route_coords, " for coord ", coord)
+                #     if train != self and coord in train.route_coords:
+                #         # print("setting coord ", coord, " to white because of train ", train.headcode)
+                #         display.set_char_color_at_coord(coord[0], coord[1], "white", game.text)
+                #         set_to_white = True
+                #         break
+                if not set_to_white:
+                    display.set_char_color_at_coord(coord[0], coord[1], "gray", game.text)
 
     def move_train(self,x, y, lines, game, signals, display):
         if len(self.coords) >= 2:
@@ -369,21 +392,21 @@ class Train:
         f = StringIO(text)
         lines = f.readlines()
         grid = [list(line.rstrip('\n')) for line in lines]
-        if x <= 0 or x > len(lines[y]):
+        if x < 0 or x > len(lines[y]):
             display.add_log("failed bounds check")
             self.despawn_train(text, display, game)
             return False
         return True
     
     def color_route_coords(self, display, text):
-        if self.last_colored_route_coords == self.route_coords:
-            return
+        # if self.last_colored_route_coords == self.route_coords:
+        #     return
         for coord in self.route_coords:
             if coord:
                 x, y = coord
                 if display.get_char_color_at_coord(x, y, text) == (255, 255, 255):
                     display.set_char_color_at_coord(x, y, "white",text)
-        self.last_colored_route_coords = self.route_coords.copy()
+        # self.last_colored_route_coords = self.route_coords.copy()
     
     def despawn_train(self, text, display, game):
         f = StringIO(text)
@@ -399,7 +422,7 @@ class Train:
         
         for last_signal in self.last_signal:
             last_signal.train_in_block = False
-            game.update_signals()
+            # game.update_signals()
         
     def add_last_direction(self):
         if not self.last_three_directions or self.direction != self.last_three_directions[-1]:

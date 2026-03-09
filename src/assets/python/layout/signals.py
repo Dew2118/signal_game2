@@ -46,7 +46,6 @@ class Signal:
                     self.color = "green"
         else:
             self.color = "red"
-            
 
     def get_coords_to_next_signal(self, exit_signal, game, switches, filename, signals, trains):
         try:
@@ -73,23 +72,31 @@ class Signal:
                             if switch != last_switch:
                                 if self.duplicate_train_route_check(x, y, trains):
                                     if game.get_switch_position(i, game_text) == "normal":
-                                        switch_stack.append((switch,i, direction))
-                                        print("change switch to reverse at ", switch)
+                                        switch_stack.append((switch,i, direction, False, None))
+                                        print("appened switch stack with normal at ", switch)
                                     else:
-                                        switch_stack.append((switch,i,direction))
+                                        switch_stack.append((switch,i,direction, False, None))
                                         x, y, last_switch, switch_stack, direction, original_text, coords = self.go_back_to_last_switch(trains, switch_stack, game, coords, original_text)
                                         lines = original_text.splitlines()
                                         restart = True
                                         break
                                 else:
-                                    switch_stack.append((switch,i, direction))
-                                    game_text = game.change_switch(i, text=game_text)
-                                    print("change switch to normal at ", switch)
+                                    switch_stack.append((switch,i, direction, False, None))
+                                    # game_text = game.change_switch(i, text=game_text)
+                                    print("pretend the switch is normal at ", switch)
+                                    if direction == "left":
+                                        x -= 1
+                                    else:
+                                        x += 1
+                                    coords.append((x, y))
+                                    restart = True
+                                    break
                                 # print("switch found")
                         else:
                             if last_char not in "a[]bc":
                                 if game.get_switch_position(i, game_text) == "reverse" or not self.duplicate_train_route_check(x, y, trains):
-                                    game_text = game.change_switch(i, switch_direction = "reverse", text=game_text)
+                                    # game_text = game.change_switch(i, switch_direction = "reverse", text=game_text)
+                                    switch_stack.append((switch,i, direction, True, "reverse"))
                                     print("change trailing switch to reverse at ", switch)
                                 else:
                                     
@@ -99,7 +106,8 @@ class Signal:
                                     break
                             else:
                                 if game.get_switch_position(i, game_text) == "normal" or not self.duplicate_train_route_check(x, y, trains):
-                                    game_text = game.change_switch(i, text=game_text)
+                                    # game_text = game.change_switch(i, text=game_text)
+                                    switch_stack.append((switch,i, direction, True, "normal"))
                                     print("change trailing switch to normal at ", switch)
                                 else:
                                     x, y, last_switch, switch_stack, direction, original_text, coords = self.go_back_to_last_switch(trains, switch_stack, game, coords, original_text)
@@ -133,9 +141,14 @@ class Signal:
 
 
             for switch in switch_stack:
-                switch_index = switch[1]
-                game_text = game.change_switch(switch_index, "normal", text=game_text)
-                print("afterwards changing switch to normal at ", switch)
+                if switch[4] == "reverse":
+                    switch_index = switch[1]
+                    game_text = game.change_switch(switch_index, "reverse", text=game_text)
+                    print("afterwards changing switch to reverse at ", switch)
+                else:
+                    switch_index = switch[1]
+                    game_text = game.change_switch(switch_index, "normal", text=game_text)
+                    print("afterwards changing switch to normal at ", switch)
             direction_to_test_change = False
             for coord in coords:
                 x,y = coord
@@ -149,13 +162,13 @@ class Signal:
                         direction_to_test_change = True
                     else:
                         direction_to_test = self.direction
-                    if x == switch[0] and y == switch[1] and switch[3] == direction_to_test and (switch,i,direction_to_test) not in switch_stack:
+                    if x == switch[0] and y == switch[1] and switch[3] == direction_to_test and (switch,i,direction_to_test, False, None) not in switch_stack:
                         game_text = game.change_switch(i, "reverse", text=game_text)
                         print("finally changing switch to reverse at ", switch)
-            self.route_coords = coords
+            self.route_coords = list(set(coords))
             game.text = game_text
             game.update_lines()
-            return coords
+            return list(set(coords))
         except Exception as e:
             game.display_class.add_log("route setting failed, please try again error message: ", str(e))
 
@@ -163,6 +176,7 @@ class Signal:
         for train in trains:
             if train.route_coords:
                 if (x, y) in train.route_coords:
+                    print(train.route_coords)
                     print("route collision detected at ", (x,y))
                     return True
             for coord_list in train.coords:
@@ -212,32 +226,42 @@ class Signal:
             self.route_set = False
             self.next_signal = None
             self.color = "red"
+            train_route_coords_list = []
+            for train in game.trains:
+                if train.route_coords:
+                    train_route_coords_list.extend(train.route_coords) 
             for coord in self.route_coords:
                 x, y = coord
-                if display.get_char_color_at_coord(x, y, lines) == (255, 255, 255):
+                if display.get_char_color_at_coord(x, y, lines) == (255, 255, 255) and (x,y) not in train_route_coords_list:
                     display.set_char_color_at_coord(x, y, "gray", text)
             for auto in autos:
                 if auto.signal == self:
                     auto.depressed(text, game)
             self.route_coords = None
-            game.update_signals()
+            # game.update_signals()
 
     def go_back_to_last_switch(self, trains, switch_stack, game, coords, original_text):
-        x = switch_stack[0][0][0]
-        y = switch_stack[0][0][1]
-        result = self.duplicate_train_route_check(x, y, trains)
-        if result and game.get_switch_position(switch_stack[0][1], game.text) == "normal":
-            print("checked last switch and train occupied normal")
-            return
-        last_switch_tuple = switch_stack.pop()
+        is_trailing = True
+        while is_trailing:
+            last_switch_tuple = switch_stack.pop()
+            is_trailing = last_switch_tuple[3]
         last_switch = last_switch_tuple[0]
         direction = last_switch_tuple[2]
+        x = last_switch[0]
+        y = last_switch[1]
+        # x = switch_stack[0][0][0]
+        # y = switch_stack[0][0][1]
+        result = self.duplicate_train_route_check(x, y, trains)
+        if result and game.get_switch_position(last_switch_tuple[1], game.text) == "normal":
+            print("checked last switch and train occupied normal")
+            return
+        
+        
         print("going back to switch at location", last_switch)
         last_switch_index = last_switch_tuple[1]
         original_text = game.change_switch(last_switch_index, "reverse",text = original_text)
         print("reversing switch at", last_switch)
-        x = last_switch[0]
-        y = last_switch[1]
+        
         for i in range(len(coords)):
             if coords.pop() == (x,y):
                 coords.append((x, y))

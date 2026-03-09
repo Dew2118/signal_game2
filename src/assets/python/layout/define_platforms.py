@@ -2,7 +2,7 @@ import pygame
 import json
 
 class DefinePlatforms:
-    def __init__(self, layout_file="zone_G_map.txt"):
+    def __init__(self, layout_file):
         pygame.init()
         self.SCREEN_WIDTH, self.SCREEN_HEIGHT = 1000, 750
         self.FONT_PATH = "../../fonts/S-box.ttf"
@@ -191,5 +191,5 @@ class DefinePlatforms:
 
 
 if __name__ == "__main__":
-    app = DefinePlatforms("zone_G_map.txt")
+    app = DefinePlatforms("zone_6_map.txt")
     app.run()

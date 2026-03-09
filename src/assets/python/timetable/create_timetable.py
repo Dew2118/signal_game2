@@ -4,7 +4,7 @@ import datetime
 CWD = os.path.dirname(__file__)
 JSON_PATH = os.path.join("..", "..","..", "json")
 class TimetableCreator:
-    def __init__(self, segments_file=os.path.join(CWD, JSON_PATH, "zone_G_annotated_segments.json")):
+    def __init__(self, segments_file=os.path.join(CWD, JSON_PATH, "zone_6_annotated_segments.json")):
         with open(segments_file, "r") as f:
             self.segments = json.load(f)
         self.timetable = {
@@ -182,7 +182,7 @@ class TimetableCreator:
 
 
 
-    def save_timetable(self, filename=os.path.join(CWD, JSON_PATH, "zone_G_timetable.json")):
+    def save_timetable(self, filename=os.path.join(CWD, JSON_PATH, "zone_6_timetable.json")):
         all_timetables = []
 
         # Step 1: Load existing data if the file exists

@@ -503,7 +503,7 @@ class Game:
             self.display_class.set_char_color_at_coord(coord[0], coord[1], "white", self.text)
         self.entry_signal = None
         self.exit_signal = None
-        self.update_signals()
+        # self.update_signals()
 
     def despawn_train(self, train):
         self.trains.remove(train)
@@ -657,8 +657,9 @@ class Game:
                     
 
                 # Draw signal colors using self.signals
-                for signal in self.signals:
-                    signal.update_color(self.trains)
+                self.update_signals()
+                # for signal in self.signals:
+                #     signal.update_color(self.trains)
                 # self.display_class.display_signal_color(self.signals, self.text)
                 self.display_class.display_auto_button_color(self.autos, self.text)
                 # Draw and handle events
