@@ -10,7 +10,7 @@
         ],
         "type": "entrance_exit",
         "station": "ZONE 7",
-        "platform": "1"
+        "platform": "SLOW 1"
     },
     {
         "left": [
@@ -75,7 +75,7 @@
         ],
         "type": "entrance_exit",
         "station": "ZONE 7",
-        "platform": "2"
+        "platform": "SLOW 2"
     },
     {
         "left": [

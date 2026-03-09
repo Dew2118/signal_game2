@@ -330,13 +330,22 @@ class Train:
             grid = [list(line.rstrip('\n')) for line in lines]
         (x,y) = self.coords[0][5 if len(self.coords[0]) > 5 else -1]
         last_char = self.last_char
-        
+        for signal in signals:
+            if (x,y) == signal.overlap:
+                return
         while True:
             x, y, direction, last_char, direction_change = game.path_find(lines, x, y, direction, self.direction, last_char)
             if x == -1:
                 return
             for signal in signals:
-                if ((signal.coord == (x,y-1) and signal.mount == "up") or (signal.coord == (x,y+1) and signal.mount == "down") or ((signal.coord == (x+2,y) or signal.coord == (x-2,y)) and signal.buffer)) and signal.direction == direction:
+                if ((signal.coord == (x,y-1) and signal.mount == "up") or (signal.coord == (x,y+1) and signal.mount == "down") or ((signal.coord == (x+2,y) or signal.coord == (x-2,y)) and signal.buffer) or signal.overlap == (x,y)) and signal.direction == direction:
+                    if (x,y) == signal.overlap:
+                        x = signal.coord[0]
+                        y = signal.coord[1]
+                        if signal.mount == "up":
+                            y += 1
+                        elif signal.mount == "down":
+                            y -= 1
                     if direction == "left":
                         x += 1
                     else:
