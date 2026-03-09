@@ -146,7 +146,7 @@ class Display_Class:
                 char_surf = self.char_cache[key]
 
                 char_rects.append((idx, pygame.Rect(x, y, char_width, line_height)))
-
+                
                 # direct blit (no get_rect)
                 surf.blit(char_surf, (x, y))
 
@@ -436,6 +436,7 @@ class Display_Class:
                 x += 1
             elif signal.direction == "left":
                 x -= 1
+            print("setting color of", (x, y), "to", signal.color)
             self.set_char_color_at_coord(x, y, signal.color, text)
             signal.last_colored_color = signal.color
 

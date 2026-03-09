@@ -9,7 +9,7 @@
             8
         ],
         "type": "entrance_exit",
-        "station": "FARLEIGH DEPOT",
+        "station": "FARLEIGH SIDING",
         "platform": "1"
     },
     {
@@ -23,7 +23,7 @@
         ],
         "type": "platform",
         "station": "ESTERFIELD",
-        "platform": "1"
+        "platform": "4"
     },
     {
         "left": [
@@ -59,101 +59,101 @@
         "right": [
             224,
             9
-        ],
-        "type": "platform",
-        "station": "ESTERFIELD",
-        "platform": "2"
-    },
-    {
-        "left": [
-            1,
-            10
-        ],
-        "right": [
-            1,
-            10
-        ],
-        "type": "entrance_exit",
-        "station": "ZONE C",
-        "platform": "1"
-    },
-    {
-        "left": [
-            99,
-            11
-        ],
-        "right": [
-            103,
-            11
-        ],
-        "type": "platform",
-        "station": "FARLEIGH",
-        "platform": "1"
-    },
-    {
-        "left": [
-            99,
-            12
-        ],
-        "right": [
-            103,
-            12
-        ],
-        "type": "platform",
-        "station": "FARLEIGH",
-        "platform": "2"
-    },
-    {
-        "left": [
-            1,
-            13
-        ],
-        "right": [
-            1,
-            13
-        ],
-        "type": "entrance_exit",
-        "station": "ZONE C",
-        "platform": "2"
-    },
-    {
-        "left": [
-            139,
-            14
-        ],
-        "right": [
-            143,
-            14
-        ],
-        "type": "platform",
-        "station": "JAMES STREET",
-        "platform": "2"
-    },
-    {
-        "left": [
-            167,
-            14
-        ],
-        "right": [
-            171,
-            14
-        ],
-        "type": "platform",
-        "station": "ROSEDALE VILLAGE",
-        "platform": "2"
-    },
-    {
-        "left": [
-            220,
-            14
-        ],
-        "right": [
-            224,
-            14
         ],
         "type": "platform",
         "station": "ESTERFIELD",
         "platform": "3"
+    },
+    {
+        "left": [
+            1,
+            10
+        ],
+        "right": [
+            1,
+            10
+        ],
+        "type": "entrance_exit",
+        "station": "ZONE C",
+        "platform": "1"
+    },
+    {
+        "left": [
+            99,
+            11
+        ],
+        "right": [
+            103,
+            11
+        ],
+        "type": "platform",
+        "station": "FARLEIGH",
+        "platform": "1"
+    },
+    {
+        "left": [
+            99,
+            12
+        ],
+        "right": [
+            103,
+            12
+        ],
+        "type": "platform",
+        "station": "FARLEIGH",
+        "platform": "2"
+    },
+    {
+        "left": [
+            1,
+            13
+        ],
+        "right": [
+            1,
+            13
+        ],
+        "type": "entrance_exit",
+        "station": "ZONE C",
+        "platform": "2"
+    },
+    {
+        "left": [
+            139,
+            14
+        ],
+        "right": [
+            143,
+            14
+        ],
+        "type": "platform",
+        "station": "JAMES STREET",
+        "platform": "2"
+    },
+    {
+        "left": [
+            167,
+            14
+        ],
+        "right": [
+            171,
+            14
+        ],
+        "type": "platform",
+        "station": "ROSEDALE VILLAGE",
+        "platform": "2"
+    },
+    {
+        "left": [
+            220,
+            14
+        ],
+        "right": [
+            224,
+            14
+        ],
+        "type": "platform",
+        "station": "ESTERFIELD",
+        "platform": "2"
     },
     {
         "left": [
@@ -179,7 +179,7 @@
         ],
         "type": "platform",
         "station": "ESTERFIELD",
-        "platform": "4"
+        "platform": "1"
     },
     {
         "left": [

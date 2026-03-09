@@ -212,7 +212,7 @@ class Game:
             # Only consider timetables that should spawn now
             if current_time not in spawn_seconds:
                 continue
-
+            
             start_seg = tt['start_location']
             # Determine spawn coordinate
             coord = tuple(start_seg['left'] if 'left' in start_seg else start_seg['right'])
