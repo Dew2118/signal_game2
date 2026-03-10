@@ -66,6 +66,8 @@ class Signal:
             lines = original_text.splitlines()
             while True:
                 # lines = original_text.splitlines()
+                
+                # print("current location: ", (x,y), " current direction: ", direction, " last char: ", last_char)
                 for i,switch in enumerate(switches):
                     if x == switch[0] and y == switch[1]:
                         if switch[3] == direction:
@@ -114,13 +116,20 @@ class Signal:
                                     lines = original_text.splitlines()
                                     restart = True
                                     break
+                if last_char in "yz" and self.duplicate_train_route_check(x, y, trains):
+                    x,y, last_switch, switch_stack, direction, original_text, coords = self.go_back_to_last_switch(trains, switch_stack, game, coords, original_text)
+                    lines = original_text.splitlines()
+                    restart = True
                 if restart:
                     restart = False
                     continue
                 x, y, direction, last_char, new_direction_change = game.path_find(lines, x, y, direction, self.direction, last_char)
-                if x == -1 or last_char == "X":
+                if x == -1 or last_char == "x":
                     x, y, last_switch, switch_stack, direction, original_text, coords = self.go_back_to_last_switch(trains, switch_stack, game, coords, original_text)
                     lines = original_text.splitlines()
+                    last_char = "a"
+                    print("NEW X IS ", x)
+                    continue
                 if new_direction_change:
                     direction_change = new_direction_change
                 print(x,y, last_char)
@@ -261,11 +270,11 @@ class Signal:
         last_switch_index = last_switch_tuple[1]
         original_text = game.change_switch(last_switch_index, "reverse",text = original_text)
         print("reversing switch at", last_switch)
-        
         for i in range(len(coords)):
             if coords.pop() == (x,y):
                 coords.append((x, y))
                 break
+        print("finished go back to last switch, new location is ", (x,y))
         return x, y, last_switch, switch_stack, direction, original_text, coords
 
     def check_for_trains_in_section(self, trains):

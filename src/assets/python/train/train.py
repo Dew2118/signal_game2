@@ -289,14 +289,14 @@ class Train:
             if self.direction == "right":
                 amended_x = x+1
                 opposite_direction = "left"
-                if (amended_x >= len(lines[y])) or (lines[y][x] in "b" or lines[y][amended_x] in "c"):
+                if (amended_x >= len(lines[y])) or (lines[y][x] in "b" or (lines[y][amended_x] in "c" and lines[y][x] in "a")):
                     self.coords.insert(0, coords)
                     print("blocked by ", lines[y][x], " or ", lines[y][amended_x], " at ", (x,y), " or ", (amended_x,y))
                     return
             else:
                 amended_x = x-1
                 opposite_direction = "right"
-                if (amended_x < 0) or (lines[y][x] in "c" or lines[y][amended_x] in "b"):
+                if (amended_x < 0) or (lines[y][x] in "c" or (lines[y][amended_x] in "b" and lines[y][x] in "a")):
                     print("blocked by ", lines[y][x], " or ", lines[y][amended_x], " at ", (x,y), " or ", (amended_x,y))
                     self.coords.insert(0, coords)
                     return
