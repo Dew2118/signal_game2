@@ -41,22 +41,36 @@ class DefinePlatforms:
     def extract_segments(self, text):
         lines = text.splitlines()
         segments = []
+
         for y, line in enumerate(lines):
             x = 0
             while x < len(line):
                 char = line[x]
+
                 if char == '¯':
                     start_x = x
-                    while x < len(line) and line[x] == '¯':
+
+                    while x < len(line) and (line[x] == '¯' or line[x].isdigit()):
                         x += 1
+
                     end_x = x - 1
-                    segments.append({'left': (start_x, y), 'right': (end_x, y), 'type': 'platform'})
+                    segments.append({
+                        'left': (start_x, y),
+                        'right': (end_x, y),
+                        'type': 'platform'
+                    })
+
                 elif char == 'x':
-                    # single 'x' detected
-                    segments.append({'left': (x, y), 'right': (x, y), 'type': 'entrance_exit'})
+                    segments.append({
+                        'left': (x, y),
+                        'right': (x, y),
+                        'type': 'entrance_exit'
+                    })
                     x += 1
+
                 else:
                     x += 1
+
         return segments
 
 

@@ -1,4 +1,3 @@
-from tkinter import font
 
 import pygame
 
@@ -132,18 +131,28 @@ class Display_Class:
             x = 0
 
             for char in line:
+                bg = None
+
                 if idx in self.char_colors:
                     color = self.char_colors[idx]
+
                 elif char == self.orange_char:
                     color = (255, 165, 0)
+
+                elif char in "1234567890":
+                    color = (0, 0, 0)          # black number
+                    bg = (255, 165, 0)         # orange background
+
                 else:
                     color = (128, 128, 128)
 
                 # cached render
-                key = (char, color)
+                key = (char, color, bg)
                 if key not in self.char_cache:
-                    self.char_cache[key] = font.render(char, True, color)
+                    self.char_cache[key] = font.render(char, True, color, bg)
+
                 char_surf = self.char_cache[key]
+
 
                 char_rects.append((idx, pygame.Rect(x, y, char_width, line_height)))
                 
