@@ -254,7 +254,7 @@ class Signal:
         result = self.duplicate_train_route_check(x, y, trains)
         if result and game.get_switch_position(last_switch_tuple[1], game.text) == "normal":
             print("checked last switch and train occupied normal")
-            return
+            return self.go_back_to_last_switch(trains, switch_stack, game, coords, original_text)
         
         
         print("going back to switch at location", last_switch)

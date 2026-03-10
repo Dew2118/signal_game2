@@ -565,11 +565,15 @@ class Game:
                 x += 1
         else:
             if char in both_up:
-                y -= 1
-                x += 1 if direction == "right" else -1
+                if last_char == both_down:
+                    x += 1 if direction == "right" else -1
+                else:
+                    y -= 1
             elif char in both_down:
-                y += 1
-                x += 1 if direction == "right" else -1
+                if last_char == both_up:
+                    x += 1 if direction == "right" else -1
+                else:
+                    y += 1
             elif char != " ":
                 if direction == 'right':
                     x += 1
