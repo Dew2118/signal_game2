@@ -200,6 +200,8 @@ class Train:
                         self.notified = False
                         if self.last_action == "remove train tail":
                             signal.train_in_block = True
+                            lines = signal.deactivate_TRTS(game, display, text, lines)
+                            
                             # game.update_signals()
                             if not signal.auto:
                                 signal.route_set = False
@@ -292,22 +294,22 @@ class Train:
                 opposite_direction = "left"
                 if (amended_x >= len(lines[y])) or (lines[y][x] in "b" or (lines[y][amended_x] in "c" and lines[y][x] in "a")):
                     self.coords.insert(0, coords)
-                    print("blocked by ", lines[y][x], " or ", lines[y][amended_x], " at ", (x,y), " or ", (amended_x,y))
+                    # print("blocked by ", lines[y][x], " or ", lines[y][amended_x], " at ", (x,y), " or ", (amended_x,y))
                     return
             else:
                 amended_x = x-1
                 opposite_direction = "right"
                 if (amended_x < 0) or (lines[y][x] in "c" or (lines[y][amended_x] in "b" and lines[y][x] in "a")):
-                    print("blocked by ", lines[y][x], " or ", lines[y][amended_x], " at ", (x,y), " or ", (amended_x,y))
+                    # print("blocked by ", lines[y][x], " or ", lines[y][amended_x], " at ", (x,y), " or ", (amended_x,y))
                     self.coords.insert(0, coords)
                     return
             for signal in signals:
                 if self.signal_condition_check(signal, x, y, self.direction) or self.signal_condition_check(signal, amended_x, y, opposite_direction):
-                    print("blocked by signal at ", signal.coord, " with color ", signal.color)
+                    # print("blocked by signal at ", signal.coord, " with color ", signal.color)
                     self.coords.insert(0, coords)
                     return
             if self.last_char == "x":
-                print("blocked by last char at ", (x,y))
+                # print("blocked by last char at ", (x,y))
                 self.coords.insert(0, coords)
                 return
                 

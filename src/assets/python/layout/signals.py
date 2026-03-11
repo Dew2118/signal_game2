@@ -303,7 +303,7 @@ class Signal:
 
     def deactivate_TRTS(self, game, display, text, lines):
         if not self.TRTS_button_coord:
-            return
+            return lines
         # lines = text.splitlines()
         grid = [list(line.rstrip('\n')) for line in lines]
         x,y = self.TRTS_button_coord
@@ -312,3 +312,4 @@ class Signal:
         modified_text = '\n'.join(''.join(row) for row in grid)
         game.text = modified_text
         game.update_lines()
+        return game.lines
