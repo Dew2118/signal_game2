@@ -17,6 +17,7 @@ import math
 import tkinter as tk
 import os
 import glob
+from pathlib import Path
 
 JSON_PATH = os.path.join("src", "json") #
 SPAWN_SOUND = r"C:\Windows\Media\Speech On.wav"
@@ -722,7 +723,11 @@ class Game:
 # Python's best practice, only run the code if it is the main script
 def main():
     # Find scenario map files
-    map_files = glob.glob("*_map.txt")
+    # map_files = glob.glob("*_map.txt")
+    
+
+    base_dir = Path(__file__).parent
+    map_files = list(base_dir.glob("*_map.txt"))
 
     # Extract scenario names
     scenarios = [os.path.basename(f).replace("_map.txt", "") for f in map_files]
