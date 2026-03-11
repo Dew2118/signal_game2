@@ -352,7 +352,7 @@ class Train:
                 print(f"move headcode {x},{y}, direction is {direction}")
                 last_message = f"move headcode {x},{y}, direction is {direction}"
             for signal in signals:
-                if (x,y) == signal.overlap:
+                if (x,y) == signal.overlap and signal.direction == direction:
                     x = signal.coord[0]
                     y = signal.coord[1]
                     if signal.mount == "up":
