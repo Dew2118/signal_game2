@@ -54,6 +54,7 @@ class Signal:
             switch_stack = deque()
             direction = self.direction
             last_char = "F"
+            last_last_char = "F"
             direction_change = None
             if not exit_signal:
                 return []
@@ -123,7 +124,7 @@ class Signal:
                 if restart:
                     restart = False
                     continue
-                x, y, direction, last_char, new_direction_change = game.path_find(lines, x, y, direction, self.direction, last_char)
+                x, y, direction, last_char, new_direction_change, last_last_char = game.path_find(lines, x, y, direction, self.direction, last_char, last_last_char)
                 if x == -1 or last_char == "x":
                     x, y, last_switch, switch_stack, direction, original_text, coords = self.go_back_to_last_switch(trains, switch_stack, game, coords, original_text)
                     lines = original_text.splitlines()

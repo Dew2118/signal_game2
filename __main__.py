@@ -439,6 +439,7 @@ class Game:
     def find_next_signals(self, signals):
         signal_lookup = {(s.coord[0], s.coord[1]): s for s in signals}
         last_char = "F"
+        last_last_char = "F"
         for signal in signals:
             # self.display_class.add_log(signal)
             # if signal.signal_type != "automatic":
@@ -463,7 +464,7 @@ class Game:
             direction = signal.direction
             while 0 <= y < len(self.lines) - 1 and 0 <= x < len(self.lines[y]) - 1:
                 self.display_class.add_log(x,y)
-                x, y, direction, last_char, direction_change = self.path_find(self.lines, x, y, direction, signal.direction, last_char)
+                x, y, direction, last_char, direction_change, last_last_char = self.path_find(self.lines, x, y, direction, signal.direction, last_char, last_last_char)
 
                 if not (0 <= y < len(self.lines) and 0 <= x < len(self.lines[y])):
                     break
@@ -517,7 +518,7 @@ class Game:
         if self.entry_signal:
             self.display_class.set_char_color_at_coord(self.entry_signal.coord[0], self.entry_signal.coord[1], "white", self.text)
     
-    def path_find(self, lines, x, y, direction, main_direction, last_char):
+    def path_find(self, lines, x, y, direction, main_direction, last_char, last_last_char):
         right_up = 'k{'
         right_down = "io"
         left_up = "hn"
@@ -525,6 +526,8 @@ class Game:
         both_up = "z"
         both_down = "y"
         vertical = "|ö"
+        right_conditional = "e"
+        left_conditional = "d"
         direction_change = None
         char = lines[y][x]
         # print("char is", char)
@@ -563,6 +566,45 @@ class Game:
                 if direction != main_direction:
                     direction_change = [(x,y), direction]
                 x += 1
+        
+            
+        elif char == "e" and last_char == "d":
+            if direction == "right":
+                if last_last_char == "i":
+                    direction = "down"
+                    y += 1
+                else:
+                    direction = "right"
+                    x += 1
+            # else:
+            #     direction = "left"
+            #     x -= 1
+        elif char == "d" and last_char == "e":
+            if direction == "left":
+                if last_last_char == "h":
+                    direction = "up"
+                    y -= 1
+                else:
+                    direction = "left"
+                    x -= 1
+            # else:
+        elif char == "g" and last_char == "f":
+            if direction == "right":
+                if last_last_char == "k":
+                    direction = "up"
+                    y -= 1
+                else:
+                    direction = "right"
+                    x += 1
+        elif char == "f" and last_char == "g":
+            if direction == "left":
+                if last_last_char == "j":
+                    direction = "down"
+                    y += 1
+                else:
+                    direction = "left"
+                    x -= 1
+                
         else:
             if char in both_up:
                 if last_char == both_down:
@@ -580,9 +622,11 @@ class Game:
                 elif direction == 'left':
                     x -= 1
             else:
-                return -1,-1,None,None,None
+                return -1,-1,None,None,None, None
+
+        last_last_char = last_char
         last_char = char
-        return x, y, direction, last_char, direction_change
+        return x, y, direction, last_char, direction_change, last_last_char
     
     def skip_parts(self, character, direction, x, y, lines):
         passed = False

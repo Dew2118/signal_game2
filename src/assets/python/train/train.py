@@ -27,6 +27,7 @@ class Train:
         self.start_to_stop_time = 0
         self.waiting_for_departure = False
         self.last_char = "F"
+        self.last_last_char = "F"
         self.real_first_coord = self.coords[0][0]
         self.skip_parts_horizontal = False
         self.skip_parts_vertical = False
@@ -277,7 +278,7 @@ class Train:
             return
         coords = []
         while True:
-            x, y, self.direction, self.last_char, direction_change = game.path_find(lines, x, y, self.direction, self.direction, self.last_char)
+            x, y, self.direction, self.last_char, direction_change, self.last_last_char = game.path_find(lines, x, y, self.direction, self.direction, self.last_char, self.last_last_char)
             if x == -1:
                 return
             print("move train x, y, is ", x, y)
@@ -334,11 +335,12 @@ class Train:
             grid = [list(line.rstrip('\n')) for line in lines]
         (x,y) = self.coords[0][5 if len(self.coords[0]) > 5 else -1]
         last_char = self.last_char
+        last_last_char = self.last_last_char
         for signal in signals:
             if (x,y) == signal.overlap:
                 return
         while True:
-            x, y, direction, last_char, direction_change = game.path_find(lines, x, y, direction, self.direction, last_char)
+            x, y, direction, last_char, direction_change, last_last_char = game.path_find(lines, x, y, direction, self.direction, last_char, last_last_char)
             if x == -1:
                 return
             for signal in signals:
