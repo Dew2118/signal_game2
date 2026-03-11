@@ -223,7 +223,10 @@ class Train:
             elif self.last_action == "remove train tail":
                 self.move_train(x, y, lines, game, signals, display)
                 self.last_action = "move train"
+                print("finished move train")
+
             self.move_headcode(text, lines, game, signals, display)
+            print("finished move")
 
     def last_last_signal_check(self, game):
         # print("train headcode is ", self.headcode, "its direction is ", self.direction)
@@ -294,13 +297,13 @@ class Train:
                 opposite_direction = "left"
                 if (amended_x >= len(lines[y])) or (lines[y][x] in "b" or (lines[y][amended_x] in "c" and lines[y][x] in "a")):
                     self.coords.insert(0, coords)
-                    # print("blocked by ", lines[y][x], " or ", lines[y][amended_x], " at ", (x,y), " or ", (amended_x,y))
+                    print("blocked by ", lines[y][x], " or ", lines[y][amended_x], " at ", (x,y), " or ", (amended_x,y))
                     return
             else:
                 amended_x = x-1
                 opposite_direction = "right"
                 if (amended_x < 0) or (lines[y][x] in "c" or (lines[y][amended_x] in "b" and lines[y][x] in "a")):
-                    # print("blocked by ", lines[y][x], " or ", lines[y][amended_x], " at ", (x,y), " or ", (amended_x,y))
+                    print("blocked by ", lines[y][x], " or ", lines[y][amended_x], " at ", (x,y), " or ", (amended_x,y))
                     self.coords.insert(0, coords)
                     return
             for signal in signals:
@@ -335,30 +338,29 @@ class Train:
             # lines = text.splitlines()
             lines = game.lines
             grid = [list(line.rstrip('\n')) for line in lines]
-        (x,y) = self.coords[0][5 if len(self.coords[0]) > 5 else -1]
+        (x,y) = self.coords[0][0]
+        element = grid[y][x]
         last_char = self.last_char
         last_last_char = self.last_last_char
-        for signal in signals:
-            if (x,y) == signal.overlap:
-                return
+        # for signal in signals:
+        #     if (x,y) == signal.overlap:
+        #         return
+        last_message = None
         while True:
-            x, y, direction, last_char, direction_change, last_last_char = game.path_find(lines, x, y, direction, self.direction, last_char, last_last_char)
-            if x == -1:
-                return
+            
+            if last_message != f"move headcode {x},{y}, direction is {direction}":
+                print(f"move headcode {x},{y}, direction is {direction}")
+                last_message = f"move headcode {x},{y}, direction is {direction}"
             for signal in signals:
-                if ((signal.coord == (x,y-1) and signal.mount == "up") or (signal.coord == (x,y+1) and signal.mount == "down") or ((signal.coord == (x+2,y) or signal.coord == (x-2,y)) and signal.buffer) or signal.overlap == (x,y)) and signal.direction == direction:
-                    if (x,y) == signal.overlap:
-                        x = signal.coord[0]
-                        y = signal.coord[1]
-                        if signal.mount == "up":
-                            y += 1
-                        elif signal.mount == "down":
-                            y -= 1
-                    if direction == "left":
-                        x += 1
-                    else:
-                        x -= 4
-                    
+                if (x,y) == signal.overlap:
+                    x = signal.coord[0]
+                    y = signal.coord[1]
+                    if signal.mount == "up":
+                        y += 1
+                    elif signal.mount == "down":
+                        y -= 1
+                    if signal.direction == "right":
+                        x -= 3
                     for i in range(4):
                         self.headcode_element.append(lines[y][x+i])
                         self.headcode_coords.append((x+i,y))
@@ -371,6 +373,9 @@ class Train:
                     game.update_lines()
 
                     return
+            x, y, direction, last_char, direction_change, last_last_char = game.path_find(lines, x, y, direction, self.direction, last_char, last_last_char)
+            if x == -1:
+                return
             if last_char == "x":
                 return
     def display_on(self, display, text, lines):
