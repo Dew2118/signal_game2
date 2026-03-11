@@ -88,10 +88,10 @@ class Game:
         
         if filename:  # Check if the user selected a file (not canceled)
             data = {
+                "text": self.text,
                 "trains": self.trains,
                 "signals": self.signals,
                 "autos": self.autos,
-                "text": self.text,
                 "entry_signal": self.entry_signal,
                 "exit_signal": self.exit_signal,
                 "switches": self.switches,
@@ -103,6 +103,12 @@ class Game:
                 "last_spawn_time": self.last_spawn_time,
                 "headcode_suffix": self.headcode_suffix,
                 "timetables": self.timetables,
+                "timetable_obj": self.timetable_obj,
+                "backlog_train_spawn": self.backlog_train_spawn,
+                "snapshot": self.snapshot,
+                "lines": self.lines,
+                "layout_file": self.layout_file,
+
             }
 
             with open(filename, "wb") as f:
@@ -140,6 +146,14 @@ class Game:
                 self.headcode_suffix = data.get("headcode_suffix", {})
                 self.timetables = data.get("timetables", None)
                 self.timetable_obj = None
+                self.backlog_train_spawn = data.get("backlog_train_spawn", [])
+                # self.display_class = data.get("display_class", None)
+                self.display_class = Display_Class(self.signals)
+                self.snapshot = data.get("snapshot", False)
+                self.lines = data.get("lines", None)
+                self.layout_file = data.get("layout_file", None)
+
+                self.update_lines()
 
                 for signal in self.signals:
                     signal.last_colored_color = None
@@ -149,8 +163,8 @@ class Game:
                             self.display_class.set_char_color_at_coord(coord[0], coord[1], "white", self.text)
 
                 for train in self.trains:
-                    train.last_colored_route_coords = []
-                    train.move_headcode(self.text, self, self.signals, self.display_class)
+                    print("train route_coord is ", train.route_coords)
+                    train.move_headcode(self.text, self.lines, self, self.signals, self.display_class)
                     if train.route_coords:
                         for coord in train.route_coords:
                             self.display_class.set_char_color_at_coord(coord[0], coord[1], "white", self.text)
@@ -447,10 +461,6 @@ class Game:
             #     continue
             if signal.buffer:
                 x,y = signal.coord
-                if signal.mount == "up":
-                    y += 1
-                elif signal.mount == "down":
-                    y -= 1
                 if signal.direction == "right":
                     x -= 2
                 elif signal.direction == "left":

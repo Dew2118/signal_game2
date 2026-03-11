@@ -187,9 +187,6 @@ class Train:
             if signals:
                 # print("coord", self.coords[-1][0])
                 for signal in signals:
-                    # if signal.buffer:
-                        # print(signal.overlap)
-                        
                     if self.signal_condition_check(signal, x, y, self.direction):
                         if signal.color == "red" and self.last_action == "remove train tail":
                             if not self.notified:
@@ -268,13 +265,6 @@ class Train:
                         display.set_char_color_at_coord(coord[0], coord[1], "white", game.text)
                         set_to_white = True
                         break
-                # for train in game.trains:
-                #     # print("checking train ", train == self, train.route_coords, " for coord ", coord)
-                #     if train != self and coord in train.route_coords:
-                #         # print("setting coord ", coord, " to white because of train ", train.headcode)
-                #         display.set_char_color_at_coord(coord[0], coord[1], "white", game.text)
-                #         set_to_white = True
-                #         break
                 if not set_to_white:
                     display.set_char_color_at_coord(coord[0], coord[1], "gray", game.text)
 
@@ -342,9 +332,6 @@ class Train:
         element = grid[y][x]
         last_char = self.last_char
         last_last_char = self.last_last_char
-        # for signal in signals:
-        #     if (x,y) == signal.overlap:
-        #         return
         last_message = None
         while True:
             
@@ -353,14 +340,20 @@ class Train:
                 last_message = f"move headcode {x},{y}, direction is {direction}"
             for signal in signals:
                 if (x,y) == signal.overlap and signal.direction == direction:
-                    x = signal.coord[0]
-                    y = signal.coord[1]
-                    if signal.mount == "up":
-                        y += 1
-                    elif signal.mount == "down":
-                        y -= 1
-                    if signal.direction == "right":
-                        x -= 3
+                    if signal.buffer:
+                        if direction == "right":
+                            x -= 5
+                        else:
+                            x += 2
+                    else:
+                        x = signal.coord[0]
+                        y = signal.coord[1]
+                        if signal.mount == "up":
+                            y += 1
+                        elif signal.mount == "down":
+                            y -= 1
+                        if signal.direction == "right":
+                            x -= 3
                     for i in range(4):
                         self.headcode_element.append(lines[y][x+i])
                         self.headcode_coords.append((x+i,y))
@@ -394,22 +387,7 @@ class Train:
             x,y = coord
             display.set_char_color_at_coord(x, y, "light blue", text)
 
-    # def station_check(self, text):
-    #     x, y = self.coords[0][0]
-    #     lines = text.splitlines()
-    #     if self.direction == 'right':
-    #         additive = 1
-    #     else:
-    #         additive = -1
-    #     if x-3 < 0:
-    #         return
-    #     if lines[y+1][x] == "¯" and lines[y+1][x + additive] != "¯":
-    #         self.wait_time = 2
-    #     elif lines[y-1][x] == "¯" and lines[y-1][x + additive] != "¯":
-    #         self.wait_time = 2
-    
     def bounds_check(self, text,display, game):
-
         x, y = self.coords[0][0]
         f = StringIO(text)
         lines = f.readlines()
