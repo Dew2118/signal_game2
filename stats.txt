@@ -1,2 +1,0 @@
-Welcome to the profile statistics browser.
-output.prof% output.prof% 
