@@ -1,522 +1,285 @@
-[
-    {
-        "left": [
-            51,
-            3
-        ],
-        "right": [
-            51,
-            3
-        ],
-        "type": "entrance_exit",
-        "station": "DC SIDING",
-        "platform": "1"
-    },
-    {
-        "left": [
-            51,
-            5
-        ],
-        "right": [
-            51,
-            5
-        ],
-        "type": "entrance_exit",
-        "station": "DC SIDING",
-        "platform": "2"
-    },
-    {
-        "left": [
-            70,
-            6
-        ],
-        "right": [
-            76,
-            6
-        ],
-        "type": "platform",
-        "station": "DC REVERSING SIDING",
-        "platform": ""
-    },
-    {
-        "left": [
-            40,
-            8
-        ],
-        "right": [
-            52,
-            8
-        ],
-        "type": "platform",
-        "station": "DC",
-        "platform": "8"
-    },
-    {
-        "left": [
-            40,
-            9
-        ],
-        "right": [
-            40,
-            9
-        ],
-        "type": "platform",
-        "station": "",
-        "platform": ""
-    },
-    {
-        "left": [
-            40,
-            10
-        ],
-        "right": [
-            40,
-            10
-        ],
-        "type": "platform",
-        "station": "",
-        "platform": ""
-    },
-    {
-        "left": [
-            40,
-            11
-        ],
-        "right": [
-            40,
-            11
-        ],
-        "type": "platform",
-        "station": "",
-        "platform": ""
-    },
-    {
-        "left": [
-            40,
-            12
-        ],
-        "right": [
-            52,
-            12
-        ],
-        "type": "platform",
-        "station": "DC",
-        "platform": "7"
-    },
-    {
-        "left": [
-            40,
-            13
-        ],
-        "right": [
-            52,
-            13
-        ],
-        "type": "platform",
-        "station": "DC",
-        "platform": "6"
-    },
-    {
-        "left": [
-            1,
-            14
-        ],
-        "right": [
-            1,
-            14
-        ],
-        "type": "entrance_exit",
-        "station": "GE",
-        "platform": "UP"
-    },
-    {
-        "left": [
-            40,
-            14
-        ],
-        "right": [
-            40,
-            14
-        ],
-        "type": "platform",
-        "station": "",
-        "platform": ""
-    },
-    {
-        "left": [
-            40,
-            15
-        ],
-        "right": [
-            40,
-            15
-        ],
-        "type": "platform",
-        "station": "",
-        "platform": ""
-    },
-    {
-        "left": [
-            1,
-            16
-        ],
-        "right": [
-            1,
-            16
-        ],
-        "type": "entrance_exit",
-        "station": "GE",
-        "platform": "DOWN"
-    },
-    {
-        "left": [
-            40,
-            16
-        ],
-        "right": [
-            40,
-            16
-        ],
-        "type": "platform",
-        "station": "",
-        "platform": ""
-    },
-    {
-        "left": [
-            40,
-            17
-        ],
-        "right": [
-            52,
-            17
-        ],
-        "type": "platform",
-        "station": "DC",
-        "platform": "5"
-    },
-    {
-        "left": [
-            40,
-            18
-        ],
-        "right": [
-            52,
-            18
-        ],
-        "type": "platform",
-        "station": "DC",
-        "platform": "4"
-    },
-    {
-        "left": [
-            385,
-            18
-        ],
-        "right": [
-            385,
-            18
-        ],
-        "type": "entrance_exit",
-        "station": "SAT SIDING",
-        "platform": "1"
-    },
-    {
-        "left": [
-            1,
-            19
-        ],
-        "right": [
-            1,
-            19
-        ],
-        "type": "entrance_exit",
-        "station": "MC",
-        "platform": "UP"
-    },
-    {
-        "left": [
-            385,
-            20
-        ],
-        "right": [
-            385,
-            20
-        ],
-        "type": "entrance_exit",
-        "station": "SAT SIDING",
-        "platform": "2"
-    },
-    {
-        "left": [
-            1,
-            21
-        ],
-        "right": [
-            1,
-            21
-        ],
-        "type": "entrance_exit",
-        "station": "MC",
-        "platform": "DOWN"
-    },
-    {
-        "left": [
-            40,
-            22
-        ],
-        "right": [
-            52,
-            22
-        ],
-        "type": "platform",
-        "station": "DC",
-        "platform": "3"
-    },
-    {
-        "left": [
-            277,
-            22
-        ],
-        "right": [
-            283,
-            22
-        ],
-        "type": "platform",
-        "station": "DE",
-        "platform": "1"
-    },
-    {
-        "left": [
-            385,
-            22
-        ],
-        "right": [
-            385,
-            22
-        ],
-        "type": "entrance_exit",
-        "station": "SAT SIDING",
-        "platform": "3"
-    },
-    {
-        "left": [
-            40,
-            23
-        ],
-        "right": [
-            52,
-            23
-        ],
-        "type": "platform",
-        "station": "DC",
-        "platform": "2"
-    },
-    {
-        "left": [
-            277,
-            23
-        ],
-        "right": [
-            283,
-            23
-        ],
-        "type": "platform",
-        "station": "DE",
-        "platform": "2"
-    },
-    {
-        "left": [
-            377,
-            23
-        ],
-        "right": [
-            383,
-            23
-        ],
-        "type": "platform",
-        "station": "SAT",
-        "platform": "2"
-    },
-    {
-        "left": [
-            447,
-            23
-        ],
-        "right": [
-            453,
-            23
-        ],
-        "type": "platform",
-        "station": "FM",
-        "platform": "1"
-    },
-    {
-        "left": [
-            483,
-            26
-        ],
-        "right": [
-            483,
-            26
-        ],
-        "type": "entrance_exit",
-        "station": "BL",
-        "platform": ""
-    },
-    {
-        "left": [
-            40,
-            27
-        ],
-        "right": [
-            52,
-            27
-        ],
-        "type": "platform",
-        "station": "DC",
-        "platform": "1"
-    },
-    {
-        "left": [
-            277,
-            27
-        ],
-        "right": [
-            283,
-            27
-        ],
-        "type": "platform",
-        "station": "DE",
-        "platform": "3"
-    },
-    {
-        "left": [
-            377,
-            27
-        ],
-        "right": [
-            383,
-            27
-        ],
-        "type": "platform",
-        "station": "SAT",
-        "platform": "1"
-    },
-    {
-        "left": [
-            447,
-            27
-        ],
-        "right": [
-            453,
-            27
-        ],
-        "type": "platform",
-        "station": "FM",
-        "platform": "2"
-    },
-    {
-        "left": [
-            277,
-            28
-        ],
-        "right": [
-            283,
-            28
-        ],
-        "type": "platform",
-        "station": "DE",
-        "platform": "4"
-    },
-    {
-        "left": [
-            447,
-            28
-        ],
-        "right": [
-            453,
-            28
-        ],
-        "type": "platform",
-        "station": "FM",
-        "platform": "3"
-    },
-    {
-        "left": [
-            204,
-            29
-        ],
-        "right": [
-            204,
-            29
-        ],
-        "type": "entrance_exit",
-        "station": "CH SIDING",
-        "platform": ""
-    },
-    {
-        "left": [
-            452,
-            31
-        ],
-        "right": [
-            452,
-            31
-        ],
-        "type": "entrance_exit",
-        "station": "FM SIDING",
-        "platform": "1"
-    },
-    {
-        "left": [
-            277,
-            32
-        ],
-        "right": [
-            283,
-            32
-        ],
-        "type": "platform",
-        "station": "DE",
-        "platform": "5-6"
-    },
-    {
-        "left": [
-            452,
-            33
-        ],
-        "right": [
-            452,
-            33
-        ],
-        "type": "entrance_exit",
-        "station": "FM SIDING",
-        "platform": "2"
-    },
-    {
-        "left": [
-            180,
-            36
-        ],
-        "right": [
-            186,
-            36
-        ],
-        "type": "platform",
-        "station": "CH",
-        "platform": "1"
-    },
-    {
-        "left": [
-            180,
-            37
-        ],
-        "right": [
-            186,
-            37
-        ],
-        "type": "platform",
-        "station": "CH",
-        "platform": "2"
-    }
-]
+{
+    "segments": [
+        {
+            "left": [51, 3],
+            "right": [51, 3],
+            "type": "entrance_exit",
+            "station": "DC SIDING",
+            "platform": "1"
+        },
+        {
+            "left": [51, 5],
+            "right": [51, 5],
+            "type": "entrance_exit",
+            "station": "DC SIDING",
+            "platform": "2"
+        },
+        {
+            "left": [70, 6],
+            "right": [76, 6],
+            "type": "platform",
+            "station": "DC REVERSING SIDING",
+            "platform": ""
+        },
+        {
+            "left": [40, 8],
+            "right": [52, 8],
+            "type": "platform",
+            "station": "DC",
+            "platform": "8"
+        },
+        {
+            "left": [40, 9],
+            "right": [40, 9],
+            "type": "platform",
+            "station": "",
+            "platform": ""
+        },
+        {
+            "left": [40, 10],
+            "right": [40, 10],
+            "type": "platform",
+            "station": "",
+            "platform": ""
+        },
+        {
+            "left": [40, 11],
+            "right": [40, 11],
+            "type": "platform",
+            "station": "",
+            "platform": ""
+        },
+        {
+            "left": [40, 12],
+            "right": [52, 12],
+            "type": "platform",
+            "station": "DC",
+            "platform": "7"
+        },
+        {
+            "left": [40, 13],
+            "right": [52, 13],
+            "type": "platform",
+            "station": "DC",
+            "platform": "6"
+        },
+        {
+            "left": [1, 14],
+            "right": [1, 14],
+            "type": "entrance_exit",
+            "station": "GE",
+            "platform": "UP"
+        },
+        {
+            "left": [40, 14],
+            "right": [40, 14],
+            "type": "platform",
+            "station": "",
+            "platform": ""
+        },
+        {
+            "left": [40, 15],
+            "right": [40, 15],
+            "type": "platform",
+            "station": "",
+            "platform": ""
+        },
+        {
+            "left": [1, 16],
+            "right": [1, 16],
+            "type": "entrance_exit",
+            "station": "GE",
+            "platform": "DOWN"
+        },
+        {
+            "left": [40, 16],
+            "right": [40, 16],
+            "type": "platform",
+            "station": "",
+            "platform": ""
+        },
+        {
+            "left": [40, 17],
+            "right": [52, 17],
+            "type": "platform",
+            "station": "DC",
+            "platform": "5"
+        },
+        {
+            "left": [40, 18],
+            "right": [52, 18],
+            "type": "platform",
+            "station": "DC",
+            "platform": "4"
+        },
+        {
+            "left": [385, 18],
+            "right": [385, 18],
+            "type": "entrance_exit",
+            "station": "SAT SIDING",
+            "platform": "1"
+        },
+        {
+            "left": [1, 19],
+            "right": [1, 19],
+            "type": "entrance_exit",
+            "station": "MC",
+            "platform": "UP"
+        },
+        {
+            "left": [385, 20],
+            "right": [385, 20],
+            "type": "entrance_exit",
+            "station": "SAT SIDING",
+            "platform": "2"
+        },
+        {
+            "left": [1, 21],
+            "right": [1, 21],
+            "type": "entrance_exit",
+            "station": "MC",
+            "platform": "DOWN"
+        },
+        {
+            "left": [40, 22],
+            "right": [52, 22],
+            "type": "platform",
+            "station": "DC",
+            "platform": "3"
+        },
+        {
+            "left": [277, 22],
+            "right": [283, 22],
+            "type": "platform",
+            "station": "DE",
+            "platform": "1"
+        },
+        {
+            "left": [385, 22],
+            "right": [385, 22],
+            "type": "entrance_exit",
+            "station": "SAT SIDING",
+            "platform": "3"
+        },
+        {
+            "left": [40, 23],
+            "right": [52, 23],
+            "type": "platform",
+            "station": "DC",
+            "platform": "2"
+        },
+        {
+            "left": [277, 23],
+            "right": [283, 23],
+            "type": "platform",
+            "station": "DE",
+            "platform": "2"
+        },
+        {
+            "left": [377, 23],
+            "right": [383, 23],
+            "type": "platform",
+            "station": "SAT",
+            "platform": "2"
+        },
+        {
+            "left": [447, 23],
+            "right": [453, 23],
+            "type": "platform",
+            "station": "FM",
+            "platform": "1"
+        },
+        {
+            "left": [483, 26],
+            "right": [483, 26],
+            "type": "entrance_exit",
+            "station": "BL",
+            "platform": ""
+        },
+        {
+            "left": [40, 27],
+            "right": [52, 27],
+            "type": "platform",
+            "station": "DC",
+            "platform": "1"
+        },
+        {
+            "left": [277, 27],
+            "right": [283, 27],
+            "type": "platform",
+            "station": "DE",
+            "platform": "3"
+        },
+        {
+            "left": [377, 27],
+            "right": [383, 27],
+            "type": "platform",
+            "station": "SAT",
+            "platform": "1"
+        },
+        {
+            "left": [447, 27],
+            "right": [453, 27],
+            "type": "platform",
+            "station": "FM",
+            "platform": "2"
+        },
+        {
+            "left": [277, 28],
+            "right": [283, 28],
+            "type": "platform",
+            "station": "DE",
+            "platform": "4"
+        },
+        {
+            "left": [447, 28],
+            "right": [453, 28],
+            "type": "platform",
+            "station": "FM",
+            "platform": "3"
+        },
+        {
+            "left": [204, 29],
+            "right": [204, 29],
+            "type": "entrance_exit",
+            "station": "CH SIDING",
+            "platform": ""
+        },
+        {
+            "left": [452, 31],
+            "right": [452, 31],
+            "type": "entrance_exit",
+            "station": "FM SIDING",
+            "platform": "1"
+        },
+        {
+            "left": [277, 32],
+            "right": [283, 32],
+            "type": "platform",
+            "station": "DE",
+            "platform": "5-6"
+        },
+        {
+            "left": [452, 33],
+            "right": [452, 33],
+            "type": "entrance_exit",
+            "station": "FM SIDING",
+            "platform": "2"
+        },
+        {
+            "left": [180, 36],
+            "right": [186, 36],
+            "type": "platform",
+            "station": "CH",
+            "platform": "1"
+        },
+        {
+            "left": [180, 37],
+            "right": [186, 37],
+            "type": "platform",
+            "station": "CH",
+            "platform": "2"
+        }
+    ],
+    "portals": []
+}

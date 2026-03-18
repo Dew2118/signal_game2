@@ -1,80 +1,47 @@
-[
-    {
-        "left": [
-            60,
-            4
-        ],
-        "right": [
-            82,
-            4
-        ],
-        "type": "platform",
-        "station": "TEST STATION",
-        "platform": "1"
-    },
-    {
-        "left": [
-            0,
-            7
-        ],
-        "right": [
-            0,
-            7
-        ],
-        "type": "entrance_exit",
-        "station": "LEFT",
-        "platform": "1"
-    },
-    {
-        "left": [
-            143,
-            7
-        ],
-        "right": [
-            143,
-            7
-        ],
-        "type": "entrance_exit",
-        "station": "RIGHT",
-        "platform": "1"
-    },
-    {
-        "left": [
-            0,
-            9
-        ],
-        "right": [
-            0,
-            9
-        ],
-        "type": "entrance_exit",
-        "station": "LEFT",
-        "platform": "2"
-    },
-    {
-        "left": [
-            143,
-            9
-        ],
-        "right": [
-            143,
-            9
-        ],
-        "type": "entrance_exit",
-        "station": "RIGHT",
-        "platform": "2"
-    },
-    {
-        "left": [
-            61,
-            12
-        ],
-        "right": [
-            83,
-            12
-        ],
-        "type": "platform",
-        "station": "TEST STATION",
-        "platform": "2"
-    }
-]
+{
+    "segments": [
+        {
+            "left": [60, 4],
+            "right": [82, 4],
+            "type": "platform",
+            "station": "TEST STATION",
+            "platform": "1"
+        },
+        {
+            "left": [0, 7],
+            "right": [0, 7],
+            "type": "entrance_exit",
+            "station": "LEFT",
+            "platform": "1"
+        },
+        {
+            "left": [143, 7],
+            "right": [143, 7],
+            "type": "entrance_exit",
+            "station": "RIGHT",
+            "platform": "1"
+        },
+        {
+            "left": [0, 9],
+            "right": [0, 9],
+            "type": "entrance_exit",
+            "station": "LEFT",
+            "platform": "2"
+        },
+        {
+            "left": [143, 9],
+            "right": [143, 9],
+            "type": "entrance_exit",
+            "station": "RIGHT",
+            "platform": "2"
+        },
+        {
+            "left": [61, 12],
+            "right": [83, 12],
+            "type": "platform",
+            "station": "TEST STATION",
+            "platform": "2"
+        }
+    ],
+    "portals": []
+}

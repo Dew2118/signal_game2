@@ -6,7 +6,13 @@ JSON_PATH = os.path.join("..", "..","..", "json")
 class TimetableCreator:
     def __init__(self, segments_file=os.path.join(CWD, JSON_PATH, "zone_10_annotated_segments.json")):
         with open(segments_file, "r") as f:
-            self.segments = json.load(f)
+            data = json.load(f)
+
+        # Load segments and portals (new format only)
+        self.segments = data.get("segments", [])
+        self.portals = data.get("portals", [])
+
+        # Initialize timetable
         self.timetable = {
             "headcode_prefix": "",
             "start_location": None,
@@ -14,10 +20,11 @@ class TimetableCreator:
             "stops": [],
             "spawn_times": []
         }
-        # Add type detection here if not already present
+
+        # Add type detection if not present
         for seg in self.segments:
             if 'type' not in seg:
-                # If left == right, treat as entrance/exit
+                # Entrance/exit if left == right
                 if seg.get('left') == seg.get('right'):
                     seg['type'] = 'entrance_exit'
                 else:

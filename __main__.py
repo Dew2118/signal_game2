@@ -54,14 +54,23 @@ class Game:
         self.snapshot = False
         self.lines = self.text.splitlines()
         self.layout_file = layout_file
+        self.portals = []
 
     #TODO : rework this to work better with file path
-    def load_timetable_and_annotated_segments(self, filename, annnotated_segments_file):
+    def load_timetable_and_annotated_segments(self, filename, annotated_segments_file):
         self.display_class.add_log("  | loading " + filename)
+
+        # Load timetables
         with open(filename, "r") as f:
             self.timetables = json.load(f)
-        with open(os.path.join(CWD, JSON_PATH, annnotated_segments_file), "r") as f:
-            self.annotated_segments = json.load(f)
+
+        # Load annotated segments (new format only)
+        with open(os.path.join(CWD, JSON_PATH, annotated_segments_file), "r") as f:
+            data = json.load(f)
+            self.annotated_segments = data.get("segments", [])
+            self.portals = data.get("portals", [])
+
+        # Initialize headcode suffixes
         for seg in self.timetables:
             headcode_prefix = seg.get('headcode_prefix', '')
             if headcode_prefix and headcode_prefix not in self.headcode_suffix:
@@ -108,6 +117,7 @@ class Game:
                 "snapshot": self.snapshot,
                 "lines": self.lines,
                 "layout_file": self.layout_file,
+                "portals": self.portals
 
             }
 
@@ -152,7 +162,7 @@ class Game:
                 self.snapshot = data.get("snapshot", False)
                 self.lines = data.get("lines", None)
                 self.layout_file = data.get("layout_file", None)
-
+                self.portals = data.get("portals", [])
                 self.update_lines()
 
                 for signal in self.signals:
@@ -552,6 +562,43 @@ class Game:
                 direction = "down"
         next_char = self.get_next_char_from_direction(direction, x, y, lines)
         if next_char == "÷":
+            if hasattr(self, 'portals'):
+                # Step 1: Compute tentative next position
+                amended_x = x + (1 if direction == "right" else -1 if direction == "left" else 0)
+                print("moving one step, position is", x, y)
+
+                # Step 2: Check all portals
+                for portal in self.portals:
+                    (x1, y1), (x2, y2), portal_dir = portal
+
+                    # Step 3: Check if we're on either side of the portal
+                    if (amended_x, y) == (x1, y1):
+                        target_x, target_y = x2, y2
+                    elif (amended_x, y) == (x2, y2):
+                        target_x, target_y = x1, y1
+                    else:
+                        continue  # not a portal match
+
+                    # Step 4: Apply portal teleport
+                    amended_x, y = target_x, target_y
+
+                    # Step 5: Flip direction if "opposite"
+                    if portal_dir == "opposite":
+                        if direction == "right":
+                            direction = "left"
+                        elif direction == "left":
+                            direction = "right"
+
+                    # Step 6: Adjust position for movement after teleport (same logic as before)
+                    if direction == "right":
+                        amended_x += 1
+                    elif direction == "left":
+                        amended_x -= 1
+
+                    direction_change = [amended_x, y, direction]
+
+                    print("teleported to", amended_x, y, "new direction is", direction)
+                    return amended_x, y, direction, last_char, direction_change, last_last_char
             x, y = self.skip_parts("÷", direction, x, y, lines)
         elif next_char == "ö":
             x, y = self.skip_parts("ö", direction, x, y, lines)
@@ -637,6 +684,8 @@ class Game:
 
         last_last_char = last_char
         last_char = char
+        # print("finished with last char stuff")
+        
         return x, y, direction, last_char, direction_change, last_last_char
     
     def skip_parts(self, character, direction, x, y, lines):
@@ -731,36 +780,67 @@ class Game:
             
 
 # Python's best practice, only run the code if it is the main script
-def main():
-    # Find scenario map files
-    # map_files = glob.glob("*_map.txt")
-    
 
+def choose_scenario():
     base_dir = Path(__file__).parent
     map_files = list(base_dir.glob("*_map.txt"))
-
-    # Extract scenario names
     scenarios = [os.path.basename(f).replace("_map.txt", "") for f in map_files]
 
     selected = {"name": None}
 
-    def choose(name):
-        selected["name"] = name
-        root.destroy()
+    def choose(event=None):
+        """Set the selected scenario and close the window"""
+        selection = listbox.curselection()
+        if selection:
+            selected["name"] = listbox.get(selection[0])
+            root.destroy()
+
+    def update_filter(*args):
+        """Update the listbox based on the search entry"""
+        search_term = search_var.get().lower()
+        listbox.delete(0, tk.END)
+        for scenario in scenarios:
+            if search_term in scenario.lower():
+                listbox.insert(tk.END, scenario)
 
     root = tk.Tk()
     root.title("Select Scenario")
-    root.geometry("300x200")
+    root.geometry("400x400")  # Starting size
 
     tk.Label(root, text="Choose a scenario:", font=("Arial", 12)).pack(pady=10)
 
-    for name in scenarios:
-        tk.Button(root, text=name, width=20, command=lambda n=name: choose(n)).pack(pady=2)
+    # Search entry
+    search_var = tk.StringVar()
+    search_var.trace_add("write", update_filter)  # Update list as user types
+    tk.Entry(root, textvariable=search_var, width=30).pack(pady=5)
+
+    # Scrollable listbox
+    frame = tk.Frame(root)
+    frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+
+    scrollbar = tk.Scrollbar(frame)
+    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+    listbox = tk.Listbox(frame, yscrollcommand=scrollbar.set, font=("Arial", 11))
+    listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+    scrollbar.config(command=listbox.yview)
+
+    # Populate the listbox
+    for scenario in scenarios:
+        listbox.insert(tk.END, scenario)
+
+    # Bind double click or Enter key to choose
+    listbox.bind("<Double-Button-1>", choose)
+    listbox.bind("<Return>", choose)
 
     root.mainloop()
 
-    # After window closes
     scenario = selected["name"]
+    return scenario
+
+def main():
+    
+    scenario = choose_scenario()
 
     if scenario:
         # global LAYOUT_FILE, TIMETABLE_FILE, ANNOTATED_SEGMENTS_FILE
