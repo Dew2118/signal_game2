@@ -65,6 +65,8 @@ class Timetable:
 
             arr_str = self.format_seconds_to_time(arr_time)
             dep_str = self.format_seconds_to_time(dep_time)
+            if dep_str == arr_str:
+                arr_str = "-"
 
             self.tree.item(self.tree_items[i], values=(stop["station"], stop["platform"], arr_str, dep_str))
         self.window.update()

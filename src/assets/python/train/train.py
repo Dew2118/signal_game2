@@ -105,11 +105,17 @@ class Train:
         stop_coords = self._get_stop_coord(current_stop)  # defined below
         # Only apply timing logic if head is at the stop
         if self._at_stop_coord(stop_coords):
+
             current_game_time = game.game_seconds
             time_since_spawn = current_game_time - self.game_seconds_at_spawn
             if not self.start_to_stop_time:
                 self.start_to_stop_time = time_since_spawn
             dep_offset = current_stop.get('departure_offset', 0)
+            arr_offset = current_stop.get('arrival_offset', 0)
+            despawn = current_stop.get('despawn', False)
+            if dep_offset == arr_offset and not despawn:
+                self.current_stop_index += 1
+                return True
             if self.last_action == "move train":
                 self.last_last_signal_check(game)
                 self.delete_train_tail(display, game)
@@ -146,7 +152,7 @@ class Train:
             self.TRTS(dep_offset-time_since_spawn, game.signals, game, display, text, lines)
             if time_since_spawn < dep_offset:
                 
-                return False # ⛔ Guard: Not time to leave yet
+                return False
             
             elif (time_since_spawn - self.start_to_stop_time) < 2:
                 # print(time_since_spawn, self.start_to_stop_time)

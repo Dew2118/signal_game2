@@ -4,7 +4,7 @@ import datetime
 CWD = os.path.dirname(__file__)
 JSON_PATH = os.path.join("..", "..","..", "json")
 class TimetableCreator:
-    def __init__(self, segments_file=os.path.join(CWD, JSON_PATH, "zone_6_annotated_segments.json")):
+    def __init__(self, segments_file=os.path.join(CWD, JSON_PATH, "zone_10_annotated_segments.json")):
         with open(segments_file, "r") as f:
             self.segments = json.load(f)
         self.timetable = {
@@ -118,7 +118,7 @@ class TimetableCreator:
                 break
             print("Invalid direction. Please enter 'left' or 'right'.")
 
-    def input_stops(self):
+    def input_stops(self, filename):
         print("Enter stops (station and platform names). When done, type 'done'.")
         last_stop_coord = self.timetable['start_location'][self.timetable['direction']]
         last_value = 0
@@ -172,7 +172,20 @@ class TimetableCreator:
 
             if input("Change timetable at last stop? (y/n): ").strip().lower() == "y":
                 # while True:
-                new_tt_code = input("Enter new timetable index (e.g., 1): ").strip().upper()
+                all_timetables = []
+
+                # Step 1: Load existing data if the file exists
+                if os.path.exists(filename):
+                    with open(filename, "r") as f:
+                        try:
+                            all_timetables = json.load(f)
+                        except json.JSONDecodeError:
+                            print("Warning: timetable file was corrupted or empty. Starting fresh.")
+                            all_timetables = []
+
+                # Step 2: Append the current timetable
+                next_index = len(all_timetables) + 1
+                new_tt_code = input(f"Enter new timetable index (e.g., {next_index}): ").strip().upper()
                 last_stop['change_timetable'] = int(new_tt_code)
             # else:
             #     # Only add key if actually relevant
@@ -182,7 +195,7 @@ class TimetableCreator:
 
 
 
-    def save_timetable(self, filename=os.path.join(CWD, JSON_PATH, "zone_6_timetable.json")):
+    def save_timetable(self, filename):
         all_timetables = []
 
         # Step 1: Load existing data if the file exists
@@ -209,8 +222,8 @@ class TimetableCreator:
         self.input_spawn_times()  # NEW LINE HERE
         self.input_start_location()
         self.input_direction()
-        self.input_stops()
-        self.save_timetable()
+        self.input_stops(os.path.join(CWD, JSON_PATH, "zone_10_timetable.json"))
+        self.save_timetable(os.path.join(CWD, JSON_PATH, "zone_10_timetable.json"))
 
 
 

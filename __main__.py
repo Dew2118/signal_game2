@@ -479,7 +479,7 @@ class Game:
 
                 if not (0 <= y < len(self.lines) and 0 <= x < len(self.lines[y])):
                     break
-                if (self.lines[y][x] == "[" and signal.direction == "left") or (self.lines[y][x] == "]" and signal.direction == "right"):
+                if (((self.lines[y][x] in "[c" or self.lines[y][x-1] == "b") and signal.direction == "left") or ((self.lines[y][x] in "]b" or self.lines[y][x+1] == "c") and signal.direction == "right")) and signal.overlap == (0,0):
                     signal.overlap = (x,y)
                     if signal.signal_type != "automatic":
                         break

@@ -164,7 +164,7 @@ class DefinePlatforms:
             pygame.draw.rect(self.screen, self.RED, (0, self.SCREEN_HEIGHT - 30, self.SCREEN_WIDTH, 30))
             self.screen.blit(input_surf, (10, self.SCREEN_HEIGHT - 28))
 
-    def save_to_json(self, filename="annotated_segments.json"):
+    def save_to_json(self, filename="zone_10_annotated_segments.json"):
         with open("../../../json/"+filename, "w") as f:
             json.dump(self.annotated_segments, f, indent=4)
         print(f"Saved annotated segments to {filename}")
@@ -205,5 +205,5 @@ class DefinePlatforms:
 
 
 if __name__ == "__main__":
-    app = DefinePlatforms("zone_6_map.txt")
+    app = DefinePlatforms("zone_10_map.txt")
     app.run()
