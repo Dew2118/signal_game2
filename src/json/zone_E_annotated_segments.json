@@ -62,7 +62,7 @@
                 12
             ],
             "type": "platform",
-            "station": "NORTSHORE",
+            "station": "NORTHSHORE",
             "platform": "4"
         },
         {
@@ -439,7 +439,7 @@
                 35
             ],
             "type": "entrance_exit",
-            "station": "ZONE E",
+            "station": "ZONE D",
             "platform": "DOWN"
         },
         {
@@ -478,7 +478,7 @@
                 38
             ],
             "type": "entrance_exit",
-            "station": "ZONE E",
+            "station": "ZONE D",
             "platform": "UP"
         },
         {

@@ -478,6 +478,7 @@ class Game:
                 signal.overlap = (x,y)
                 continue
             x, y = signal.coord
+            print("signal coord is ", x,y)
             if signal.mount == 'up':
                 y += 1
             elif signal.mount == 'down':
@@ -486,7 +487,7 @@ class Game:
             while 0 <= y < len(self.lines) - 1 and 0 <= x < len(self.lines[y]) - 1:
                 self.display_class.add_log(x,y)
                 x, y, direction, last_char, direction_change, last_last_char = self.path_find(self.lines, x, y, direction, signal.direction, last_char, last_last_char)
-
+                # print(x,y)
                 if not (0 <= y < len(self.lines) and 0 <= x < len(self.lines[y])):
                     break
                 if (((self.lines[y][x] in "[c" or self.lines[y][x-1] == "b") and signal.direction == "left") or ((self.lines[y][x] in "]b" or self.lines[y][x+1] == "c") and signal.direction == "right")) and signal.overlap == (0,0):
@@ -495,11 +496,16 @@ class Game:
                         break
                 for dy in [-1, 0, 1]:
                     ny = y + dy
+                    if dy == -1: 
+                        mount = "up" 
+                    else: 
+                        mount = "down"
                     if 0 <= ny < len(self.lines):
                         candidate = signal_lookup.get((x, ny))
-                        if candidate and candidate.direction == direction:
+                        if candidate and candidate.direction == direction and candidate.mount == mount:
                             if signal.signal_type == "automatic":
                                 signal.next_signal = candidate
+                                print("found next signal at", candidate.coord)
                             break
                 if signal.next_signal:
                     break
@@ -723,7 +729,7 @@ class Game:
         for signal in self.signals:
             signal.deactivate_TRTS(self, self.display_class, self.text, self.lines)
         # try:
-        for i in range(2):
+        for i in range(10):
             self.update_signals()
         while running:
             try:
