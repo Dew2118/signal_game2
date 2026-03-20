@@ -278,6 +278,9 @@ class Game:
         threading.Thread(target=winsound.PlaySound, args=(SPAWN_SOUND, winsound.SND_FILENAME)).start()
         self.display_class.add_log(f"train {headcode} spawned at {start_coord}")
         train = Train(length, start_coord,direction, headcode, timetable, int(self.game_seconds), self.annotated_segments, self.wait_time)
+        print("signal coords is ", signal_coords)
+        train.route_coords = signal_coords
+        # train.color_route_coords(self.display_class, self.text)
         self.trains.append(train)
         return train
 

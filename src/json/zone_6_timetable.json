@@ -1717,7 +1717,7 @@
                 "despawn": false
             },
             {
-                "station": "ZONE 3",
+                "station": "ZONE 5",
                 "platform": "DOWN WL",
                 "arrival_offset": 240,
                 "departure_offset": 240,

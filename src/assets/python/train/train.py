@@ -410,7 +410,8 @@ class Train:
         for coord in self.route_coords:
             if coord:
                 x, y = coord
-                if display.get_char_color_at_coord(x, y, text) == (255, 255, 255):
+                # print("coloring", x, y, "white")
+                if display.get_char_color_at_coord(x, y, text) != (255, 255, 255):
                     display.set_char_color_at_coord(x, y, "white",text)
         # self.last_colored_route_coords = self.route_coords.copy()
     
