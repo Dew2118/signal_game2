@@ -55,6 +55,7 @@ class Game:
         self.lines = self.text.splitlines()
         self.layout_file = layout_file
         self.portals = []
+        self.wait_time = 1
 
     #TODO : rework this to work better with file path
     def load_timetable_and_annotated_segments(self, filename, annotated_segments_file):
@@ -69,6 +70,7 @@ class Game:
             data = json.load(f)
             self.annotated_segments = data.get("segments", [])
             self.portals = data.get("portals", [])
+            self.wait_time = data.get("wait_time", 1)
 
         # Initialize headcode suffixes
         for seg in self.timetables:
@@ -117,7 +119,8 @@ class Game:
                 "snapshot": self.snapshot,
                 "lines": self.lines,
                 "layout_file": self.layout_file,
-                "portals": self.portals
+                "portals": self.portals,
+                "wait_time": self.wait_time
 
             }
 
@@ -157,12 +160,12 @@ class Game:
                 self.timetables = data.get("timetables", None)
                 self.timetable_obj = None
                 self.backlog_train_spawn = data.get("backlog_train_spawn", [])
-                # self.display_class = data.get("display_class", None)
                 self.display_class = Display_Class(self.signals)
                 self.snapshot = data.get("snapshot", False)
                 self.lines = data.get("lines", None)
                 self.layout_file = data.get("layout_file", None)
                 self.portals = data.get("portals", [])
+                self.wait_time = data.get("wait_time", 1)
                 self.update_lines()
 
                 for signal in self.signals:
@@ -274,7 +277,7 @@ class Game:
             return
         threading.Thread(target=winsound.PlaySound, args=(SPAWN_SOUND, winsound.SND_FILENAME)).start()
         self.display_class.add_log(f"train {headcode} spawned at {start_coord}")
-        train = Train(length, start_coord,direction, headcode, timetable, int(self.game_seconds), self.annotated_segments)
+        train = Train(length, start_coord,direction, headcode, timetable, int(self.game_seconds), self.annotated_segments, self.wait_time)
         self.trains.append(train)
         return train
 

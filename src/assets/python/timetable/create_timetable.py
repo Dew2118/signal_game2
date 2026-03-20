@@ -1,18 +1,18 @@
 import json
 import os
 import datetime
+
 CWD = os.path.dirname(__file__)
 JSON_PATH = os.path.join("..", "..","..", "json")
+
 class TimetableCreator:
     def __init__(self, segments_file=os.path.join(CWD, JSON_PATH, "zone_E_annotated_segments.json")):
         with open(segments_file, "r") as f:
             data = json.load(f)
 
-        # Load segments and portals (new format only)
         self.segments = data.get("segments", [])
         self.portals = data.get("portals", [])
 
-        # Initialize timetable
         self.timetable = {
             "headcode_prefix": "",
             "start_location": None,
@@ -21,16 +21,13 @@ class TimetableCreator:
             "spawn_times": []
         }
 
-        # Add type detection if not present
         for seg in self.segments:
             if 'type' not in seg:
-                # Entrance/exit if left == right
                 if seg.get('left') == seg.get('right'):
                     seg['type'] = 'entrance_exit'
                 else:
                     seg['type'] = 'platform'
 
-        # Separate entrances and platforms, sort alphabetically by station name then platform
         self.entrances = sorted(
             [s for s in self.segments if s['type'] == 'entrance_exit'],
             key=lambda x: (x.get('station', '').lower(), x.get('platform', '').lower())
@@ -39,8 +36,6 @@ class TimetableCreator:
             [s for s in self.segments if s['type'] == 'platform'],
             key=lambda x: (x.get('station', '').lower(), x.get('platform', '').lower())
         )
-
-    import datetime
 
     def input_spawn_times(self):
         choice = input("Do you want to define spawn times? (y/n): ").strip().lower()
@@ -76,14 +71,11 @@ class TimetableCreator:
             except ValueError:
                 print("Invalid count. Enter a positive number.")
 
-        # Generate the times
         self.timetable["spawn_times"] = []
         for i in range(count):
             spawn_time = start_time + datetime.timedelta(seconds=i * interval)
-            # Format to HH:MM:SS
             spawn_str = str(spawn_time)
             if spawn_time.days > 0:
-                # Remove days if over 24 hours
                 spawn_str = str(datetime.timedelta(seconds=spawn_time.total_seconds() % 86400))
             self.timetable["spawn_times"].append(spawn_str)
 
@@ -111,10 +103,9 @@ class TimetableCreator:
                 if 0 <= idx < len(self.entrances) + len(self.platforms):
                     if idx < len(self.entrances):
                         self.timetable['start_location'] = self.entrances[idx]
-                        break
                     else:
                         self.timetable['start_location'] = self.platforms[idx - len(self.entrances)]
-                        break
+                    break
             print("Invalid index. Try again.")
 
     def input_direction(self):
@@ -129,39 +120,52 @@ class TimetableCreator:
         print("Enter stops (station and platform names). When done, type 'done'.")
         last_stop_coord = self.timetable['start_location'][self.timetable['direction']]
         last_value = 0
+
         while True:
             station = input("Station name (or 'done' to finish): ").strip()
             if station.lower() == "done":
                 break
+
             platform = input("Platform name: ").strip()
             second_last_stop_coord = None
-            # if platform == '':
+            matched_seg = None
 
             for seg in self.segments:
                 if seg['station'] == station and (seg['platform'] == platform or platform == ''):
                     second_last_stop_coord = (seg[self.timetable['direction']][0], seg[self.timetable['direction']][1])
+                    matched_seg = seg
                     break
+
             if second_last_stop_coord is None:
                 print("location invalid please retry")
                 continue
-            travel_time = int(input(f"Arrival time addition (sec) travel time is ({abs(last_stop_coord[0] - second_last_stop_coord[0])+abs(last_stop_coord[1] - second_last_stop_coord[1])}): ").strip())
+
+            # ✅ Distance
+            distance = abs(last_stop_coord[0] - second_last_stop_coord[0]) + \
+                       abs(last_stop_coord[1] - second_last_stop_coord[1])
+
+            # ✅ Wait time from JSON
+            wait_time = matched_seg.get("wait_time", 1)
+            if wait_time <= 0:
+                wait_time = 1
+
+            # ✅ Adjusted travel time
+            adjusted_time = round(distance / wait_time)
+
+            travel_time = int(input(
+                f"Arrival time addition (sec) travel time is ({adjusted_time}): "
+            ).strip())
+
             stop_time = int(input("Stop time (sec): ").strip())
+
             last_value += travel_time
             arr = last_value
             last_value += stop_time
             dep = last_value
-            reverse = input("Reverse direction here? (y/n): ").strip().lower() == "y"
-            change_tt = False
-            despawn = False
-            last_stop_coord = second_last_stop_coord
-            # Will handle these only at last stop after finishing input
 
-            try:
-                arr = int(arr)
-                dep = int(dep)
-            except:
-                print("Invalid times. Please enter numbers.")
-                continue
+            reverse = input("Reverse direction here? (y/n): ").strip().lower() == "y"
+
+            last_stop_coord = second_last_stop_coord
 
             self.timetable['stops'].append({
                 "station": station,
@@ -169,19 +173,15 @@ class TimetableCreator:
                 "arrival_offset": arr,
                 "departure_offset": dep,
                 "reverse_direction": reverse,
-                # "change_timetable": False,
                 "despawn": False
             })
 
         if self.timetable['stops']:
-            # Ask for last stop special flags
             last_stop = self.timetable['stops'][-1]
 
             if input("Change timetable at last stop? (y/n): ").strip().lower() == "y":
-                # while True:
                 all_timetables = []
 
-                # Step 1: Load existing data if the file exists
                 if os.path.exists(filename):
                     with open(filename, "r") as f:
                         try:
@@ -190,22 +190,15 @@ class TimetableCreator:
                             print("Warning: timetable file was corrupted or empty. Starting fresh.")
                             all_timetables = []
 
-                # Step 2: Append the current timetable
                 next_index = len(all_timetables) + 1
                 new_tt_code = input(f"Enter new timetable index (e.g., {next_index}): ").strip().upper()
                 last_stop['change_timetable'] = int(new_tt_code)
-            # else:
-            #     # Only add key if actually relevant
-            #     last_stop['change_timetable'] = None
 
             last_stop['despawn'] = input("Despawn at last stop? (y/n): ").strip().lower() == "y"
-
-
 
     def save_timetable(self, filename):
         all_timetables = []
 
-        # Step 1: Load existing data if the file exists
         if os.path.exists(filename):
             with open(filename, "r") as f:
                 try:
@@ -214,11 +207,9 @@ class TimetableCreator:
                     print("Warning: timetable file was corrupted or empty. Starting fresh.")
                     all_timetables = []
 
-        # Step 2: Append the current timetable
         self.timetable["index"] = len(all_timetables)
         all_timetables.append(self.timetable)
-        
-        # Step 3: Write back the updated list
+
         with open(filename, "w") as f:
             json.dump(all_timetables, f, indent=4)
 
@@ -226,12 +217,11 @@ class TimetableCreator:
 
     def run(self):
         self.input_headcode()
-        self.input_spawn_times()  # NEW LINE HERE
+        self.input_spawn_times()
         self.input_start_location()
         self.input_direction()
         self.input_stops(os.path.join(CWD, JSON_PATH, "zone_E_timetable.json"))
         self.save_timetable(os.path.join(CWD, JSON_PATH, "zone_E_timetable.json"))
-
 
 
 if __name__ == "__main__":

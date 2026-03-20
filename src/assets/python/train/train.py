@@ -9,7 +9,7 @@ TRTS_SOUND = r"C:\Windows\Media\Windows Notify.wav"
 
 
 class Train:
-    def __init__(self, length, head_coord, direction, headcode, timetable, game_seconds_at_spawn,annotated_segments):
+    def __init__(self, length, head_coord, direction, headcode, timetable, game_seconds_at_spawn,annotated_segments, wait_time=1):
         self.length = length
         self.head_coord = head_coord
         self.coords = [[head_coord]]  # List of (x, y) tuples
@@ -19,7 +19,7 @@ class Train:
         self.headcode = headcode
         self.headcode_element = []
         self.headcode_coords = []
-        self.wait_time = 1
+        self.wait_time = wait_time
         self.timetable = timetable
         self.game_seconds_at_spawn = game_seconds_at_spawn
         self.annotated_segments = annotated_segments
