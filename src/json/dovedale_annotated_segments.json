@@ -42,19 +42,6 @@
         {
             "left": [
                 185,
-                8
-            ],
-            "right": [
-                191,
-                8
-            ],
-            "type": "platform",
-            "station": "GLEETHOP END",
-            "platform": "3"
-        },
-        {
-            "left": [
-                185,
                 9
             ],
             "right": [
@@ -62,8 +49,8 @@
                 9
             ],
             "type": "platform",
-            "station": "GLEETHOP END",
-            "platform": "2"
+            "station": "GLEETHROP END",
+            "platform": "1"
         },
         {
             "left": [
@@ -101,7 +88,7 @@
                 11
             ],
             "type": "platform",
-            "station": "GLASSBURY JUNCTION",
+            "station": "GLEETHROP END",
             "platform": "1"
         },
         {
@@ -153,8 +140,8 @@
                 13
             ],
             "type": "platform",
-            "station": "GLEETHOP END",
-            "platform": "1"
+            "station": "GLEETHROP END",
+            "platform": "2"
         },
         {
             "left": [
@@ -184,6 +171,19 @@
         },
         {
             "left": [
+                185,
+                14
+            ],
+            "right": [
+                191,
+                14
+            ],
+            "type": "platform",
+            "station": "GLEETHROP END",
+            "platform": "3"
+        },
+        {
+            "left": [
                 244,
                 14
             ],
@@ -206,7 +206,7 @@
             ],
             "type": "entrance_exit",
             "station": "GLASSBURY JUNCTION SIDING",
-            "platform": "1"
+            "platform": "2"
         },
         {
             "left": [
@@ -452,7 +452,7 @@
                 33
             ],
             "type": "entrance_exit",
-            "station": "COSDALE HARBOUR SIDING",
+            "station": "COSDALE HABOUR SIDING",
             "platform": "1"
         },
         {
@@ -467,19 +467,6 @@
             "type": "entrance_exit",
             "station": "SATUS SERVICES SIDING",
             "platform": "2"
-        },
-        {
-            "left": [
-                332,
-                36
-            ],
-            "right": [
-                332,
-                36
-            ],
-            "type": "entrance_exit",
-            "station": "ASHBURN SIDING",
-            "platform": "1"
         },
         {
             "left": [
@@ -548,32 +535,6 @@
         },
         {
             "left": [
-                326,
-                39
-            ],
-            "right": [
-                332,
-                39
-            ],
-            "type": "platform",
-            "station": "ASHBURN",
-            "platform": "1"
-        },
-        {
-            "left": [
-                326,
-                40
-            ],
-            "right": [
-                332,
-                40
-            ],
-            "type": "platform",
-            "station": "ASHBURN",
-            "platform": "2"
-        },
-        {
-            "left": [
                 384,
                 40
             ],
@@ -583,19 +544,6 @@
             ],
             "type": "platform",
             "station": "COSDALE HARBOUR",
-            "platform": "2"
-        },
-        {
-            "left": [
-                351,
-                41
-            ],
-            "right": [
-                351,
-                41
-            ],
-            "type": "entrance_exit",
-            "station": "ASHBURN SIDING",
             "platform": "2"
         },
         {
@@ -652,6 +600,19 @@
         },
         {
             "left": [
+                325,
+                42
+            ],
+            "right": [
+                331,
+                42
+            ],
+            "type": "platform",
+            "station": "ASHBURN",
+            "platform": "2"
+        },
+        {
+            "left": [
                 28,
                 43
             ],
@@ -678,6 +639,19 @@
         },
         {
             "left": [
+                325,
+                43
+            ],
+            "right": [
+                331,
+                43
+            ],
+            "type": "platform",
+            "station": "ASHBURN",
+            "platform": "1"
+        },
+        {
+            "left": [
                 203,
                 46
             ],
@@ -687,6 +661,19 @@
             ],
             "type": "entrance_exit",
             "station": "FANORY MILL SIDING",
+            "platform": "1"
+        },
+        {
+            "left": [
+                335,
+                46
+            ],
+            "right": [
+                335,
+                46
+            ],
+            "type": "entrance_exit",
+            "station": "ASHBURN SIDING",
             "platform": "1"
         },
         {

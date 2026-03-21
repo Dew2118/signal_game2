@@ -272,7 +272,7 @@ class DefinePlatforms:
         keys = pygame.key.get_pressed()
         if keys[pygame.K_BACKSPACE]:
             self.current_input = self.current_input[:-1]
-            pygame.time.delay(50)
+            pygame.time.delay(150)
 
     def process_input(self):
         if self.current_index >= len(self.segments):

@@ -1,14 +1,14 @@
 [
     {
-        "headcode_prefix": "2M",
+        "headcode_prefix": "5M",
         "start_location": {
             "left": [
-                332,
-                36
+                335,
+                46
             ],
             "right": [
-                332,
-                36
+                335,
+                46
             ],
             "type": "entrance_exit",
             "station": "ASHBURN SIDING",
@@ -19,48 +19,8 @@
             {
                 "station": "FANORY MILL",
                 "platform": "",
-                "arrival_offset": 140,
-                "departure_offset": 200,
-                "reverse_direction": false,
-                "despawn": false
-            },
-            {
-                "station": "SATUS SERVICES",
-                "platform": "",
-                "arrival_offset": 280,
-                "departure_offset": 340,
-                "reverse_direction": false,
-                "despawn": false
-            },
-            {
-                "station": "DOVEDALE EAST",
-                "platform": "",
-                "arrival_offset": 450,
-                "departure_offset": 510,
-                "reverse_direction": false,
-                "despawn": false
-            },
-            {
-                "station": "COSDALE HARBOUR",
-                "platform": "2",
-                "arrival_offset": 890,
-                "departure_offset": 950,
-                "reverse_direction": false,
-                "despawn": false
-            },
-            {
-                "station": "DOVEDALE CENTRAL",
-                "platform": "",
-                "arrival_offset": 1120,
-                "departure_offset": 1180,
-                "reverse_direction": false,
-                "despawn": false
-            },
-            {
-                "station": "MASONFIELD",
-                "platform": "",
-                "arrival_offset": 1320,
-                "departure_offset": 1380,
+                "arrival_offset": 150,
+                "departure_offset": 210,
                 "reverse_direction": false,
                 "despawn": false,
                 "change_timetable": 1
@@ -191,6 +151,76 @@
         "index": 0
     },
     {
+        "headcode_prefix": "2M",
+        "start_location": {
+            "left": [
+                203,
+                46
+            ],
+            "right": [
+                203,
+                46
+            ],
+            "type": "entrance_exit",
+            "station": "FANORY MILL SIDING",
+            "platform": "1"
+        },
+        "direction": "left",
+        "stops": [
+            {
+                "station": "FANORY MILL",
+                "platform": "",
+                "arrival_offset": 0,
+                "departure_offset": 60,
+                "reverse_direction": false,
+                "despawn": false
+            },
+            {
+                "station": "SATUS SERVICES",
+                "platform": "",
+                "arrival_offset": 140,
+                "departure_offset": 200,
+                "reverse_direction": false,
+                "despawn": false
+            },
+            {
+                "station": "DOVEDALE EAST",
+                "platform": "",
+                "arrival_offset": 310,
+                "departure_offset": 370,
+                "reverse_direction": false,
+                "despawn": false
+            },
+            {
+                "station": "COSDALE HARBOUR",
+                "platform": "2",
+                "arrival_offset": 510,
+                "departure_offset": 570,
+                "reverse_direction": false,
+                "despawn": false
+            },
+            {
+                "station": "DOVEDALE CENTRAL",
+                "platform": "",
+                "arrival_offset": 740,
+                "departure_offset": 800,
+                "reverse_direction": false,
+                "despawn": false
+            },
+            {
+                "station": "MASONFIELD",
+                "platform": "",
+                "arrival_offset": 940,
+                "departure_offset": 1000,
+                "reverse_direction": false,
+                "despawn": false,
+                "change_timetable": 2
+            }
+        ],
+        "spawn_times": [],
+        "index": 1
+    },
+    {
         "headcode_prefix": "2A",
         "start_location": {
             "left": [
@@ -234,45 +264,116 @@
             {
                 "station": "DOVEDALE EAST",
                 "platform": "",
-                "arrival_offset": 870,
-                "departure_offset": 930,
+                "arrival_offset": 650,
+                "departure_offset": 710,
                 "reverse_direction": false,
                 "despawn": false
             },
             {
                 "station": "SATUS SERVICES",
                 "platform": "",
-                "arrival_offset": 1040,
-                "departure_offset": 1100,
+                "arrival_offset": 820,
+                "departure_offset": 880,
+                "reverse_direction": false,
+                "despawn": false
+            },
+            {
+                "station": "FANORY MILL",
+                "platform": "2",
+                "arrival_offset": 960,
+                "departure_offset": 1020,
+                "reverse_direction": false,
+                "despawn": false
+            },
+            {
+                "station": "ASHBURN",
+                "platform": "",
+                "arrival_offset": 1150,
+                "departure_offset": 1210,
+                "reverse_direction": false,
+                "despawn": false,
+                "change_timetable": 3
+            }
+        ],
+        "spawn_times": [],
+        "index": 2
+    },
+    {
+        "headcode_prefix": "2M",
+        "start_location": {
+            "left": [
+                325,
+                43
+            ],
+            "right": [
+                331,
+                43
+            ],
+            "type": "platform",
+            "station": "ASHBURN",
+            "platform": "1"
+        },
+        "direction": "left",
+        "stops": [
+            {
+                "station": "ASHBURN",
+                "platform": "",
+                "arrival_offset": 0,
+                "departure_offset": 60,
                 "reverse_direction": false,
                 "despawn": false
             },
             {
                 "station": "FANORY MILL",
                 "platform": "",
-                "arrival_offset": 1180,
-                "departure_offset": 1240,
+                "arrival_offset": 200,
+                "departure_offset": 260,
                 "reverse_direction": false,
                 "despawn": false
             },
             {
-                "station": "ASHBURN",
-                "platform": "2",
-                "arrival_offset": 1380,
-                "departure_offset": 1440,
+                "station": "SATUS SERVICES",
+                "platform": "",
+                "arrival_offset": 340,
+                "departure_offset": 400,
                 "reverse_direction": false,
                 "despawn": false
             },
             {
-                "station": "ASHBURN SIDING",
-                "platform": "2",
-                "arrival_offset": 1470,
-                "departure_offset": 1470,
+                "station": "DOVEDALE EAST",
+                "platform": "",
+                "arrival_offset": 510,
+                "departure_offset": 570,
                 "reverse_direction": false,
-                "despawn": true
+                "despawn": false
+            },
+            {
+                "station": "COSDALE HARBOUR",
+                "platform": "2",
+                "arrival_offset": 720,
+                "departure_offset": 780,
+                "reverse_direction": false,
+                "despawn": false
+            },
+            {
+                "station": "DOVEDALE CENTRAL",
+                "platform": "",
+                "arrival_offset": 950,
+                "departure_offset": 1010,
+                "reverse_direction": false,
+                "despawn": false
+            },
+            {
+                "station": "MASONFIELD",
+                "platform": "",
+                "arrival_offset": 1150,
+                "departure_offset": 1210,
+                "reverse_direction": false,
+                "despawn": false,
+                "change_timetable": 2
             }
         ],
         "spawn_times": [],
-        "index": 1
+        "index": 3
     }
 ]
