@@ -1,285 +1,743 @@
 {
     "segments": [
         {
-            "left": [51, 3],
-            "right": [51, 3],
-            "type": "entrance_exit",
-            "station": "DC SIDING",
+            "left": [
+                128,
+                7
+            ],
+            "right": [
+                134,
+                7
+            ],
+            "type": "platform",
+            "station": "MAZEWOOD",
             "platform": "1"
         },
         {
-            "left": [51, 5],
-            "right": [51, 5],
+            "left": [
+                251,
+                7
+            ],
+            "right": [
+                251,
+                7
+            ],
             "type": "entrance_exit",
-            "station": "DC SIDING",
+            "station": "DOVEDALE CENTRAL SIDING",
+            "platform": "1"
+        },
+        {
+            "left": [
+                15,
+                8
+            ],
+            "right": [
+                15,
+                8
+            ],
+            "type": "entrance_exit",
+            "station": "GLASSBURY JUNCTION SIDING",
+            "platform": "1"
+        },
+        {
+            "left": [
+                185,
+                8
+            ],
+            "right": [
+                191,
+                8
+            ],
+            "type": "platform",
+            "station": "GLEETHOP END",
+            "platform": "3"
+        },
+        {
+            "left": [
+                185,
+                9
+            ],
+            "right": [
+                191,
+                9
+            ],
+            "type": "platform",
+            "station": "GLEETHOP END",
             "platform": "2"
         },
         {
-            "left": [70, 6],
-            "right": [76, 6],
-            "type": "platform",
-            "station": "DC REVERSING SIDING",
-            "platform": ""
+            "left": [
+                251,
+                9
+            ],
+            "right": [
+                251,
+                9
+            ],
+            "type": "entrance_exit",
+            "station": "DOVEDALE CENTRAL SIDING",
+            "platform": "2"
         },
         {
-            "left": [40, 8],
-            "right": [52, 8],
+            "left": [
+                274,
+                10
+            ],
+            "right": [
+                280,
+                10
+            ],
             "type": "platform",
-            "station": "DC",
+            "station": "DOVEDALE CENTRAL REVERSING SIDING",
+            "platform": "1"
+        },
+        {
+            "left": [
+                33,
+                11
+            ],
+            "right": [
+                39,
+                11
+            ],
+            "type": "platform",
+            "station": "GLASSBURY JUNCTION",
+            "platform": "1"
+        },
+        {
+            "left": [
+                128,
+                11
+            ],
+            "right": [
+                134,
+                11
+            ],
+            "type": "platform",
+            "station": "MAZEWOOD",
+            "platform": "2"
+        },
+        {
+            "left": [
+                33,
+                12
+            ],
+            "right": [
+                39,
+                12
+            ],
+            "type": "platform",
+            "station": "GLASSBURY JUNCTION",
+            "platform": "2"
+        },
+        {
+            "left": [
+                244,
+                12
+            ],
+            "right": [
+                256,
+                12
+            ],
+            "type": "platform",
+            "station": "DOVEDALE CENTRAL",
             "platform": "8"
         },
         {
-            "left": [40, 9],
-            "right": [40, 9],
+            "left": [
+                185,
+                13
+            ],
+            "right": [
+                191,
+                13
+            ],
+            "type": "platform",
+            "station": "GLEETHOP END",
+            "platform": "1"
+        },
+        {
+            "left": [
+                244,
+                13
+            ],
+            "right": [
+                244,
+                13
+            ],
             "type": "platform",
             "station": "",
             "platform": ""
         },
         {
-            "left": [40, 10],
-            "right": [40, 10],
+            "left": [
+                86,
+                14
+            ],
+            "right": [
+                92,
+                14
+            ],
+            "type": "platform",
+            "station": "CODSALL CASTLE",
+            "platform": "1"
+        },
+        {
+            "left": [
+                244,
+                14
+            ],
+            "right": [
+                244,
+                14
+            ],
             "type": "platform",
             "station": "",
             "platform": ""
         },
         {
-            "left": [40, 11],
-            "right": [40, 11],
+            "left": [
+                31,
+                15
+            ],
+            "right": [
+                31,
+                15
+            ],
+            "type": "entrance_exit",
+            "station": "GLASSBURY JUNCTION SIDING",
+            "platform": "1"
+        },
+        {
+            "left": [
+                244,
+                15
+            ],
+            "right": [
+                244,
+                15
+            ],
             "type": "platform",
             "station": "",
             "platform": ""
         },
         {
-            "left": [40, 12],
-            "right": [52, 12],
+            "left": [
+                244,
+                16
+            ],
+            "right": [
+                256,
+                16
+            ],
             "type": "platform",
-            "station": "DC",
+            "station": "DOVEDALE CENTRAL",
             "platform": "7"
         },
         {
-            "left": [40, 13],
-            "right": [52, 13],
+            "left": [
+                244,
+                17
+            ],
+            "right": [
+                256,
+                17
+            ],
             "type": "platform",
-            "station": "DC",
+            "station": "DOVEDALE CENTRAL",
             "platform": "6"
         },
         {
-            "left": [1, 14],
-            "right": [1, 14],
-            "type": "entrance_exit",
-            "station": "GE",
-            "platform": "UP"
-        },
-        {
-            "left": [40, 14],
-            "right": [40, 14],
+            "left": [
+                244,
+                18
+            ],
+            "right": [
+                244,
+                18
+            ],
             "type": "platform",
             "station": "",
             "platform": ""
         },
         {
-            "left": [40, 15],
-            "right": [40, 15],
+            "left": [
+                244,
+                19
+            ],
+            "right": [
+                244,
+                19
+            ],
             "type": "platform",
             "station": "",
             "platform": ""
         },
         {
-            "left": [1, 16],
-            "right": [1, 16],
-            "type": "entrance_exit",
-            "station": "GE",
-            "platform": "DOWN"
-        },
-        {
-            "left": [40, 16],
-            "right": [40, 16],
+            "left": [
+                244,
+                20
+            ],
+            "right": [
+                244,
+                20
+            ],
             "type": "platform",
             "station": "",
             "platform": ""
         },
         {
-            "left": [40, 17],
-            "right": [52, 17],
+            "left": [
+                118,
+                21
+            ],
+            "right": [
+                124,
+                21
+            ],
             "type": "platform",
-            "station": "DC",
+            "station": "MASONFIELD",
+            "platform": "1"
+        },
+        {
+            "left": [
+                244,
+                21
+            ],
+            "right": [
+                256,
+                21
+            ],
+            "type": "platform",
+            "station": "DOVEDALE CENTRAL",
             "platform": "5"
         },
         {
-            "left": [40, 18],
-            "right": [52, 18],
+            "left": [
+                118,
+                22
+            ],
+            "right": [
+                124,
+                22
+            ],
             "type": "platform",
-            "station": "DC",
+            "station": "MASONFIELD",
+            "platform": "2"
+        },
+        {
+            "left": [
+                244,
+                22
+            ],
+            "right": [
+                256,
+                22
+            ],
+            "type": "platform",
+            "station": "DOVEDALE CENTRAL",
             "platform": "4"
         },
         {
-            "left": [385, 18],
-            "right": [385, 18],
+            "left": [
+                86,
+                23
+            ],
+            "right": [
+                86,
+                23
+            ],
             "type": "entrance_exit",
-            "station": "SAT SIDING",
+            "station": "MASONFIELD SIDING",
             "platform": "1"
         },
         {
-            "left": [1, 19],
-            "right": [1, 19],
+            "left": [
+                86,
+                25
+            ],
+            "right": [
+                86,
+                25
+            ],
             "type": "entrance_exit",
-            "station": "MC",
-            "platform": "UP"
-        },
-        {
-            "left": [385, 20],
-            "right": [385, 20],
-            "type": "entrance_exit",
-            "station": "SAT SIDING",
+            "station": "MASONFIELD SIDING",
             "platform": "2"
         },
         {
-            "left": [1, 21],
-            "right": [1, 21],
-            "type": "entrance_exit",
-            "station": "MC",
-            "platform": "DOWN"
-        },
-        {
-            "left": [40, 22],
-            "right": [52, 22],
+            "left": [
+                118,
+                26
+            ],
+            "right": [
+                124,
+                26
+            ],
             "type": "platform",
-            "station": "DC",
+            "station": "MASONFIELD",
             "platform": "3"
         },
         {
-            "left": [277, 22],
-            "right": [283, 22],
+            "left": [
+                244,
+                26
+            ],
+            "right": [
+                256,
+                26
+            ],
             "type": "platform",
-            "station": "DE",
-            "platform": "1"
-        },
-        {
-            "left": [385, 22],
-            "right": [385, 22],
-            "type": "entrance_exit",
-            "station": "SAT SIDING",
+            "station": "DOVEDALE CENTRAL",
             "platform": "3"
         },
         {
-            "left": [40, 23],
-            "right": [52, 23],
+            "left": [
+                118,
+                27
+            ],
+            "right": [
+                124,
+                27
+            ],
             "type": "platform",
-            "station": "DC",
-            "platform": "2"
-        },
-        {
-            "left": [277, 23],
-            "right": [283, 23],
-            "type": "platform",
-            "station": "DE",
-            "platform": "2"
-        },
-        {
-            "left": [377, 23],
-            "right": [383, 23],
-            "type": "platform",
-            "station": "SAT",
-            "platform": "2"
-        },
-        {
-            "left": [447, 23],
-            "right": [453, 23],
-            "type": "platform",
-            "station": "FM",
-            "platform": "1"
-        },
-        {
-            "left": [483, 26],
-            "right": [483, 26],
-            "type": "entrance_exit",
-            "station": "BL",
-            "platform": ""
-        },
-        {
-            "left": [40, 27],
-            "right": [52, 27],
-            "type": "platform",
-            "station": "DC",
-            "platform": "1"
-        },
-        {
-            "left": [277, 27],
-            "right": [283, 27],
-            "type": "platform",
-            "station": "DE",
-            "platform": "3"
-        },
-        {
-            "left": [377, 27],
-            "right": [383, 27],
-            "type": "platform",
-            "station": "SAT",
-            "platform": "1"
-        },
-        {
-            "left": [447, 27],
-            "right": [453, 27],
-            "type": "platform",
-            "station": "FM",
-            "platform": "2"
-        },
-        {
-            "left": [277, 28],
-            "right": [283, 28],
-            "type": "platform",
-            "station": "DE",
+            "station": "MASONFIELD",
             "platform": "4"
         },
         {
-            "left": [447, 28],
-            "right": [453, 28],
+            "left": [
+                244,
+                27
+            ],
+            "right": [
+                256,
+                27
+            ],
             "type": "platform",
-            "station": "FM",
-            "platform": "3"
-        },
-        {
-            "left": [204, 29],
-            "right": [204, 29],
-            "type": "entrance_exit",
-            "station": "CH SIDING",
-            "platform": ""
-        },
-        {
-            "left": [452, 31],
-            "right": [452, 31],
-            "type": "entrance_exit",
-            "station": "FM SIDING",
-            "platform": "1"
-        },
-        {
-            "left": [277, 32],
-            "right": [283, 32],
-            "type": "platform",
-            "station": "DE",
-            "platform": "5-6"
-        },
-        {
-            "left": [452, 33],
-            "right": [452, 33],
-            "type": "entrance_exit",
-            "station": "FM SIDING",
+            "station": "DOVEDALE CENTRAL",
             "platform": "2"
         },
         {
-            "left": [180, 36],
-            "right": [186, 36],
+            "left": [
+                244,
+                31
+            ],
+            "right": [
+                256,
+                31
+            ],
             "type": "platform",
-            "station": "CH",
+            "station": "DOVEDALE CENTRAL",
             "platform": "1"
         },
         {
-            "left": [180, 37],
-            "right": [186, 37],
+            "left": [
+                136,
+                33
+            ],
+            "right": [
+                136,
+                33
+            ],
+            "type": "entrance_exit",
+            "station": "SATUS SERVICES SIDING",
+            "platform": "1"
+        },
+        {
+            "left": [
+                408,
+                33
+            ],
+            "right": [
+                408,
+                33
+            ],
+            "type": "entrance_exit",
+            "station": "COSDALE HARBOUR SIDING",
+            "platform": "1"
+        },
+        {
+            "left": [
+                136,
+                35
+            ],
+            "right": [
+                136,
+                35
+            ],
+            "type": "entrance_exit",
+            "station": "SATUS SERVICES SIDING",
+            "platform": "2"
+        },
+        {
+            "left": [
+                332,
+                36
+            ],
+            "right": [
+                332,
+                36
+            ],
+            "type": "entrance_exit",
+            "station": "ASHBURN SIDING",
+            "platform": "1"
+        },
+        {
+            "left": [
+                28,
+                37
+            ],
+            "right": [
+                34,
+                37
+            ],
             "type": "platform",
-            "station": "CH",
+            "station": "DOVEDALE EAST",
+            "platform": "5"
+        },
+        {
+            "left": [
+                136,
+                37
+            ],
+            "right": [
+                136,
+                37
+            ],
+            "type": "entrance_exit",
+            "station": "SATUS SERVICES SIDING",
+            "platform": "3"
+        },
+        {
+            "left": [
+                28,
+                38
+            ],
+            "right": [
+                34,
+                38
+            ],
+            "type": "platform",
+            "station": "DOVEDALE EAST",
+            "platform": "4"
+        },
+        {
+            "left": [
+                128,
+                38
+            ],
+            "right": [
+                134,
+                38
+            ],
+            "type": "platform",
+            "station": "SATUS SERVICES",
+            "platform": "2"
+        },
+        {
+            "left": [
+                198,
+                38
+            ],
+            "right": [
+                204,
+                38
+            ],
+            "type": "platform",
+            "station": "FANORY MILL",
+            "platform": "1"
+        },
+        {
+            "left": [
+                326,
+                39
+            ],
+            "right": [
+                332,
+                39
+            ],
+            "type": "platform",
+            "station": "ASHBURN",
+            "platform": "1"
+        },
+        {
+            "left": [
+                326,
+                40
+            ],
+            "right": [
+                332,
+                40
+            ],
+            "type": "platform",
+            "station": "ASHBURN",
+            "platform": "2"
+        },
+        {
+            "left": [
+                384,
+                40
+            ],
+            "right": [
+                390,
+                40
+            ],
+            "type": "platform",
+            "station": "COSDALE HARBOUR",
+            "platform": "2"
+        },
+        {
+            "left": [
+                351,
+                41
+            ],
+            "right": [
+                351,
+                41
+            ],
+            "type": "entrance_exit",
+            "station": "ASHBURN SIDING",
+            "platform": "2"
+        },
+        {
+            "left": [
+                384,
+                41
+            ],
+            "right": [
+                390,
+                41
+            ],
+            "type": "platform",
+            "station": "COSDALE HARBOUR",
+            "platform": "1"
+        },
+        {
+            "left": [
+                28,
+                42
+            ],
+            "right": [
+                34,
+                42
+            ],
+            "type": "platform",
+            "station": "DOVEDALE EAST",
+            "platform": "3"
+        },
+        {
+            "left": [
+                128,
+                42
+            ],
+            "right": [
+                134,
+                42
+            ],
+            "type": "platform",
+            "station": "SATUS SERVICES",
+            "platform": "1"
+        },
+        {
+            "left": [
+                198,
+                42
+            ],
+            "right": [
+                204,
+                42
+            ],
+            "type": "platform",
+            "station": "FANORY MILL",
+            "platform": "2"
+        },
+        {
+            "left": [
+                28,
+                43
+            ],
+            "right": [
+                34,
+                43
+            ],
+            "type": "platform",
+            "station": "DOVEDALE EAST",
+            "platform": "2"
+        },
+        {
+            "left": [
+                198,
+                43
+            ],
+            "right": [
+                204,
+                43
+            ],
+            "type": "platform",
+            "station": "FANORY MILL",
+            "platform": "3"
+        },
+        {
+            "left": [
+                203,
+                46
+            ],
+            "right": [
+                203,
+                46
+            ],
+            "type": "entrance_exit",
+            "station": "FANORY MILL SIDING",
+            "platform": "1"
+        },
+        {
+            "left": [
+                28,
+                47
+            ],
+            "right": [
+                34,
+                47
+            ],
+            "type": "platform",
+            "station": "DOVEDALE EAST",
+            "platform": "1"
+        },
+        {
+            "left": [
+                203,
+                48
+            ],
+            "right": [
+                203,
+                48
+            ],
+            "type": "entrance_exit",
+            "station": "FANORY MILL SIDING",
             "platform": "2"
         }
     ],
-    "portals": []
+    "portals": [
+        [
+            [
+                0,
+                39
+            ],
+            [
+                452,
+                28
+            ],
+            "same"
+        ],
+        [
+            [
+                0,
+                41
+            ],
+            [
+                452,
+                30
+            ],
+            "same"
+        ]
+    ]
 }

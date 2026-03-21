@@ -6,7 +6,7 @@ CWD = os.path.dirname(__file__)
 JSON_PATH = os.path.join("..", "..","..", "json")
 
 class TimetableCreator:
-    def __init__(self, segments_file=os.path.join(CWD, JSON_PATH, "zone_E_annotated_segments.json")):
+    def __init__(self, segments_file=os.path.join(CWD, JSON_PATH, "dovedale_annotated_segments.json")):
         with open(segments_file, "r") as f:
             data = json.load(f)
 
@@ -220,8 +220,8 @@ class TimetableCreator:
         self.input_spawn_times()
         self.input_start_location()
         self.input_direction()
-        self.input_stops(os.path.join(CWD, JSON_PATH, "zone_E_timetable.json"))
-        self.save_timetable(os.path.join(CWD, JSON_PATH, "zone_E_timetable.json"))
+        self.input_stops(os.path.join(CWD, JSON_PATH, "dovedale_timetable.json"))
+        self.save_timetable(os.path.join(CWD, JSON_PATH, "dovedale_timetable.json"))
 
 
 if __name__ == "__main__":
