@@ -131,6 +131,9 @@ class Train:
                 self.headcode = game.get_headcode_from_prefix(tt_headcode_prefix)
                 self.current_stop_index = 0
                 self.route_coords = []
+                self.last_signal = deque()
+                self.direction_change = None
+                self.last_three_directions = deque(maxlen=3)
                 self.game_seconds_at_spawn += dep_offset
                 time_since_spawn = current_game_time - self.game_seconds_at_spawn
                 self.start_to_stop_time = time_since_spawn
@@ -244,12 +247,15 @@ class Train:
             # print("the last direction is ", direction)
         else:
             direction = self.direction
-        # print("last signal length", len(self.last_signal), "last last coord", self.coords[-1], "overlap", self.last_signal[-1].overlap, "direction", self.last_signal[-1].direction, "last action", self.last_action)
+        print("last signal length", len(self.last_signal), "last last coord", self.coords[-1], "overlap", self.last_signal[-1].overlap, "direction", self.last_signal[-1].direction, "last action", self.last_action)
         if len(self.last_signal) > 0 and self.signal_condition_check(self.last_signal[-1], self.coords[-1][0][0], self.coords[-1][0][1], direction) and self.last_action == "move train" and (len(self.last_signal) >= 2 or self.last_signal[0].signal_type == "manual"):
             self.last_last_signal = self.last_signal.popleft()
-            # print("last last signal check passed ", self.last_last_signal.coord, self.coords[-1])
+            print("last last signal check passed ", self.last_last_signal.coord, self.coords[-1])
             self.last_last_signal.train_in_block = False
             # game.update_signals()
+        else:
+            print(len(self.last_signal) > 0, self.signal_condition_check(self.last_signal[-1], self.coords[-1][0][0], self.coords[-1][0][1], direction), self.last_action == "move train", len(self.last_signal) >= 2 or self.last_signal[0].signal_type == "manual")
+            print(self.last_signal[-1].overlap, self.coords[-1][0][0], self.coords[-1][0][1], direction)
             
 
     def delete_train_tail(self, display, game):
