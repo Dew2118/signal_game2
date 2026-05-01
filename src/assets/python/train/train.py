@@ -49,24 +49,15 @@ class Train:
         Returns the coord (x, y) from annotated segments matching station & platform.
         """
         target_station = stop.get("station")
-        target_platform = stop.get("platform")
-        if target_platform == '':
-            stop_coords = []
-            for segment in self.annotated_segments:
-                if segment.get("station") == target_station:
-                    # Return one end of the platform (use left or right based on train direction)
-                    if self.direction == "right":
-                        stop_coords.append(segment.get("right", segment.get("end")))
-                    else:
-                        stop_coords.append(segment.get("left", segment.get("start")))
-            return stop_coords
+        stop_coords = []
         for segment in self.annotated_segments:
-            if segment.get("station") == target_station and segment.get("platform") == target_platform:
+            if segment.get("station") == target_station:
                 # Return one end of the platform (use left or right based on train direction)
                 if self.direction == "right":
-                    return [segment.get("right", segment.get("end"))]
+                    stop_coords.append(segment.get("right", segment.get("end")))
                 else:
-                    return [segment.get("left", segment.get("start"))]
+                    stop_coords.append(segment.get("left", segment.get("start")))
+        return stop_coords
         
         return None  # 🚨 Not found
     def _at_stop_coord(self, stop_coords):
@@ -83,6 +74,24 @@ class Train:
                 if (x == sx and abs(y - sy) <= 1):
                     return True
         return False
+    
+    def _past_stop_coord(self, stop_coords, direction):
+        coord = self.coords[0][0]
+        x = coord[0]
+        y = coord[1]
+        lowest_x = min([c[0] for c in stop_coords])
+        highest_x = max([c[0] for c in stop_coords])
+        lowest_y = min([c[1] for c in stop_coords])
+        highest_y = max([c[1] for c in stop_coords])
+        lowest_y -= 1
+        highest_y += 1
+
+        if direction == "right" and x > highest_x and lowest_y <= y <= highest_y:
+            return True
+        elif direction == "left" and x < lowest_x and lowest_y <= y <= highest_y:
+            return True
+        return False
+
     
     def TRTS(self, time_difference, signals, game, display, text, lines):
         
@@ -106,7 +115,7 @@ class Train:
         stop_coords = self._get_stop_coord(current_stop)  # defined below
         # Only apply timing logic if head is at the stop
         if self._at_stop_coord(stop_coords):
-
+            
             current_game_time = game.game_seconds
             time_since_spawn = current_game_time - self.game_seconds_at_spawn
             if not self.start_to_stop_time:
@@ -171,6 +180,10 @@ class Train:
                     return False
                 
             self.current_stop_index += 1
+        elif self._past_stop_coord(stop_coords, self.direction):
+            self.current_stop_index += 1
+            display.add_log(f"train {self.headcode} missed stop at {current_stop.get('station')}")
+            return False
         else:
             self.start_to_stop_time = 0
         return True
