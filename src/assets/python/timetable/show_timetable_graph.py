@@ -237,5 +237,5 @@ def plot_timetable(data):
 
 # ---------------- MAIN ----------------
 if __name__ == "__main__":
-    data = load_data("zone_E_timetable.json")
+    data = load_data("zone_A_timetable.json")
     plot_timetable(data)

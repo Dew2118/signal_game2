@@ -254,7 +254,6 @@ class Game:
             direction = tt['direction']
               # Example suffix
             train = self.spawn_train(
-                length=6,
                 start_coord=coord,
                 direction=direction,
                 headcode=headcode,
@@ -265,7 +264,7 @@ class Game:
         self.last_spawn_time = current_time
 
 
-    def spawn_train(self, length, start_coord, direction='right', headcode = "4H69", timetable = [], game_seconds = None, annotated_segments = None):
+    def spawn_train(self, start_coord, direction='right', headcode = "4H69", timetable = [], game_seconds = None, annotated_segments = None):
         if not game_seconds:
             game_seconds = self.game_seconds
         if not annotated_segments:
@@ -273,11 +272,11 @@ class Game:
         # coords = [start_coord for _ in range(length)]
         signal_coords = self.find_first_spawn_signal(start_coord, direction)
         if not self.check_if_spawnable(signal_coords):
-            self.backlog_train_spawn.append({"length": length, "start_coord": start_coord, "direction": direction, "headcode": headcode, "timetable": timetable, "game_seconds": game_seconds, "annotated_segments": annotated_segments})
+            self.backlog_train_spawn.append({"start_coord": start_coord, "direction": direction, "headcode": headcode, "timetable": timetable, "game_seconds": game_seconds, "annotated_segments": annotated_segments})
             return
         threading.Thread(target=winsound.PlaySound, args=(SPAWN_SOUND, winsound.SND_FILENAME)).start()
         self.display_class.add_log(f"train {headcode} spawned at {start_coord}")
-        train = Train(length, start_coord,direction, headcode, timetable, int(self.game_seconds), self.annotated_segments, self.wait_time)
+        train = Train(start_coord,direction, headcode, timetable, int(self.game_seconds), self.annotated_segments, self.wait_time)
         print("signal coords is ", signal_coords)
         train.route_coords = signal_coords
         # train.color_route_coords(self.display_class, self.text)
@@ -291,7 +290,7 @@ class Game:
             if self.check_if_spawnable(signal_coords):
                 self.backlog_train_spawn.remove(backlog_train)
                 self.display_class.add_log('removed')
-                self.spawn_train(backlog_train["length"], backlog_train["start_coord"], backlog_train["direction"], backlog_train["headcode"], backlog_train["timetable"])
+                self.spawn_train(backlog_train["start_coord"], backlog_train["direction"], backlog_train["headcode"], backlog_train["timetable"])
 
     def check_if_spawnable(self, coords):
         # for coord in coords:
@@ -600,6 +599,7 @@ class Game:
                             direction = "left"
                         elif direction == "left":
                             direction = "right"
+                        direction_change = [(amended_x, y), direction]
 
                     # Step 6: Adjust position for movement after teleport (same logic as before)
                     if direction == "right":
@@ -607,7 +607,7 @@ class Game:
                     elif direction == "left":
                         amended_x -= 1
 
-                    direction_change = [amended_x, y, direction]
+                    
 
                     print("teleported to", amended_x, y, "new direction is", direction)
                     return amended_x, y, direction, last_char, direction_change, last_last_char

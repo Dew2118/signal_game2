@@ -130,6 +130,6 @@ def process_file(filename, min_gap_seconds=60):
 if __name__ == "__main__":
     CWD = os.path.dirname(__file__)
     JSON_PATH = os.path.join("..", "..", "..", "json")
-    filename = os.path.join(CWD, JSON_PATH, "zone_E_timetable.json")
+    filename = os.path.join(CWD, JSON_PATH, "zone_A_timetable.json")
 
     process_file(filename, min_gap_seconds=120)

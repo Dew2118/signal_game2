@@ -375,5 +375,111 @@
         ],
         "spawn_times": [],
         "index": 3
+    },
+    {
+        "headcode_prefix": "1F",
+        "start_location": {
+            "left": [
+                118,
+                21
+            ],
+            "right": [
+                124,
+                21
+            ],
+            "type": "platform",
+            "station": "MASONFIELD",
+            "platform": "1"
+        },
+        "direction": "right",
+        "stops": [
+            {
+                "station": "MASONFIELD",
+                "platform": "",
+                "arrival_offset": 0,
+                "departure_offset": 60,
+                "reverse_direction": false,
+                "despawn": false
+            },
+            {
+                "station": "DOVEDALE CENTRAL",
+                "platform": "",
+                "arrival_offset": 210,
+                "departure_offset": 270,
+                "reverse_direction": false,
+                "despawn": false
+            },
+            {
+                "station": "DOVEDALE EAST",
+                "platform": "",
+                "arrival_offset": 380,
+                "departure_offset": 440,
+                "reverse_direction": false,
+                "despawn": false
+            },
+            {
+                "station": "FANORY MILL",
+                "platform": "2",
+                "arrival_offset": 560,
+                "departure_offset": 620,
+                "reverse_direction": false,
+                "despawn": false
+            }
+        ],
+        "spawn_times": [],
+        "index": 4
+    },
+    {
+        "headcode_prefix": "1M",
+        "start_location": {
+            "left": [
+                203,
+                46
+            ],
+            "right": [
+                203,
+                46
+            ],
+            "type": "platform",
+            "station": "FANORY MILL",
+            "platform": "2"
+        },
+        "direction": "left",
+        "stops": [
+            {
+                "station": "FANORY MILL",
+                "platform": "",
+                "arrival_offset": 0,
+                "departure_offset": 60,
+                "reverse_direction": false,
+                "despawn": false
+            },
+            {
+                "station": "DOVEDALE EAST",
+                "platform": "",
+                "arrival_offset": 180,
+                "departure_offset": 240,
+                "reverse_direction": false,
+                "despawn": false
+            },
+            {
+                "station": "DOVEDALE CENTRAL",
+                "platform": "",
+                "arrival_offset": 350,
+                "departure_offset": 410,
+                "reverse_direction": false,
+                "despawn": false
+            },
+            {
+                "station": "MASONFIELD",
+                "platform": "1",
+                "arrival_offset": 560,
+                "departure_offset": 620,
+                "reverse_direction": false,
+                "despawn": false
+            }
+        ],
+        "spawn_times": [],
+        "index": 5
     }
 ]
