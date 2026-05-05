@@ -339,7 +339,7 @@ class DefinePlatforms:
             pygame.draw.rect(self.screen, self.RED, (0, self.SCREEN_HEIGHT - 30, self.SCREEN_WIDTH, 30))
             self.screen.blit(self.font.render(prompt, True, self.WHITE), (10, self.SCREEN_HEIGHT - 28))
 
-    def save_to_json(self, filename="dovedale_annotated_segments.json"):
+    def save_to_json(self, filename="zone_F_annotated_segments.json"):
         with open("../../../json/" + filename, "w") as f:
             json.dump({
                 "segments": self.annotated_segments,
@@ -392,5 +392,5 @@ class DefinePlatforms:
 
 
 if __name__ == "__main__":
-    app = DefinePlatforms("dovedale_map.txt")
+    app = DefinePlatforms("zone_F_map.txt")
     app.run()

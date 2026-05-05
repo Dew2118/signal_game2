@@ -28,6 +28,8 @@ class Train:
         self.last_action = "remove train tail"
         self.notify_TRTS = False
         self.direction_change = None
+        self.despawn = False
+        self.temporary_characters = []
 
     def _get_stop_coord(self, stop):
         """
@@ -64,7 +66,6 @@ class Train:
         coord = self.coords[0][0]
         x = coord[0]
         y = coord[1]
-        print(stop_coords)
         lowest_x = min([c[0] for c in stop_coords])
         highest_x = max([c[0] for c in stop_coords])
         lowest_y = min([c[1] for c in stop_coords])
@@ -115,17 +116,19 @@ class Train:
             if self.last_action == "move train":
                 last_last_signal = self.last_last_signal_check(game)
                 self.delete_train_tail(display, game, last_last_signal)
+                text = game.text
+                lines = game.lines
                 self.last_action = "remove train tail"
             if "change_timetable" in current_stop:
                 tt_index = current_stop["change_timetable"]
                 self.timetable, tt_headcode_prefix, new_direction = game.get_tt_from_index(tt_index)
                 if self.direction != new_direction:
                     self.direction = new_direction
-                    # self.real_first_coord = self.coords[0][0]
                     self.coords[0].reverse()
                 self.headcode = game.get_headcode_from_prefix(tt_headcode_prefix)
                 self.current_stop_index = 0
                 self.route_coords = []
+                self.temporary_characters = []
                 self.last_signal = []
                 self.direction_change = None
                 self.last_three_directions = deque(maxlen=3)
@@ -149,8 +152,9 @@ class Train:
             # else:
                 # self.reversed_direction = False
             if current_stop.get("despawn"):
-                self.despawn_train(text, display, game)
-                game.despawn_train(self)
+                self.despawn = True
+                # self.despawn_train(text, display, game)
+                # game.despawn_train(self)
                 return False
             self.TRTS(dep_offset-time_since_spawn, game.signals, game, display, text, lines)
             if time_since_spawn < dep_offset:
@@ -191,7 +195,15 @@ class Train:
         if not self.coords:
             return
         # 🚦 Timetable departure check
-        if self.timetable and self.current_stop_index < len(self.timetable):
+        if self.despawn:
+            last_last_signal = self.last_last_signal_check(game)
+            self.delete_train_tail(display, game, last_last_signal)
+            text = game.text
+            lines = game.lines
+            self.last_action = "remove train tail"
+            self.last_move_time = now
+            return
+        elif self.timetable and self.current_stop_index < len(self.timetable):
             if not self.timetable_check(game, text, lines, display, signals):
                 return
             self.notify_TRTS = False
@@ -219,8 +231,11 @@ class Train:
                                 if signal.route_coords:
                                     self.route_coords = signal.route_coords.copy()
                                     signal.route_coords = []
+                                    self.temporary_characters = signal.temporary_characters.copy()
+                                    signal.temporary_characters = []
                                 else:
                                     self.route_coords = []
+                                    self.temporary_characters = []
                             self.last_signal.insert(0, signal)
                             break
             
@@ -230,14 +245,16 @@ class Train:
             if self.last_action == "move train":
                 last_last_signal = self.last_last_signal_check(game)
                 self.delete_train_tail(display, game, last_last_signal)
+                text = game.text
+                lines = game.lines
                 self.last_action = "remove train tail"
             elif self.last_action == "remove train tail":
-                self.move_train(x, y, lines, game, signals, display)
+                if not self.despawn:
+                    self.move_train(x, y, lines, game, signals, display)
                 self.last_action = "move train"
-                print("finished move train")
+                
 
             self.move_headcode(text, lines, game, signals, display)
-            print("finished move")
 
     def last_last_signal_check(self, game):
         # print("train headcode is ", self.headcode, "its direction is ", self.direction)
@@ -269,15 +286,22 @@ class Train:
             
 
     def delete_train_tail(self, display, game, last_last_signal):
-        if len(self.coords) < 2:
+        if len(self.coords) < 2 and not self.despawn:
+            print("self.despawn is : ", self.despawn)
             return
         last_last_coord = self.coords.pop()
+        print("deleting train tail at coords ", last_last_coord)
         if self.direction_change and self.direction_change[0] in last_last_coord:
             print("direction change removed")
             self.direction_change = None
-        # print("deleting train tail at coords ", last_last_coord)
+
+        result = []
+        
         for coord in last_last_coord:
-            
+            for temp_char in self.temporary_characters:
+                if temp_char[0] == coord:
+                    result.append(temp_char)
+                    self.temporary_characters.remove(temp_char)
             if coord in self.route_coords:
                 self.route_coords.remove(coord)
 
@@ -295,6 +319,17 @@ class Train:
                 if not set_to_white:
                     display.set_char_color_at_coord(coord[0], coord[1], "gray", game.text)
 
+        
+        game_text = game.reset_temporary_characters(result, game.text)
+        game.text = game_text
+        game.update_lines()
+        print("temporary character left: ", self.temporary_characters)
+
+        if self.coords == [] and self.despawn:
+            for signal in self.last_signal:
+                signal.train_in_block = False
+            game.despawn_train(self)
+
     def move_train(self,x, y, lines, game, signals, display):
         if len(self.coords) >= 2:
             return
@@ -303,7 +338,7 @@ class Train:
         last_char = "F"
         last_last_char = "F"
         while True:
-            x, y, direction, last_char, direction_change, last_last_char = game.path_find(lines, x, y, direction, self.direction, last_char, last_last_char)
+            x, y, direction, last_char, direction_change, last_last_char, temporary_characters = game.path_find(lines, x, y, direction, self.direction, last_char, last_last_char, [])
             if x == -1:
                 return
             print("move train x, y, is ", x, y)
@@ -311,11 +346,10 @@ class Train:
             if direction_change:
                 self.direction_change = direction_change
                 print("direction change is ", direction_change)
-            # self.add_last_direction()
             if direction == "right":
                 amended_x = x+1
                 opposite_direction = "left"
-                if (amended_x >= len(lines[y])) or (lines[y][x] in "b" or (lines[y][amended_x] in "c" and lines[y][x] in "a")):
+                if (amended_x >= len(lines[y])) or (lines[y][x] in "b]" or (lines[y][amended_x] in "c[" and lines[y][x] in "a")):
                     self.coords.insert(0, coords)
                     self.direction = direction
                     print("blocked by ", lines[y][x], " or ", lines[y][amended_x], " at ", (x,y), " or ", (amended_x,y))
@@ -323,18 +357,19 @@ class Train:
             else:
                 amended_x = x-1
                 opposite_direction = "right"
-                if (amended_x < 0) or (lines[y][x] in "c" or (lines[y][amended_x] in "b" and lines[y][x] in "a")):
+                if (amended_x < 0) or (lines[y][x] in "c[" or (lines[y][amended_x] in "b]" and lines[y][x] in "a")):
                     print("blocked by ", lines[y][x], " or ", lines[y][amended_x], " at ", (x,y), " or ", (amended_x,y))
                     self.coords.insert(0, coords)
                     self.direction = direction
                     return
-            for signal in signals:
-                if self.signal_condition_check(signal, x, y, direction) or self.signal_condition_check(signal, amended_x, y, opposite_direction):
-                    # print("blocked by signal at ", signal.coord, " with color ", signal.color)
-                    self.coords.insert(0, coords)
-                    self.direction = direction
-                    return
-            if last_char == "x":
+            # for signal in signals:
+            #     if self.signal_condition_check(signal, x, y, direction) or self.signal_condition_check(signal, amended_x, y, opposite_direction):
+            #         # print("blocked by signal at ", signal.coord, " with color ", signal.color)
+            #         self.coords.insert(0, coords)
+            #         self.direction = direction
+            #         return
+            if last_char == "x" and len(self.coords[0]) > 1:
+                self.despawn = True
                 # print("blocked by last char at ", (x,y))
                 self.coords.insert(0, coords)
                 self.direction = direction
@@ -400,7 +435,7 @@ class Train:
                     game.update_lines()
 
                     return
-            x, y, direction, last_char, direction_change, last_last_char = game.path_find(lines, x, y, direction, self.direction, last_char, last_last_char)
+            x, y, direction, last_char, direction_change, last_last_char, temporary_characters = game.path_find(lines, x, y, direction, self.direction, last_char, last_last_char, [])
             if x == -1:
                 return
             if last_char == "x":
@@ -428,7 +463,8 @@ class Train:
         grid = [list(line.rstrip('\n')) for line in lines]
         if x < 0 or x > len(lines[y]):
             display.add_log("failed bounds check")
-            self.despawn_train(text, display, game)
+            # self.despawn_train(text, display, game)
+            self.despawn = True
             return False
         return True
     
@@ -443,21 +479,21 @@ class Train:
                     display.set_char_color_at_coord(x, y, "white",text)
         # self.last_colored_route_coords = self.route_coords.copy()
     
-    def despawn_train(self, text, display, game):
-        f = StringIO(text)
-        lines = f.readlines()
-        grid = [list(line.rstrip('\n')) for line in lines]
-        for coords in self.coords:
-            for i,coord in enumerate(coords):
-                x, y = coord
-                if self.last_signal and self.last_signal[-1].route_set and (x,y) in self.last_signal[-1].route_coords:
-                    display.set_char_color_at_coord(x, y, "white",text)
-                else:
-                    display.set_char_color_at_coord(x, y, "gray",text)
+    # def despawn_train(self, text, display, game):
+    #     f = StringIO(text)
+    #     lines = f.readlines()
+    #     grid = [list(line.rstrip('\n')) for line in lines]
+    #     for coords in self.coords:
+    #         for i,coord in enumerate(coords):
+    #             x, y = coord
+    #             if self.last_signal and self.last_signal[-1].route_set and (x,y) in self.last_signal[-1].route_coords:
+    #                 display.set_char_color_at_coord(x, y, "white",text)
+    #             else:
+    #                 display.set_char_color_at_coord(x, y, "gray",text)
         
-        for last_signal in self.last_signal:
-            last_signal.train_in_block = False
-            # game.update_signals()
+    #     for last_signal in self.last_signal:
+    #         last_signal.train_in_block = False
+    #         # game.update_signals()
         
     # def add_last_direction(self):
     #     if not self.last_three_directions or self.direction != self.last_three_directions[-1]:

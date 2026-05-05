@@ -20,17 +20,14 @@
                 "station": "STEPFORD EAST",
                 "platform": "3",
                 "arrival_offset": 100,
-                "departure_offset": 160,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 160
+},
             {
                 "station": "STEPFORD CENTRAL",
                 "platform": "",
                 "arrival_offset": 290,
                 "departure_offset": 350,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 1
             }
         ],
@@ -133,24 +130,20 @@
                 "station": "STEPFORD CENTRAL",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "STEPFORD EAST",
                 "platform": "",
                 "arrival_offset": 180,
-                "departure_offset": 240,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 240
+},
             {
                 "station": "ZONE B",
                 "platform": "3",
                 "arrival_offset": 340,
                 "departure_offset": 340,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -179,8 +172,7 @@
                 "platform": "",
                 "arrival_offset": 250,
                 "departure_offset": 310,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 3
             }
         ],
@@ -297,16 +289,14 @@
                 "station": "STEPFORD CENTRAL",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "ZONE B",
                 "platform": "5",
                 "arrival_offset": 280,
                 "departure_offset": 280,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -335,8 +325,7 @@
                 "platform": "",
                 "arrival_offset": 230,
                 "departure_offset": 290,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 5
             }
         ],
@@ -395,16 +384,14 @@
                 "station": "STEPFORD CENTRAL",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "ZONE B",
                 "platform": "1",
                 "arrival_offset": 260,
                 "departure_offset": 260,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -432,17 +419,14 @@
                 "station": "STEPFORD EAST",
                 "platform": "",
                 "arrival_offset": 130,
-                "departure_offset": 190,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 190
+},
             {
                 "station": "STEPFORD CENTRAL",
                 "platform": "",
                 "arrival_offset": 310,
                 "departure_offset": 370,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 7
             }
         ],
@@ -534,24 +518,20 @@
                 "station": "STEPFORD CENTRAL",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "STEPFORD EAST",
                 "platform": "",
                 "arrival_offset": 180,
-                "departure_offset": 240,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 240
+},
             {
                 "station": "ZONE B",
                 "platform": "5",
                 "arrival_offset": 360,
                 "departure_offset": 360,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -579,17 +559,14 @@
                 "station": "STEPFORD EAST",
                 "platform": "3",
                 "arrival_offset": 100,
-                "departure_offset": 160,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 160
+},
             {
                 "station": "STEPFORD CENTRAL",
                 "platform": "",
                 "arrival_offset": 290,
                 "departure_offset": 350,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 9
             }
         ],
@@ -648,24 +625,20 @@
                 "station": "STEPFORD CENTRAL",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "STEPFORD EAST",
                 "platform": "",
                 "arrival_offset": 180,
-                "departure_offset": 240,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 240
+},
             {
                 "station": "ZONE B",
                 "platform": "3",
                 "arrival_offset": 340,
                 "departure_offset": 340,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -693,17 +666,14 @@
                 "station": "STEPFORD EAST",
                 "platform": "3",
                 "arrival_offset": 100,
-                "departure_offset": 160,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 160
+},
             {
                 "station": "STEPFORD CENTRAL",
                 "platform": "",
                 "arrival_offset": 290,
                 "departure_offset": 350,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 11
             }
         ],
@@ -762,24 +732,20 @@
                 "station": "STEPFORD CENTRAL",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "STEPFORD EAST",
                 "platform": "",
                 "arrival_offset": 180,
-                "departure_offset": 240,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 240
+},
             {
                 "station": "ZONE B",
                 "platform": "3",
                 "arrival_offset": 340,
                 "departure_offset": 340,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -807,17 +773,14 @@
                 "station": "STEPFORD EAST",
                 "platform": "3",
                 "arrival_offset": 100,
-                "departure_offset": 160,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 160
+},
             {
                 "station": "STEPFORD CENTRAL",
                 "platform": "",
                 "arrival_offset": 290,
                 "departure_offset": 350,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 13
             }
         ],
@@ -876,24 +839,20 @@
                 "station": "STEPFORD CENTRAL",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "STEPFORD EAST",
                 "platform": "",
                 "arrival_offset": 180,
-                "departure_offset": 240,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 240
+},
             {
                 "station": "ZONE B",
                 "platform": "3",
                 "arrival_offset": 340,
                 "departure_offset": 340,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -921,17 +880,14 @@
                 "station": "STEPFORD EAST",
                 "platform": "3",
                 "arrival_offset": 100,
-                "departure_offset": 160,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 160
+},
             {
                 "station": "STEPFORD CENTRAL",
                 "platform": "",
                 "arrival_offset": 290,
                 "departure_offset": 350,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 15
             }
         ],
@@ -989,24 +945,20 @@
                 "station": "STEPFORD CENTRAL",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "STEPFORD EAST",
                 "platform": "",
                 "arrival_offset": 180,
-                "departure_offset": 240,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 240
+},
             {
                 "station": "ZONE B",
                 "platform": "3",
                 "arrival_offset": 340,
                 "departure_offset": 340,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -1034,33 +986,26 @@
                 "station": "STEPFORD EAST",
                 "platform": "4",
                 "arrival_offset": 110,
-                "departure_offset": 170,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 170
+},
             {
                 "station": "STEPFORD CENTRAL",
                 "platform": "11",
                 "arrival_offset": 280,
-                "departure_offset": 340,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 340
+},
             {
                 "station": "FINANCIAL QUARTER",
                 "platform": "",
                 "arrival_offset": 430,
-                "departure_offset": 490,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 490
+},
             {
                 "station": "STEPFORD VICTORIA",
                 "platform": "",
                 "arrival_offset": 570,
                 "departure_offset": 630,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 17
             }
         ],
@@ -1117,40 +1062,32 @@
                 "station": "STEPFORD VICTORIA",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "FINANCIAL QUARTER",
                 "platform": "",
                 "arrival_offset": 140,
-                "departure_offset": 200,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 200
+},
             {
                 "station": "STEPFORD CENTRAL",
                 "platform": "10",
                 "arrival_offset": 290,
-                "departure_offset": 350,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 350
+},
             {
                 "station": "STEPFORD EAST",
                 "platform": "",
                 "arrival_offset": 470,
-                "departure_offset": 530,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 530
+},
             {
                 "station": "ZONE B",
                 "platform": "3",
                 "arrival_offset": 650,
                 "departure_offset": 650,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -1178,33 +1115,26 @@
                 "station": "STEPFORD EAST",
                 "platform": "4",
                 "arrival_offset": 110,
-                "departure_offset": 170,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 170
+},
             {
                 "station": "STEPFORD CENTRAL",
                 "platform": "11",
                 "arrival_offset": 280,
-                "departure_offset": 340,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 340
+},
             {
                 "station": "FINANCIAL QUARTER",
                 "platform": "",
                 "arrival_offset": 430,
-                "departure_offset": 490,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 490
+},
             {
                 "station": "STEPFORD VICTORIA",
                 "platform": "",
                 "arrival_offset": 570,
                 "departure_offset": 630,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 19
             }
         ],
@@ -1261,40 +1191,32 @@
                 "station": "STEPFORD VICTORIA",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "FINANCIAL QUARTER",
                 "platform": "",
                 "arrival_offset": 140,
-                "departure_offset": 200,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 200
+},
             {
                 "station": "STEPFORD CENTRAL",
                 "platform": "10",
                 "arrival_offset": 290,
-                "departure_offset": 350,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 350
+},
             {
                 "station": "STEPFORD EAST",
                 "platform": "",
                 "arrival_offset": 470,
-                "departure_offset": 530,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 530
+},
             {
                 "station": "ZONE B",
                 "platform": "3",
                 "arrival_offset": 650,
                 "departure_offset": 650,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -1322,33 +1244,26 @@
                 "station": "STEPFORD EAST",
                 "platform": "4",
                 "arrival_offset": 110,
-                "departure_offset": 170,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 170
+},
             {
                 "station": "STEPFORD CENTRAL",
                 "platform": "11",
                 "arrival_offset": 280,
-                "departure_offset": 340,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 340
+},
             {
                 "station": "CITY HOSPITAL",
                 "platform": "",
                 "arrival_offset": 370,
-                "departure_offset": 430,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 430
+},
             {
                 "station": "STEPFORD VICTORIA",
                 "platform": "",
                 "arrival_offset": 620,
                 "departure_offset": 680,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 21
             }
         ],
@@ -1390,40 +1305,32 @@
                 "station": "STEPFORD VICTORIA",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "CITY HOSPITAL",
                 "platform": "",
                 "arrival_offset": 250,
-                "departure_offset": 310,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 310
+},
             {
                 "station": "STEPFORD CENTRAL",
                 "platform": "10",
                 "arrival_offset": 340,
-                "departure_offset": 400,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 400
+},
             {
                 "station": "STEPFORD EAST",
                 "platform": "",
                 "arrival_offset": 520,
-                "departure_offset": 580,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 580
+},
             {
                 "station": "ZONE B",
                 "platform": "3",
                 "arrival_offset": 700,
                 "departure_offset": 700,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -1452,8 +1359,7 @@
                 "platform": "",
                 "arrival_offset": 70,
                 "departure_offset": 130,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 23
             }
         ],
@@ -1501,40 +1407,32 @@
                 "station": "WILLOWFIELD",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "BEECHLEY",
                 "platform": "1",
                 "arrival_offset": 270,
-                "departure_offset": 330,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 330
+},
             {
                 "station": "STEPFORD CENTRAL",
                 "platform": "10",
                 "arrival_offset": 460,
-                "departure_offset": 520,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 520
+},
             {
                 "station": "STEPFORD EAST",
                 "platform": "2",
                 "arrival_offset": 640,
-                "departure_offset": 700,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 700
+},
             {
                 "station": "ZONE B",
                 "platform": "3",
                 "arrival_offset": 810,
                 "departure_offset": 810,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -1562,33 +1460,26 @@
                 "station": "STEPFORD EAST",
                 "platform": "4",
                 "arrival_offset": 110,
-                "departure_offset": 170,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 170
+},
             {
                 "station": "STEPFORD CENTRAL",
                 "platform": "11",
                 "arrival_offset": 280,
-                "departure_offset": 340,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 340
+},
             {
                 "station": "BEECHLEY",
                 "platform": "2",
                 "arrival_offset": 470,
-                "departure_offset": 530,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 530
+},
             {
                 "station": "WILLOWFIELD",
                 "platform": "",
                 "arrival_offset": 740,
                 "departure_offset": 800,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 23
             }
         ],
@@ -1635,25 +1526,20 @@
                 "station": "STEPFORD EAST",
                 "platform": "4",
                 "arrival_offset": 110,
-                "departure_offset": 170,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 170
+},
             {
                 "station": "STEPFORD CENTRAL",
                 "platform": "11",
                 "arrival_offset": 280,
-                "departure_offset": 340,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 340
+},
             {
                 "station": "BEECHLEY",
                 "platform": "",
                 "arrival_offset": 470,
                 "departure_offset": 530,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 26
             }
         ],
@@ -1700,32 +1586,26 @@
                 "station": "BEECHLEY",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "STEPFORD CENTRAL",
                 "platform": "10",
                 "arrival_offset": 190,
-                "departure_offset": 250,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 250
+},
             {
                 "station": "STEPFORD EAST",
                 "platform": "2",
                 "arrival_offset": 370,
-                "departure_offset": 430,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 430
+},
             {
                 "station": "ZONE B",
                 "platform": "3",
                 "arrival_offset": 540,
                 "departure_offset": 540,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -1748,8 +1628,7 @@
                 "platform": "",
                 "arrival_offset": 70,
                 "departure_offset": 130,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 29
             }
         ],
@@ -1782,49 +1661,38 @@
                 "station": "WHITEFIELD",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "HOUGHTON RAKE",
                 "platform": "",
                 "arrival_offset": 130,
-                "departure_offset": 190,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 190
+},
             {
                 "station": "WOODHEAD LANE",
                 "platform": "",
                 "arrival_offset": 230,
-                "departure_offset": 290,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 290
+},
             {
                 "station": "STEPFORD UFC",
                 "platform": "4",
                 "arrival_offset": 380,
-                "departure_offset": 440,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 440
+},
             {
                 "station": "STEPFORD EAST",
                 "platform": "3",
                 "arrival_offset": 560,
-                "departure_offset": 620,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 620
+},
             {
                 "station": "STEPFORD CENTRAL",
                 "platform": "",
                 "arrival_offset": 760,
                 "departure_offset": 820,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 29
             }
         ],
@@ -1852,49 +1720,38 @@
                 "station": "STEPFORD CENTRAL",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "STEPFORD EAST",
                 "platform": "",
                 "arrival_offset": 180,
-                "departure_offset": 240,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 240
+},
             {
                 "station": "STEPFORD UFC",
                 "platform": "3",
                 "arrival_offset": 310,
-                "departure_offset": 370,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 370
+},
             {
                 "station": "WOODHEAD LANE",
                 "platform": "",
                 "arrival_offset": 450,
-                "departure_offset": 510,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 510
+},
             {
                 "station": "HOUGHTON RAKE",
                 "platform": "",
                 "arrival_offset": 550,
-                "departure_offset": 610,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 610
+},
             {
                 "station": "WHITEFIELD",
                 "platform": "",
                 "arrival_offset": 680,
                 "departure_offset": 740,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 28
             }
         ],
@@ -1923,8 +1780,7 @@
                 "platform": "10",
                 "arrival_offset": 110,
                 "departure_offset": 170,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 31
             }
         ],
@@ -1957,41 +1813,32 @@
                 "station": "STEPFORD CENTRAL",
                 "platform": "10",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "STEPFORD EAST",
                 "platform": "",
                 "arrival_offset": 180,
-                "departure_offset": 240,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 240
+},
             {
                 "station": "STEPFORD UFC",
                 "platform": "3",
                 "arrival_offset": 360,
-                "departure_offset": 420,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 420
+},
             {
                 "station": "WOODHEAD LANE",
                 "platform": "",
                 "arrival_offset": 500,
-                "departure_offset": 560,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 560
+},
             {
                 "station": "WHITEFIELD",
                 "platform": "",
                 "arrival_offset": 660,
                 "departure_offset": 720,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 32
             }
         ],
@@ -2019,49 +1866,38 @@
                 "station": "WHITEFIELD",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "WOODHEAD LANE",
                 "platform": "",
                 "arrival_offset": 160,
-                "departure_offset": 220,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 220
+},
             {
                 "station": "STEPFORD UFC",
                 "platform": "4",
                 "arrival_offset": 310,
-                "departure_offset": 370,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 370
+},
             {
                 "station": "STEPFORD EAST",
                 "platform": "4",
                 "arrival_offset": 490,
-                "departure_offset": 550,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 550
+},
             {
                 "station": "STEPFORD CENTRAL",
                 "platform": "11",
                 "arrival_offset": 660,
-                "departure_offset": 720,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 720
+},
             {
                 "station": "BEECHLEY",
                 "platform": "",
                 "arrival_offset": 850,
                 "departure_offset": 910,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 33
             }
         ],
@@ -2089,49 +1925,38 @@
                 "station": "BEECHLEY",
                 "platform": "3",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "STEPFORD CENTRAL",
                 "platform": "10",
                 "arrival_offset": 190,
-                "departure_offset": 250,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 250
+},
             {
                 "station": "STEPFORD EAST",
                 "platform": "2",
                 "arrival_offset": 370,
-                "departure_offset": 430,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 430
+},
             {
                 "station": "STEPFORD UFC",
                 "platform": "3",
                 "arrival_offset": 550,
-                "departure_offset": 610,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 610
+},
             {
                 "station": "WOODHEAD LANE",
                 "platform": "",
                 "arrival_offset": 690,
-                "departure_offset": 750,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 750
+},
             {
                 "station": "WHITEFIELD",
                 "platform": "",
                 "arrival_offset": 850,
                 "departure_offset": 910,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 32
             }
         ],
@@ -2160,8 +1985,7 @@
                 "platform": "11",
                 "arrival_offset": 150,
                 "departure_offset": 210,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 35
             }
         ],
@@ -2194,25 +2018,20 @@
                 "station": "STEPFORD CENTRAL",
                 "platform": "11",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "BEECHLEY",
                 "platform": "2",
                 "arrival_offset": 190,
-                "departure_offset": 250,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 250
+},
             {
                 "station": "WILLOWFIELD",
                 "platform": "",
                 "arrival_offset": 460,
                 "departure_offset": 520,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 36
             }
         ],
@@ -2240,65 +2059,50 @@
                 "station": "WILLOWFIELD",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "BEECHLEY",
                 "platform": "1",
                 "arrival_offset": 270,
-                "departure_offset": 330,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 330
+},
             {
                 "station": "STEPFORD CENTRAL",
                 "platform": "10",
                 "arrival_offset": 460,
-                "departure_offset": 520,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 520
+},
             {
                 "station": "STEPFORD EAST",
                 "platform": "2",
                 "arrival_offset": 640,
-                "departure_offset": 700,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 700
+},
             {
                 "station": "STEPFORD UFC",
                 "platform": "3",
                 "arrival_offset": 820,
-                "departure_offset": 880,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 880
+},
             {
                 "station": "WOODHEAD LANE",
                 "platform": "",
                 "arrival_offset": 960,
-                "departure_offset": 1020,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 1020
+},
             {
                 "station": "HOUGHTON RAKE",
                 "platform": "",
                 "arrival_offset": 1060,
-                "departure_offset": 1120,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 1120
+},
             {
                 "station": "WHITEFIELD",
                 "platform": "",
                 "arrival_offset": 1190,
                 "departure_offset": 1250,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 37
             }
         ],
@@ -2326,65 +2130,50 @@
                 "station": "WHITEFIELD",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "HOUGHTON RAKE",
                 "platform": "",
                 "arrival_offset": 130,
-                "departure_offset": 190,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 190
+},
             {
                 "station": "WOODHEAD LANE",
                 "platform": "",
                 "arrival_offset": 230,
-                "departure_offset": 290,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 290
+},
             {
                 "station": "STEPFORD UFC",
                 "platform": "",
                 "arrival_offset": 370,
-                "departure_offset": 430,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 430
+},
             {
                 "station": "STEPFORD EAST",
                 "platform": "4",
                 "arrival_offset": 560,
-                "departure_offset": 620,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 620
+},
             {
                 "station": "STEPFORD CENTRAL",
                 "platform": "11",
                 "arrival_offset": 730,
-                "departure_offset": 790,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 790
+},
             {
                 "station": "BEECHLEY",
                 "platform": "2",
                 "arrival_offset": 920,
-                "departure_offset": 980,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 980
+},
             {
                 "station": "WILLOWFIELD",
                 "platform": "",
                 "arrival_offset": 1190,
                 "departure_offset": 1250,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 36
             }
         ],
@@ -2413,8 +2202,7 @@
                 "platform": "4",
                 "arrival_offset": 50,
                 "departure_offset": 110,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 39
             }
         ],
@@ -2447,41 +2235,32 @@
                 "station": "STEPFORD UFC",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "WHITEFIELD LIDO",
                 "platform": "",
                 "arrival_offset": 120,
-                "departure_offset": 180,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 180
+},
             {
                 "station": "HIGH STREET",
                 "platform": "",
                 "arrival_offset": 210,
-                "departure_offset": 270,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 270
+},
             {
                 "station": "STEPFORD EAST",
                 "platform": "3",
                 "arrival_offset": 380,
-                "departure_offset": 440,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 440
+},
             {
                 "station": "STEPFORD CENTRAL",
                 "platform": "",
                 "arrival_offset": 570,
                 "departure_offset": 630,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 40
             }
         ],
@@ -2509,41 +2288,32 @@
                 "station": "STEPFORD CENTRAL",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "STEPFORD EAST",
                 "platform": "",
                 "arrival_offset": 180,
-                "departure_offset": 240,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 240
+},
             {
                 "station": "HIGH STREET",
                 "platform": "",
                 "arrival_offset": 350,
-                "departure_offset": 410,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 410
+},
             {
                 "station": "WHITEFIELD LIDO",
                 "platform": "",
                 "arrival_offset": 440,
-                "departure_offset": 500,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 500
+},
             {
                 "station": "STEPFORD UFC",
                 "platform": "",
                 "arrival_offset": 560,
                 "departure_offset": 620,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 39
             }
         ],

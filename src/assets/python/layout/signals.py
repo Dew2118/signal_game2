@@ -21,6 +21,7 @@ class Signal:
         self.overlap = (0,0)
         self.TRTS_button_coord = None
         self.last_colored_color = None
+        self.temporary_characters = []
 
     def __repr__(self):
         return (f"Signal(name={self.name!r}, coord={self.coord}, "
@@ -124,7 +125,8 @@ class Signal:
                 if restart:
                     restart = False
                     continue
-                x, y, direction, last_char, new_direction_change, last_last_char = game.path_find(lines, x, y, direction, self.direction, last_char, last_last_char)
+                x, y, direction, last_char, new_direction_change, last_last_char, self.temporary_characters = game.path_find(lines, x, y, direction, self.direction, last_char, last_last_char, self.temporary_characters)
+                game_text = game.handle_temporary_characters(self.temporary_characters, game_text)
                 if x == -1 or last_char == "x":
                     x, y, last_switch, switch_stack, direction, original_text, coords = self.go_back_to_last_switch(trains, switch_stack, game, coords, original_text)
                     lines = original_text.splitlines()
@@ -210,26 +212,26 @@ class Signal:
             if len(intersection) > 0:
                 return (self.go_back_to_last_switch(trains, switch_stack, game, coords, original_text))
 
-    def skip_parts(self, character, direction, x, y, lines):
-        passed = False
-        trash = False
-        while passed == False:
-            if direction == 'down':
-                y += 1
-            elif direction == 'up':
-                y -= 1
-            elif direction == 'left':
-                x -= 1
-            elif direction == 'right':
-                x += 1
-            char = lines[y][x]
-            if char == character:
-                if not trash:
-                    trash = True
-                else:
-                    passed = True
-                    break
-        return x, y
+    # def skip_parts(self, character, direction, x, y, lines):
+    #     passed = False
+    #     trash = False
+    #     while passed == False:
+    #         if direction == 'down':
+    #             y += 1
+    #         elif direction == 'up':
+    #             y -= 1
+    #         elif direction == 'left':
+    #             x -= 1
+    #         elif direction == 'right':
+    #             x += 1
+    #         char = lines[y][x]
+    #         if char == character:
+    #             if not trash:
+    #                 trash = True
+    #             else:
+    #                 passed = True
+    #                 break
+    #     return x, y
 
     def cancel_route(self, display, text, lines, autos, game):
         if self.signal_type == "manual" and self.route_set and self.route_coords:
@@ -248,6 +250,11 @@ class Signal:
                 if auto.signal == self:
                     auto.depressed(text, game)
             self.route_coords = None
+
+        game_text = game.reset_temporary_characters(self.temporary_characters, text)
+        game.text = game_text
+        game.update_lines()
+        self.temporary_characters = []
             # game.update_signals()
 
     def go_back_to_last_switch(self, trains, switch_stack, game, coords, original_text):

@@ -1,0 +1,447 @@
+[
+    {
+        "headcode_prefix": "2B",
+        "start_location": {
+            "left": [
+                312,
+                75
+            ],
+            "right": [
+                312,
+                75
+            ],
+            "type": "entrance_exit",
+            "station": "ZONE D",
+            "platform": "DOWN MGT"
+        },
+        "direction": "left",
+        "stops": [
+            {
+                "station": "MORGANSTOWN DOCKS",
+                "platform": "",
+                "arrival_offset": 40,
+                "departure_offset": 100
+            },
+            {
+                "station": "PORT BENTON",
+                "platform": "2",
+                "arrival_offset": 140,
+                "departure_offset": 200
+            },
+            {
+                "station": "BENTON",
+                "platform": "2",
+                "arrival_offset": 310,
+                "departure_offset": 370,
+                "change_timetable": 1
+            }
+        ],
+        "spawn_times": [
+            "0:00:10",
+            "0:48:10",
+            "1:36:10",
+            "2:24:10",
+            "3:12:10",
+            "4:00:10",
+            "4:48:10",
+            "5:36:10",
+            "6:24:10",
+            "7:12:10"
+        ],
+        "index": 0
+    },
+    {
+        "headcode_prefix": "2M",
+        "start_location": null,
+        "direction": "right",
+        "stops": [
+            {
+                "station": "BENTON",
+                "platform": "2",
+                "arrival_offset": 0,
+                "departure_offset": 60
+            },
+            {
+                "station": "PORT BENTON",
+                "platform": "1",
+                "arrival_offset": 210,
+                "departure_offset": 270
+            },
+            {
+                "station": "MORGANSTOWN DOCKS",
+                "platform": "",
+                "arrival_offset": 310,
+                "departure_offset": 370
+            },
+            {
+                "station": "ZONE D",
+                "platform": "UP MGT",
+                "arrival_offset": 410,
+                "departure_offset": 410,
+                "despawn": true
+            }
+        ],
+        "spawn_times": [],
+        "index": 1
+    },
+    {
+        "headcode_prefix": "3H",
+        "start_location": {
+            "left": [
+                95,
+                26
+            ],
+            "right": [
+                95,
+                26
+            ],
+            "type": "entrance_exit",
+            "station": "NEWRY SIDING",
+            "platform": ""
+        },
+        "direction": "left",
+        "stops": [
+            {
+                "station": "NEWRY",
+                "platform": "3",
+                "arrival_offset": 60,
+                "departure_offset": 120,
+                "change_timetable": 3
+            }
+        ],
+        "spawn_times": [
+            "0:00:30",
+            "0:48:30",
+            "1:36:30"
+        ],
+        "index": 2
+    },
+    {
+        "headcode_prefix": "2H",
+        "start_location": null,
+        "direction": "left",
+        "stops": [
+            {
+                "station": "NEWRY",
+                "platform": "",
+                "arrival_offset": 0,
+                "departure_offset": 60
+            },
+            {
+                "station": "NEWRY HARBOUR",
+                "platform": "",
+                "arrival_offset": 120,
+                "departure_offset": 180,
+                "change_timetable": 4
+            }
+        ],
+        "spawn_times": [],
+        "index": 3
+    },
+    {
+        "headcode_prefix": "2O",
+        "start_location": null,
+        "direction": "right",
+        "stops": [
+            {
+                "station": "NEWRY HARBOUR",
+                "platform": "",
+                "arrival_offset": 0,
+                "departure_offset": 60
+            },
+            {
+                "station": "NEWRY",
+                "platform": "",
+                "arrival_offset": 110,
+                "departure_offset": 170
+            },
+            {
+                "station": "EDEN QUAY",
+                "platform": "",
+                "arrival_offset": 250,
+                "departure_offset": 310
+            },
+            {
+                "station": "FARADAY ROAD",
+                "platform": "",
+                "arrival_offset": 370,
+                "departure_offset": 430
+            },
+            {
+                "station": "WEST BENTON",
+                "platform": "",
+                "arrival_offset": 490,
+                "departure_offset": 550
+            },
+            {
+                "station": "BENTON",
+                "platform": "",
+                "arrival_offset": 620,
+                "departure_offset": 680
+            },
+            {
+                "station": "CAMBRIDGE STREET PARKWAY",
+                "platform": "",
+                "arrival_offset": 770,
+                "departure_offset": 830
+            },
+            {
+                "station": "ASHLAN PARK",
+                "platform": "",
+                "arrival_offset": 900,
+                "departure_offset": 960
+            },
+            {
+                "station": "CONNOLLY",
+                "platform": "",
+                "arrival_offset": 1030,
+                "departure_offset": 1090,
+                "change_timetable": 5
+            }
+        ],
+        "spawn_times": [],
+        "index": 4
+    },
+    {
+        "headcode_prefix": "2H",
+        "start_location": null,
+        "direction": "right",
+        "stops": [
+            {
+                "station": "CONNOLLY",
+                "platform": "",
+                "arrival_offset": 0,
+                "departure_offset": 60
+            },
+            {
+                "station": "ASHLAN PARK",
+                "platform": "",
+                "arrival_offset": 130,
+                "departure_offset": 190
+            },
+            {
+                "station": "CAMBRIDGE STREET PARKWAY",
+                "platform": "",
+                "arrival_offset": 260,
+                "departure_offset": 320
+            },
+            {
+                "station": "BENTON",
+                "platform": "",
+                "arrival_offset": 410,
+                "departure_offset": 470
+            },
+            {
+                "station": "WEST BENTON",
+                "platform": "",
+                "arrival_offset": 540,
+                "departure_offset": 600
+            },
+            {
+                "station": "FARADAY ROAD",
+                "platform": "",
+                "arrival_offset": 660,
+                "departure_offset": 720
+            },
+            {
+                "station": "EDEN QUAY",
+                "platform": "",
+                "arrival_offset": 780,
+                "departure_offset": 840
+            },
+            {
+                "station": "NEWRY",
+                "platform": "",
+                "arrival_offset": 920,
+                "departure_offset": 980
+            },
+            {
+                "station": "NEWRY HARBOUR",
+                "platform": "",
+                "arrival_offset": 1030,
+                "departure_offset": 1090,
+                "change_timetable": 4
+            }
+        ],
+        "spawn_times": [],
+        "index": 5
+    },
+    {
+        "headcode_prefix": "3G",
+        "start_location": {
+            "left": [
+                279,
+                69
+            ],
+            "right": [
+                279,
+                69
+            ],
+            "type": "entrance_exit",
+            "station": "WHITNEY GREEN SIDING",
+            "platform": "1"
+        },
+        "direction": "left",
+        "stops": [
+            {
+                "station": "WHITNEY GREEN",
+                "platform": "",
+                "arrival_offset": 50,
+                "departure_offset": 110,
+                "change_timetable": 7
+            }
+        ],
+        "spawn_times": [
+            "0:03:00",
+            "0:15:00",
+            "0:27:00",
+            "0:39:00",
+            "0:51:00"
+        ],
+        "index": 6
+    },
+    {
+        "headcode_prefix": "2G",
+        "start_location": null,
+        "direction": "left",
+        "stops": [
+            {
+                "station": "WHITNEY GREEN",
+                "platform": "",
+                "arrival_offset": 0,
+                "departure_offset": 60
+            },
+            {
+                "station": "GREENSLADE",
+                "platform": "",
+                "arrival_offset": 130,
+                "departure_offset": 190,
+                "change_timetable": 8
+            }
+        ],
+        "spawn_times": [],
+        "index": 7
+    },
+    {
+        "headcode_prefix": "2N",
+        "start_location": null,
+        "direction": "right",
+        "stops": [
+            {
+                "station": "GREENSLADE",
+                "platform": "",
+                "arrival_offset": 0,
+                "departure_offset": 60
+            },
+            {
+                "station": "WHITNEY GREEN",
+                "platform": "",
+                "arrival_offset": 130,
+                "departure_offset": 190
+            },
+            {
+                "station": "MORGANSTOWN DOCKS",
+                "platform": "",
+                "arrival_offset": 270,
+                "departure_offset": 330
+            },
+            {
+                "station": "PORT BENTON",
+                "platform": "2",
+                "arrival_offset": 340,
+                "departure_offset": 400
+            },
+            {
+                "station": "BENTON",
+                "platform": "",
+                "arrival_offset": 520,
+                "departure_offset": 580
+            },
+            {
+                "station": "WEST BENTON",
+                "platform": "",
+                "arrival_offset": 650,
+                "departure_offset": 710
+            },
+            {
+                "station": "EDEN QUAY",
+                "platform": "",
+                "arrival_offset": 820,
+                "departure_offset": 880
+            },
+            {
+                "station": "NEWRY",
+                "platform": "",
+                "arrival_offset": 960,
+                "departure_offset": 1020,
+                "change_timetable": 9
+            }
+        ],
+        "spawn_times": [],
+        "index": 8
+    },
+    {
+        "headcode_prefix": "2G",
+        "start_location": null,
+        "direction": "right",
+        "stops": [
+            {
+                "station": "NEWRY",
+                "platform": "",
+                "arrival_offset": 0,
+                "departure_offset": 60
+            },
+            {
+                "station": "EDEN QUAY",
+                "platform": "",
+                "arrival_offset": 140,
+                "departure_offset": 200
+            },
+            {
+                "station": "FARADAY ROAD",
+                "platform": "",
+                "arrival_offset": 260,
+                "departure_offset": 320
+            },
+            {
+                "station": "WEST BENTON",
+                "platform": "",
+                "arrival_offset": 380,
+                "departure_offset": 440
+            },
+            {
+                "station": "BENTON",
+                "platform": "",
+                "arrival_offset": 500,
+                "departure_offset": 560
+            },
+            {
+                "station": "PORT BENTON",
+                "platform": "1",
+                "arrival_offset": 680,
+                "departure_offset": 740
+            },
+            {
+                "station": "MORGANSTOWN DOCKS",
+                "platform": "",
+                "arrival_offset": 770,
+                "departure_offset": 830
+            },
+            {
+                "station": "WHITNEY GREEN",
+                "platform": "",
+                "arrival_offset": 910,
+                "departure_offset": 970
+            },
+            {
+                "station": "GREENSLADE",
+                "platform": "",
+                "arrival_offset": 1040,
+                "departure_offset": 1100,
+                "change_timetable": 8
+            }
+        ],
+        "spawn_times": [],
+        "index": 9
+    }
+]

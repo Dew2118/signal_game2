@@ -21,40 +21,32 @@
                 "station": "ESTERFIELD",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 1,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 1
+},
             {
                 "station": "ROSEDALE VILLAGE",
                 "platform": "2",
                 "arrival_offset": 1,
-                "departure_offset": 2,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 2
+},
             {
                 "station": "JAMES STREET",
                 "platform": "2",
                 "arrival_offset": 3,
-                "departure_offset": 4,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 4
+},
             {
                 "station": "FARLEIGH",
                 "platform": "2",
                 "arrival_offset": 5,
-                "departure_offset": 6,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 6
+},
             {
                 "station": "ZONE C",
                 "platform": "2",
                 "arrival_offset": 8,
                 "departure_offset": 9,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ]
@@ -81,33 +73,26 @@
                 "station": "FARLEIGH",
                 "platform": "1",
                 "arrival_offset": 20,
-                "departure_offset": 30,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 30
+},
             {
                 "station": "JAMES STREET",
                 "platform": "1",
                 "arrival_offset": 50,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "ROSEDALE VILLAGE",
                 "platform": "1",
                 "arrival_offset": 80,
-                "departure_offset": 90,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 90
+},
             {
                 "station": "ESTERFIELD",
                 "platform": "",
                 "arrival_offset": 100,
                 "departure_offset": 110,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 0
             }
         ],
@@ -235,33 +220,26 @@
                 "station": "FARLEIGH",
                 "platform": "1",
                 "arrival_offset": 0,
-                "departure_offset": 10,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 10
+},
             {
                 "station": "JAMES STREET",
                 "platform": "1",
                 "arrival_offset": 20,
-                "departure_offset": 30,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 30
+},
             {
                 "station": "ROSEDALE VILLAGE",
                 "platform": "1",
                 "arrival_offset": 40,
-                "departure_offset": 50,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 50
+},
             {
                 "station": "ESTERFIELD",
                 "platform": "",
                 "arrival_offset": 60,
                 "departure_offset": 70,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 0
             }
         ],
@@ -290,8 +268,7 @@
                 "platform": "1",
                 "arrival_offset": 5,
                 "departure_offset": 15,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 2
             }
         ],
@@ -421,8 +398,7 @@
                 "platform": "",
                 "arrival_offset": 15,
                 "departure_offset": 25,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 0
             }
         ],

@@ -1,5 +1,5 @@
 import cProfile
-
+import traceback
 from src.assets.python.train.train import Train
 from src.assets.python.layout.signals import Signal
 from src.assets.python.display import Display_Class
@@ -16,15 +16,10 @@ import easygui
 import math
 import tkinter as tk
 import os
-import glob
 from pathlib import Path
 
 JSON_PATH = os.path.join("src", "json") #
 SPAWN_SOUND = r"C:\Windows\Media\Speech On.wav"
-
-# LAYOUT_FILE = "test.txt"
-# TIMETABLE_FILE = "timetable.json"
-# ANNOTATED_SEGMENTS_FILE = "annotated_segments.json"
 
 # Create a "saves" folder in the current directory if it doesn't exist
 if not os.path.exists('saves'):
@@ -491,7 +486,7 @@ class Game:
             direction = signal.direction
             while 0 <= y < len(self.lines) - 1 and 0 <= x < len(self.lines[y]) - 1:
                 self.display_class.add_log(x,y)
-                x, y, direction, last_char, direction_change, last_last_char = self.path_find(self.lines, x, y, direction, signal.direction, last_char, last_last_char)
+                x, y, direction, last_char, direction_change, last_last_char, temporary_characters = self.path_find(self.lines, x, y, direction, signal.direction, last_char, last_last_char, [])
                 # print(x,y)
                 if not (0 <= y < len(self.lines) and 0 <= x < len(self.lines[y])):
                     break
@@ -516,6 +511,26 @@ class Game:
                     break
                 # last_char = char
 
+    def handle_temporary_characters(self, temporary_characters, text):
+        f = StringIO(text)
+        lines = f.readlines()
+        grid = [list(line.rstrip('\n')) for line in lines]
+        for temporary_character in temporary_characters:
+            (x,y), original_char, new_char = temporary_character
+            grid[y][x] = new_char
+        modified_text = '\n'.join(''.join(row) for row in grid)
+        return modified_text
+
+    def reset_temporary_characters(self, temporary_characters, text):
+        f = StringIO(text)
+        lines = f.readlines()
+        grid = [list(line.rstrip('\n')) for line in lines]
+        for temporary_character in temporary_characters:
+            (x,y), original_char, new_char = temporary_character
+            grid[y][x] = original_char
+            print("resetting temporary character at", (x,y), "to", original_char)
+        modified_text = '\n'.join(''.join(row) for row in grid)
+        return modified_text
 
     def set_route(self):
         self.display_class.set_char_color_at_coord(self.entry_signal.coord[0], self.entry_signal.coord[1], "gray", self.text)
@@ -550,16 +565,14 @@ class Game:
         if self.entry_signal:
             self.display_class.set_char_color_at_coord(self.entry_signal.coord[0], self.entry_signal.coord[1], "white", self.text)
     
-    def path_find(self, lines, x, y, direction, main_direction, last_char, last_last_char):
-        right_up = 'k{'
+    def path_find(self, lines, x, y, direction, main_direction, last_char, last_last_char, temporary_characters = []):
+        right_up = 'k'
         right_down = "io"
         left_up = "hn"
-        left_down = 'j}'
+        left_down = 'j'
         both_up = "z"
         both_down = "y"
         vertical = "|ö"
-        right_conditional = "e"
-        left_conditional = "d"
         direction_change = None
         char = lines[y][x]
         # print("char is", char)
@@ -610,7 +623,7 @@ class Game:
                     
 
                     print("teleported to", amended_x, y, "new direction is", direction)
-                    return amended_x, y, direction, last_char, direction_change, last_last_char
+                    return amended_x, y, direction, last_char, direction_change, last_last_char, temporary_characters
             x, y = self.skip_parts("÷", direction, x, y, lines)
         elif next_char == "ö":
             x, y = self.skip_parts("ö", direction, x, y, lines)
@@ -642,63 +655,118 @@ class Game:
             if direction == "right":
                 if last_last_char == "i":
                     direction = "down"
+                    temporary_characters.append([(x-1,y), "d", "h"])
+                    temporary_characters.append([(x,y), "e", "i"])
                     y += 1
                 else:
                     direction = "right"
+                    temporary_characters.append([(x-1,y), "d", "a"])
+                    temporary_characters.append([(x,y), "e", "a"])
+                    
                     x += 1
-            # else:
-            #     direction = "left"
-            #     x -= 1
         elif char == "d" and last_char == "e":
             if direction == "left":
                 if last_last_char == "h":
                     direction = "up"
+                    temporary_characters.append([(x,y), "d", "h"])
+                    temporary_characters.append([(x+1,y), "e", "i"])
                     y -= 1
                 else:
                     direction = "left"
+                    temporary_characters.append([(x,y), "d", "a"])
+                    temporary_characters.append([(x+1,y), "e", "a"])
                     x -= 1
-            # else:
+
         elif char == "g" and last_char == "f":
             if direction == "right":
                 if last_last_char == "k":
                     direction = "up"
+                    temporary_characters.append([(x-1,y), "f", "j"])
+                    temporary_characters.append([(x,y), "g", "k"])
                     y -= 1
                 else:
                     direction = "right"
+                    temporary_characters.append([(x-1,y), "f", "a"])
+                    temporary_characters.append([(x,y), "g", "a"])
                     x += 1
         elif char == "f" and last_char == "g":
             if direction == "left":
                 if last_last_char == "j":
                     direction = "down"
+                    temporary_characters.append([(x,y), "f", "j"])
+                    temporary_characters.append([(x+1,y), "g", "k"])
                     y += 1
                 else:
                     direction = "left"
+                    temporary_characters.append([(x,y), "f", "a"])
+                    temporary_characters.append([(x+1,y), "g", "a"])
                     x -= 1
                 
         else:
             if char in both_up:
                 if last_char == both_down:
-                    x += 1 if direction == "right" else -1
+                    if direction == "right":
+                        temporary_characters.append([(x,y), both_up, "h"])
+                        temporary_characters.append([(x,y-1), both_down, "i"])
+                        x += 1
+                    else:
+                        temporary_characters.append([(x,y), both_up, "k"])
+                        temporary_characters.append([(x,y-1), both_down, "j"])
+                        x -= 1
                 else:
                     y -= 1
             elif char in both_down:
                 if last_char == both_up:
-                    x += 1 if direction == "right" else -1
+                    if direction == "right":
+                        temporary_characters.append([(x,y), both_down, "j"])
+                        temporary_characters.append([(x,y+1), both_up, "k"])
+                        
+                        x += 1
+                    else:
+                        temporary_characters.append([(x,y), both_down, "i"])
+                        temporary_characters.append([(x,y+1), both_up, "h"])
+                        x -= 1
                 else:
                     y += 1
+
+            elif char == "{":
+                if last_char == "}":
+                    if last_last_char in right_up:
+                        temporary_characters.append([(x,y), "{", "k"])
+                        temporary_characters.append([(x-1,y), "}", "j"])
+                        y -= 1
+                    elif last_last_char in right_down:
+                        temporary_characters.append([(x,y), "{", "i"])
+                        temporary_characters.append([(x-1,y), "}", "h"])
+                        y += 1
+                else:
+                    x -= 1
+            elif char == "}":
+                if last_char == "{":
+                    if last_last_char in left_up:
+                        temporary_characters.append([(x+1,y), "{", "i"])
+                        temporary_characters.append([(x,y), "}", "h"])
+                        y -= 1
+                    elif last_last_char in left_down:
+                        temporary_characters.append([(x+1,y), "{", "k"])
+                        temporary_characters.append([(x,y), "}", "j"])
+                        y += 1
+                else:
+                    x += 1
+
             elif char != " ":
                 if direction == 'right':
                     x += 1
                 elif direction == 'left':
                     x -= 1
             else:
-                return -1,-1,None,None,None, None
+                return -1,-1,None,None,None, None, []
 
         last_last_char = last_char
         last_char = char
         # print("finished with last char stuff")
         
-        return x, y, direction, last_char, direction_change, last_last_char
+        return x, y, direction, last_char, direction_change, last_last_char, temporary_characters
     
     def skip_parts(self, character, direction, x, y, lines):
         passed = False
@@ -765,9 +833,9 @@ class Game:
                     self.snapshot = False
                 self.update_spawn()
                 for train in self.trains:
-                    if not train.bounds_check(self.text, self.display_class, self):
-                        self.despawn_train(train)
-                        continue
+                    # if not train.bounds_check(self.text, self.display_class, self):
+                    #     self.despawn_train(train)
+                    #     continue
                     train.move(self.text, self.lines, self, self.signals, self.display_class)
                     # train.station_check(self.text)
                     
@@ -789,6 +857,7 @@ class Game:
                 clock.tick(120)
             except Exception as e:
                 print("error in main loop:", e)
+                traceback.print_exc()
             
 
 # Python's best practice, only run the code if it is the main script
@@ -851,7 +920,6 @@ def choose_scenario():
     return scenario
 
 def main():
-    
     scenario = choose_scenario()
 
     if scenario:

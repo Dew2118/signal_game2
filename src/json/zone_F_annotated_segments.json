@@ -1,0 +1,785 @@
+{
+    "segments": [
+        {
+            "left": [
+                466,
+                5
+            ],
+            "right": [
+                470,
+                5
+            ],
+            "type": "platform",
+            "station": "CONNOLLY",
+            "platform": "3"
+        },
+        {
+            "left": [
+                406,
+                6
+            ],
+            "right": [
+                410,
+                6
+            ],
+            "type": "platform",
+            "station": "ASHLAN PARK",
+            "platform": ""
+        },
+        {
+            "left": [
+                466,
+                6
+            ],
+            "right": [
+                470,
+                6
+            ],
+            "type": "platform",
+            "station": "CONNOLLY",
+            "platform": "2"
+        },
+        {
+            "left": [
+                406,
+                11
+            ],
+            "right": [
+                410,
+                11
+            ],
+            "type": "platform",
+            "station": "ASHLAN PARK",
+            "platform": ""
+        },
+        {
+            "left": [
+                466,
+                11
+            ],
+            "right": [
+                470,
+                11
+            ],
+            "type": "platform",
+            "station": "CONNOLLY",
+            "platform": "1"
+        },
+        {
+            "left": [
+                344,
+                12
+            ],
+            "right": [
+                348,
+                12
+            ],
+            "type": "platform",
+            "station": "CAMBRIDGE STREET PARKWAY",
+            "platform": "1"
+        },
+        {
+            "left": [
+                481,
+                13
+            ],
+            "right": [
+                481,
+                13
+            ],
+            "type": "entrance_exit",
+            "station": "ZONE G",
+            "platform": "UP"
+        },
+        {
+            "left": [
+                481,
+                16
+            ],
+            "right": [
+                481,
+                16
+            ],
+            "type": "entrance_exit",
+            "station": "ZONE G",
+            "platform": "DOWN"
+        },
+        {
+            "left": [
+                344,
+                17
+            ],
+            "right": [
+                348,
+                17
+            ],
+            "type": "platform",
+            "station": "CAMBRIDGE STREET PARKWAY",
+            "platform": "2"
+        },
+        {
+            "left": [
+                344,
+                18
+            ],
+            "right": [
+                348,
+                18
+            ],
+            "type": "platform",
+            "station": "CAMBRIDGE STREET PARKWAY",
+            "platform": "3"
+        },
+        {
+            "left": [
+                43,
+                19
+            ],
+            "right": [
+                47,
+                19
+            ],
+            "type": "platform",
+            "station": "NEWRY",
+            "platform": "1"
+        },
+        {
+            "left": [
+                43,
+                20
+            ],
+            "right": [
+                47,
+                20
+            ],
+            "type": "platform",
+            "station": "NEWRY",
+            "platform": "2"
+        },
+        {
+            "left": [
+                4,
+                21
+            ],
+            "right": [
+                8,
+                21
+            ],
+            "type": "platform",
+            "station": "NEWRY HARBOUR",
+            "platform": "1"
+        },
+        {
+            "left": [
+                4,
+                22
+            ],
+            "right": [
+                8,
+                22
+            ],
+            "type": "platform",
+            "station": "NEWRY HARBOUR",
+            "platform": "2"
+        },
+        {
+            "left": [
+                112,
+                22
+            ],
+            "right": [
+                116,
+                22
+            ],
+            "type": "platform",
+            "station": "EDEN QUAY",
+            "platform": ""
+        },
+        {
+            "left": [
+                165,
+                22
+            ],
+            "right": [
+                169,
+                22
+            ],
+            "type": "platform",
+            "station": "FARADAY ROAD",
+            "platform": "1"
+        },
+        {
+            "left": [
+                272,
+                22
+            ],
+            "right": [
+                276,
+                22
+            ],
+            "type": "platform",
+            "station": "BENTON",
+            "platform": "1"
+        },
+        {
+            "left": [
+                216,
+                24
+            ],
+            "right": [
+                220,
+                24
+            ],
+            "type": "platform",
+            "station": "WEST BENTON",
+            "platform": ""
+        },
+        {
+            "left": [
+                248,
+                25
+            ],
+            "right": [
+                248,
+                25
+            ],
+            "type": "entrance_exit",
+            "station": "BENTON SIDING",
+            "platform": ""
+        },
+        {
+            "left": [
+                95,
+                26
+            ],
+            "right": [
+                95,
+                26
+            ],
+            "type": "entrance_exit",
+            "station": "NEWRY SIDING",
+            "platform": ""
+        },
+        {
+            "left": [
+                272,
+                26
+            ],
+            "right": [
+                276,
+                26
+            ],
+            "type": "platform",
+            "station": "BENTON",
+            "platform": "2"
+        },
+        {
+            "left": [
+                216,
+                27
+            ],
+            "right": [
+                220,
+                27
+            ],
+            "type": "platform",
+            "station": "WEST BENTON",
+            "platform": ""
+        },
+        {
+            "left": [
+                272,
+                27
+            ],
+            "right": [
+                276,
+                27
+            ],
+            "type": "platform",
+            "station": "BENTON",
+            "platform": "3"
+        },
+        {
+            "left": [
+                112,
+                29
+            ],
+            "right": [
+                116,
+                29
+            ],
+            "type": "platform",
+            "station": "EDEN QUAY",
+            "platform": ""
+        },
+        {
+            "left": [
+                165,
+                29
+            ],
+            "right": [
+                169,
+                29
+            ],
+            "type": "platform",
+            "station": "FARADAY ROAD",
+            "platform": "2"
+        },
+        {
+            "left": [
+                165,
+                30
+            ],
+            "right": [
+                169,
+                30
+            ],
+            "type": "platform",
+            "station": "FARADAY ROAD",
+            "platform": "3"
+        },
+        {
+            "left": [
+                43,
+                31
+            ],
+            "right": [
+                47,
+                31
+            ],
+            "type": "platform",
+            "station": "NEWRY",
+            "platform": "3"
+        },
+        {
+            "left": [
+                203,
+                31
+            ],
+            "right": [
+                203,
+                31
+            ],
+            "type": "entrance_exit",
+            "station": "FARADAY ROAD SIDING",
+            "platform": ""
+        },
+        {
+            "left": [
+                272,
+                32
+            ],
+            "right": [
+                276,
+                32
+            ],
+            "type": "platform",
+            "station": "BENTON",
+            "platform": "4"
+        },
+        {
+            "left": [
+                272,
+                33
+            ],
+            "right": [
+                276,
+                33
+            ],
+            "type": "platform",
+            "station": "BENTON",
+            "platform": "5"
+        },
+        {
+            "left": [
+                481,
+                34
+            ],
+            "right": [
+                481,
+                34
+            ],
+            "type": "entrance_exit",
+            "station": "ZONE C",
+            "platform": "UP"
+        },
+        {
+            "left": [
+                227,
+                36
+            ],
+            "right": [
+                227,
+                36
+            ],
+            "type": "entrance_exit",
+            "station": "ZONE B",
+            "platform": "UP SLOW"
+        },
+        {
+            "left": [
+                481,
+                36
+            ],
+            "right": [
+                481,
+                36
+            ],
+            "type": "entrance_exit",
+            "station": "ZONE C",
+            "platform": "DOWN"
+        },
+        {
+            "left": [
+                272,
+                37
+            ],
+            "right": [
+                276,
+                37
+            ],
+            "type": "platform",
+            "station": "BENTON",
+            "platform": "6"
+        },
+        {
+            "left": [
+                272,
+                38
+            ],
+            "right": [
+                276,
+                38
+            ],
+            "type": "platform",
+            "station": "BENTON",
+            "platform": "7"
+        },
+        {
+            "left": [
+                227,
+                39
+            ],
+            "right": [
+                227,
+                39
+            ],
+            "type": "entrance_exit",
+            "station": "ZONE B",
+            "platform": "UP FAST"
+        },
+        {
+            "left": [
+                481,
+                39
+            ],
+            "right": [
+                481,
+                39
+            ],
+            "type": "entrance_exit",
+            "station": "ZONE D",
+            "platform": "UP HH"
+        },
+        {
+            "left": [
+                481,
+                41
+            ],
+            "right": [
+                481,
+                41
+            ],
+            "type": "entrance_exit",
+            "station": "ZONE D",
+            "platform": "DOWN HH"
+        },
+        {
+            "left": [
+                272,
+                42
+            ],
+            "right": [
+                276,
+                42
+            ],
+            "type": "platform",
+            "station": "BENTON",
+            "platform": "8"
+        },
+        {
+            "left": [
+                272,
+                43
+            ],
+            "right": [
+                276,
+                43
+            ],
+            "type": "platform",
+            "station": "BENTON",
+            "platform": "9"
+        },
+        {
+            "left": [
+                272,
+                46
+            ],
+            "right": [
+                276,
+                46
+            ],
+            "type": "platform",
+            "station": "BENTON",
+            "platform": "10"
+        },
+        {
+            "left": [
+                227,
+                47
+            ],
+            "right": [
+                227,
+                47
+            ],
+            "type": "entrance_exit",
+            "station": "ZONE B",
+            "platform": "DOWN FAST"
+        },
+        {
+            "left": [
+                227,
+                50
+            ],
+            "right": [
+                227,
+                50
+            ],
+            "type": "entrance_exit",
+            "station": "ZONE B",
+            "platform": "DOWN SLOW"
+        },
+        {
+            "left": [
+                272,
+                51
+            ],
+            "right": [
+                276,
+                51
+            ],
+            "type": "platform",
+            "station": "BENTON",
+            "platform": "11"
+        },
+        {
+            "left": [
+                272,
+                52
+            ],
+            "right": [
+                276,
+                52
+            ],
+            "type": "platform",
+            "station": "BENTON",
+            "platform": "12"
+        },
+        {
+            "left": [
+                345,
+                52
+            ],
+            "right": [
+                345,
+                52
+            ],
+            "type": "entrance_exit",
+            "station": "BENTON SIDING",
+            "platform": "1"
+        },
+        {
+            "left": [
+                345,
+                54
+            ],
+            "right": [
+                345,
+                54
+            ],
+            "type": "entrance_exit",
+            "station": "BENTON SIDING",
+            "platform": "2"
+        },
+        {
+            "left": [
+                272,
+                57
+            ],
+            "right": [
+                276,
+                57
+            ],
+            "type": "platform",
+            "station": "BENTON",
+            "platform": "13"
+        },
+        {
+            "left": [
+                338,
+                63
+            ],
+            "right": [
+                342,
+                63
+            ],
+            "type": "platform",
+            "station": "PORT BENTON",
+            "platform": "3"
+        },
+        {
+            "left": [
+                172,
+                64
+            ],
+            "right": [
+                176,
+                64
+            ],
+            "type": "platform",
+            "station": "GREENSLADE",
+            "platform": ""
+        },
+        {
+            "left": [
+                236,
+                64
+            ],
+            "right": [
+                240,
+                64
+            ],
+            "type": "platform",
+            "station": "WHITNEY GREEN",
+            "platform": ""
+        },
+        {
+            "left": [
+                338,
+                64
+            ],
+            "right": [
+                342,
+                64
+            ],
+            "type": "platform",
+            "station": "PORT BENTON",
+            "platform": "2"
+        },
+        {
+            "left": [
+                310,
+                66
+            ],
+            "right": [
+                314,
+                66
+            ],
+            "type": "platform",
+            "station": "MORGANSTOWN DOCKS",
+            "platform": ""
+        },
+        {
+            "left": [
+                172,
+                68
+            ],
+            "right": [
+                176,
+                68
+            ],
+            "type": "platform",
+            "station": "GREENSLADE",
+            "platform": ""
+        },
+        {
+            "left": [
+                236,
+                68
+            ],
+            "right": [
+                240,
+                68
+            ],
+            "type": "platform",
+            "station": "WHITNEY GREEN",
+            "platform": ""
+        },
+        {
+            "left": [
+                338,
+                68
+            ],
+            "right": [
+                342,
+                68
+            ],
+            "type": "platform",
+            "station": "PORT BENTON",
+            "platform": "1"
+        },
+        {
+            "left": [
+                279,
+                69
+            ],
+            "right": [
+                279,
+                69
+            ],
+            "type": "entrance_exit",
+            "station": "WHITNEY GREEN SIDING",
+            "platform": "1"
+        },
+        {
+            "left": [
+                279,
+                71
+            ],
+            "right": [
+                279,
+                71
+            ],
+            "type": "entrance_exit",
+            "station": "WHITNEY GREEN SIDING",
+            "platform": "2"
+        },
+        {
+            "left": [
+                312,
+                73
+            ],
+            "right": [
+                312,
+                73
+            ],
+            "type": "entrance_exit",
+            "station": "ZONE D",
+            "platform": "UP MGT"
+        },
+        {
+            "left": [
+                312,
+                75
+            ],
+            "right": [
+                312,
+                75
+            ],
+            "type": "entrance_exit",
+            "station": "ZONE D",
+            "platform": "DOWN MGT"
+        }
+    ],
+    "portals": []
+}

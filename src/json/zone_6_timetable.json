@@ -20,24 +20,20 @@
                 "station": "MORGANSTOWN",
                 "platform": "",
                 "arrival_offset": 90,
-                "departure_offset": 90,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 90
+},
             {
                 "station": "HAMPTON HARGATE",
                 "platform": "",
                 "arrival_offset": 182,
-                "departure_offset": 182,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 182
+},
             {
                 "station": "ZONE 9",
                 "platform": "UP FAST",
                 "arrival_offset": 282,
                 "departure_offset": 282,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -184,24 +180,20 @@
                 "station": "HAMPTON HARGATE",
                 "platform": "",
                 "arrival_offset": 110,
-                "departure_offset": 110,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 110
+},
             {
                 "station": "MORGANSTOWN",
                 "platform": "",
                 "arrival_offset": 210,
-                "departure_offset": 210,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 210
+},
             {
                 "station": "ZONE 3",
                 "platform": "DOWN FAST",
                 "arrival_offset": 300,
                 "departure_offset": 300,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -361,32 +353,26 @@
                 "station": "BENTON BRIDGE",
                 "platform": "2",
                 "arrival_offset": 30,
-                "departure_offset": 90,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 90
+},
             {
                 "station": "HAMPTON HARGATE",
                 "platform": "",
                 "arrival_offset": 270,
-                "departure_offset": 330,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 330
+},
             {
                 "station": "UPPER STAPLOE",
                 "platform": "1",
                 "arrival_offset": 410,
-                "departure_offset": 470,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 470
+},
             {
                 "station": "ZONE 9",
                 "platform": "UP SLOW",
                 "arrival_offset": 490,
                 "departure_offset": 490,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -476,24 +462,20 @@
                 "station": "HAMPTON HARGATE",
                 "platform": "",
                 "arrival_offset": 100,
-                "departure_offset": 160,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 160
+},
             {
                 "station": "BENTON BRIDGE",
                 "platform": "3",
                 "arrival_offset": 340,
-                "departure_offset": 400,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 400
+},
             {
                 "station": "ZONE 5",
                 "platform": "DOWN SLOW",
                 "arrival_offset": 430,
                 "departure_offset": 430,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -583,16 +565,14 @@
                 "station": "MORGANSTOWN",
                 "platform": "",
                 "arrival_offset": 120,
-                "departure_offset": 120,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 120
+},
             {
                 "station": "ZONE 3",
                 "platform": "DOWN FAST",
                 "arrival_offset": 210,
                 "departure_offset": 210,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -716,16 +696,14 @@
                 "station": "MORGANSTOWN",
                 "platform": "",
                 "arrival_offset": 90,
-                "departure_offset": 90,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 90
+},
             {
                 "station": "ZONE 7",
                 "platform": "UP FAST",
                 "arrival_offset": 210,
                 "departure_offset": 210,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -812,16 +790,14 @@
                 "station": "HAMPTON HARGATE",
                 "platform": "",
                 "arrival_offset": 30,
-                "departure_offset": 30,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 30
+},
             {
                 "station": "ZONE 9",
                 "platform": "UP FAST",
                 "arrival_offset": 140,
                 "departure_offset": 140,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -936,16 +912,14 @@
                 "station": "HAMPTON HARGATE",
                 "platform": "",
                 "arrival_offset": 110,
-                "departure_offset": 110,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 110
+},
             {
                 "station": "ZONE 7",
                 "platform": "UP FAST",
                 "arrival_offset": 140,
                 "departure_offset": 140,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -1154,17 +1128,12 @@
                 "station": "MORGANSTOWN",
                 "platform": "",
                 "arrival_offset": 90,
-                "departure_offset": 150,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 150
+},
             {
                 "station": "HAMPTON HARGATE",
                 "platform": "",
                 "arrival_offset": 250,
-                "departure_offset": 310,
-                "reverse_direction": false,
-                "despawn": false,
                 "change_timetable": 9
             }
         ],
@@ -1268,24 +1237,20 @@
                 "station": "HAMPTON HARGATE",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "MORGANSTOWN",
                 "platform": "",
                 "arrival_offset": 160,
-                "departure_offset": 220,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 220
+},
             {
                 "station": "ZONE 3",
                 "platform": "DOWN SLOW",
                 "arrival_offset": 310,
                 "departure_offset": 310,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -1313,16 +1278,14 @@
                 "station": "HAMPTON HARGATE",
                 "platform": "",
                 "arrival_offset": 190,
-                "departure_offset": 190,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 190
+},
             {
                 "station": "ZONE 9",
                 "platform": "UP FAST",
                 "arrival_offset": 140,
                 "departure_offset": 140,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -1449,16 +1412,14 @@
                 "station": "HAMPTON HARGATE",
                 "platform": "",
                 "arrival_offset": 110,
-                "departure_offset": 110,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 110
+},
             {
                 "station": "ZONE 5",
                 "platform": "DOWN FAST",
                 "arrival_offset": 300,
                 "departure_offset": 300,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -1592,17 +1553,12 @@
                 "station": "MORGANSTOWN DOCKS",
                 "platform": "1",
                 "arrival_offset": 40,
-                "departure_offset": 100,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 100
+},
             {
                 "station": "MORGANSTOWN",
                 "platform": "",
                 "arrival_offset": 190,
-                "departure_offset": 250,
-                "reverse_direction": false,
-                "despawn": false,
                 "change_timetable": 13
             }
         ],
@@ -1704,24 +1660,20 @@
                 "station": "MORGANSTOWN",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "MORGANSTOWN DOCKS",
                 "platform": "2",
                 "arrival_offset": 150,
-                "departure_offset": 210,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 210
+},
             {
                 "station": "ZONE 5",
                 "platform": "DOWN WL",
                 "arrival_offset": 240,
                 "departure_offset": 240,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -1749,32 +1701,26 @@
                 "station": "MORGANSTOWN DOCKS",
                 "platform": "1",
                 "arrival_offset": 40,
-                "departure_offset": 40,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 40
+},
             {
                 "station": "MORGANSTOWN",
                 "platform": "",
                 "arrival_offset": 130,
-                "departure_offset": 130,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 130
+},
             {
                 "station": "HAMPTON HARGATE",
                 "platform": "",
                 "arrival_offset": 230,
-                "departure_offset": 230,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 230
+},
             {
                 "station": "ZONE 9",
                 "platform": "UP FAST",
                 "arrival_offset": 330,
                 "departure_offset": 330,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -1904,32 +1850,26 @@
                 "station": "HAMPTON HARGATE",
                 "platform": "",
                 "arrival_offset": 110,
-                "departure_offset": 110,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 110
+},
             {
                 "station": "MORGANSTOWN",
                 "platform": "",
                 "arrival_offset": 210,
-                "departure_offset": 210,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 210
+},
             {
                 "station": "MORGANSTOWN DOCKS",
                 "platform": "2",
                 "arrival_offset": 300,
-                "departure_offset": 300,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 300
+},
             {
                 "station": "ZONE 5",
                 "platform": "DOWN WL",
                 "arrival_offset": 310,
                 "departure_offset": 310,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -2059,24 +1999,20 @@
                 "station": "MORGANSTOWN DOCKS",
                 "platform": "1",
                 "arrival_offset": 20,
-                "departure_offset": 80,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 80
+},
             {
                 "station": "WHITNEY GREEN",
                 "platform": "1",
                 "arrival_offset": 120,
-                "departure_offset": 180,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 180
+},
             {
                 "station": "ZONE 3",
                 "platform": "DOWN WL",
                 "arrival_offset": 210,
                 "departure_offset": 210,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -2180,24 +2116,20 @@
                 "station": "WHITNEY GREEN",
                 "platform": "2",
                 "arrival_offset": 30,
-                "departure_offset": 90,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 90
+},
             {
                 "station": "MORGANSTOWN DOCKS",
                 "platform": "2",
                 "arrival_offset": 120,
-                "departure_offset": 180,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 180
+},
             {
                 "station": "ZONE 5",
                 "platform": "DOWN WL",
                 "arrival_offset": 200,
                 "departure_offset": 200,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -2291,16 +2223,14 @@
                 "station": "BENTON BRIDGE",
                 "platform": "1",
                 "arrival_offset": 30,
-                "departure_offset": 90,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 90
+},
             {
                 "station": "ZONE 7",
                 "platform": "UP SLOW",
                 "arrival_offset": 120,
                 "departure_offset": 120,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -2510,16 +2440,14 @@
                 "station": "BENTON BRIDGE",
                 "platform": "4",
                 "arrival_offset": 30,
-                "departure_offset": 90,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 90
+},
             {
                 "station": "ZONE 5",
                 "platform": "DOWN SLOW",
                 "arrival_offset": 120,
                 "departure_offset": 120,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -2724,9 +2652,6 @@
                 "station": "HAMPTON HARGATE",
                 "platform": "",
                 "arrival_offset": 30,
-                "departure_offset": 90,
-                "reverse_direction": false,
-                "despawn": false,
                 "change_timetable": 21
             }
         ],
@@ -2852,16 +2777,14 @@
                 "station": "HAMPTON HARGATE",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "ZONE 7",
                 "platform": "UP FAST",
                 "arrival_offset": 90,
                 "departure_offset": 90,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -2889,17 +2812,12 @@
                 "station": "BEAULIEU PARK",
                 "platform": "1",
                 "arrival_offset": 20,
-                "departure_offset": 80,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 80
+},
             {
                 "station": "MORGANSTOWN",
                 "platform": "",
                 "arrival_offset": 160,
-                "departure_offset": 220,
-                "reverse_direction": false,
-                "despawn": false,
                 "change_timetable": 23
             }
         ],
@@ -3030,24 +2948,20 @@
                 "station": "MORGANSTOWN",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "BEAULIEU PARK",
                 "platform": "2",
                 "arrival_offset": 140,
-                "departure_offset": 200,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 200
+},
             {
                 "station": "ZONE 3",
                 "platform": "DOWN SLOW",
                 "arrival_offset": 210,
                 "departure_offset": 210,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],

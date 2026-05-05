@@ -20,41 +20,32 @@
                 "station": "EDGEMEAD",
                 "platform": "",
                 "arrival_offset": 68,
-                "departure_offset": 68,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 68
+},
             {
                 "station": "WESTERCOAST",
                 "platform": "1",
                 "arrival_offset": 241,
-                "departure_offset": 241,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 241
+},
             {
                 "station": "WESTWYVERN",
                 "platform": "1",
                 "arrival_offset": 649,
-                "departure_offset": 649,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 649
+},
             {
                 "station": "NORTHSHORE",
                 "platform": "2",
                 "arrival_offset": 860,
-                "departure_offset": 860,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 860
+},
             {
                 "station": "LLYN",
                 "platform": "",
                 "arrival_offset": 1072,
                 "departure_offset": 1132,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 1
             }
         ],
@@ -136,40 +127,32 @@
                 "station": "LLYN",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "WESTWYVERN",
                 "platform": "",
                 "arrival_offset": 475,
-                "departure_offset": 475,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 475
+},
             {
                 "station": "WESTERCOAST",
                 "platform": "2",
                 "arrival_offset": 882,
-                "departure_offset": 882,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 882
+},
             {
                 "station": "EDGEMEAD",
                 "platform": "3",
                 "arrival_offset": 1050,
-                "departure_offset": 1050,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 1050
+},
             {
                 "station": "ZONE D",
                 "platform": "DOWN",
                 "arrival_offset": 1110,
                 "departure_offset": 1110,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -197,73 +180,56 @@
                 "station": "EDGEMEAD",
                 "platform": "",
                 "arrival_offset": 70,
-                "departure_offset": 130,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 130
+},
             {
                 "station": "FAYMERE",
                 "platform": "1",
                 "arrival_offset": 220,
-                "departure_offset": 280,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 280
+},
             {
                 "station": "WESTERCOAST",
                 "platform": "1",
                 "arrival_offset": 370,
-                "departure_offset": 430,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 430
+},
             {
                 "station": "MILLCASTLE RACECOURSE",
                 "platform": "1",
                 "arrival_offset": 500,
-                "departure_offset": 560,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 560
+},
             {
                 "station": "MILLCASTLE",
                 "platform": "1",
                 "arrival_offset": 600,
-                "departure_offset": 660,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 660
+},
             {
                 "station": "WESTWYVERN",
                 "platform": "1",
                 "arrival_offset": 970,
-                "departure_offset": 1030,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 1030
+},
             {
                 "station": "STARRYLOCH",
                 "platform": "1",
                 "arrival_offset": 1190,
-                "departure_offset": 1250,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 1250
+},
             {
                 "station": "NORTHSHORE",
                 "platform": "1",
                 "arrival_offset": 1310,
-                "departure_offset": 1370,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 1370
+},
             {
                 "station": "LLYN",
                 "platform": "",
                 "arrival_offset": 1590,
                 "departure_offset": 1650,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 3
             }
         ],
@@ -346,80 +312,62 @@
                 "station": "LLYN",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "NORTHSHORE",
                 "platform": "4",
                 "arrival_offset": 270,
-                "departure_offset": 330,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 330
+},
             {
                 "station": "STARRYLOCH",
                 "platform": "2",
                 "arrival_offset": 390,
-                "departure_offset": 450,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 450
+},
             {
                 "station": "WESTWYVERN",
                 "platform": "4",
                 "arrival_offset": 610,
-                "departure_offset": 670,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 670
+},
             {
                 "station": "MILLCASTLE",
                 "platform": "4",
                 "arrival_offset": 980,
-                "departure_offset": 1040,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 1040
+},
             {
                 "station": "MILLCASTLE RACECOURSE",
                 "platform": "4",
                 "arrival_offset": 1080,
-                "departure_offset": 1140,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 1140
+},
             {
                 "station": "WESTERCOAST",
                 "platform": "2",
                 "arrival_offset": 1210,
-                "departure_offset": 1270,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 1270
+},
             {
                 "station": "FAYMERE",
                 "platform": "2",
                 "arrival_offset": 1360,
-                "departure_offset": 1420,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 1420
+},
             {
                 "station": "EDGEMEAD",
                 "platform": "3",
                 "arrival_offset": 1510,
-                "departure_offset": 1570,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 1570
+},
             {
                 "station": "ZONE D",
                 "platform": "DOWN",
                 "arrival_offset": 1660,
                 "departure_offset": 1660,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -447,16 +395,13 @@
                 "station": "EDGEMEAD",
                 "platform": "",
                 "arrival_offset": 70,
-                "departure_offset": 130,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 130
+},
             {
                 "station": "WESTWYVERN",
                 "platform": "",
                 "arrival_offset": 330,
                 "departure_offset": 390,
-                "despawn": false,
                 "change_timetable": 5
             }
         ],
@@ -530,24 +475,20 @@
                 "station": "WESTWYVERN",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "EDGEMEAD",
                 "platform": "3",
                 "arrival_offset": 410,
-                "departure_offset": 470,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 470
+},
             {
                 "station": "ZONE D",
                 "platform": "DOWN",
                 "arrival_offset": 530,
                 "departure_offset": 530,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -575,17 +516,14 @@
                 "station": "WESTWYVERN",
                 "platform": "1",
                 "arrival_offset": 320,
-                "departure_offset": 380,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 380
+},
             {
                 "station": "LLYN",
                 "platform": "",
                 "arrival_offset": 720,
                 "departure_offset": 780,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 7
             }
         ],
@@ -661,24 +599,20 @@
                 "station": "LLYN",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "WESTWYVERN",
                 "platform": "",
                 "arrival_offset": 420,
-                "departure_offset": 480,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 480
+},
             {
                 "station": "ZONE D",
                 "platform": "DOWN",
                 "arrival_offset": 820,
                 "departure_offset": 820,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -706,25 +640,20 @@
                 "station": "EDGEMEAD",
                 "platform": "",
                 "arrival_offset": 80,
-                "departure_offset": 140,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 140
+},
             {
                 "station": "WESTWYVERN",
                 "platform": "1",
                 "arrival_offset": 360,
-                "departure_offset": 420,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 420
+},
             {
                 "station": "LLYN",
                 "platform": "",
                 "arrival_offset": 760,
                 "departure_offset": 820,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 9
             }
         ],
@@ -802,32 +731,26 @@
                 "station": "LLYN",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "WESTWYVERN",
                 "platform": "",
                 "arrival_offset": 440,
-                "departure_offset": 500,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 500
+},
             {
                 "station": "EDGEMEAD",
                 "platform": "3",
                 "arrival_offset": 780,
-                "departure_offset": 840,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 840
+},
             {
                 "station": "ZONE D",
                 "platform": "DOWN",
                 "arrival_offset": 920,
                 "departure_offset": 920,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -855,25 +778,20 @@
                 "station": "WESTERCOAST",
                 "platform": "1",
                 "arrival_offset": 260,
-                "departure_offset": 320,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 320
+},
             {
                 "station": "NORTHSHORE",
                 "platform": "2",
                 "arrival_offset": 640,
-                "departure_offset": 700,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 700
+},
             {
                 "station": "LLYN",
                 "platform": "",
                 "arrival_offset": 980,
                 "departure_offset": 1040,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 11
             }
         ],
@@ -952,32 +870,26 @@
                 "station": "LLYN",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "NORTHSHORE",
                 "platform": "3",
                 "arrival_offset": 340,
-                "departure_offset": 400,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 400
+},
             {
                 "station": "WESTERCOAST",
                 "platform": "2",
                 "arrival_offset": 720,
-                "departure_offset": 780,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 780
+},
             {
                 "station": "ZONE D",
                 "platform": "DOWN",
                 "arrival_offset": 1040,
                 "departure_offset": 1040,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -1005,17 +917,14 @@
                 "station": "WESTWYVERN",
                 "platform": "1",
                 "arrival_offset": 300,
-                "departure_offset": 360,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 360
+},
             {
                 "station": "LLYN",
                 "platform": "",
                 "arrival_offset": 700,
                 "departure_offset": 760,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 13
             }
         ],
@@ -1095,24 +1004,20 @@
                 "station": "LLYN",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "WESTWYVERN",
                 "platform": "",
                 "arrival_offset": 420,
-                "departure_offset": 480,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 480
+},
             {
                 "station": "ZONE D",
                 "platform": "DOWN",
                 "arrival_offset": 780,
                 "departure_offset": 780,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -1140,17 +1045,14 @@
                 "station": "NORTHSHORE",
                 "platform": "2",
                 "arrival_offset": 360,
-                "departure_offset": 420,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 420
+},
             {
                 "station": "LLYN",
                 "platform": "",
                 "arrival_offset": 720,
                 "departure_offset": 780,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 15
             }
         ],
@@ -1234,24 +1136,20 @@
                 "station": "LLYN",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "NORTHSHORE",
                 "platform": "3",
                 "arrival_offset": 320,
-                "departure_offset": 380,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 380
+},
             {
                 "station": "ZONE D",
                 "platform": "DOWN",
                 "arrival_offset": 700,
                 "departure_offset": 700,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -1279,17 +1177,14 @@
                 "station": "WESTERCOAST",
                 "platform": "1",
                 "arrival_offset": 260,
-                "departure_offset": 320,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 320
+},
             {
                 "station": "LLYN",
                 "platform": "",
                 "arrival_offset": 700,
                 "departure_offset": 760,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 17
             }
         ],
@@ -1371,24 +1266,20 @@
                 "station": "LLYN",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "WESTERCOAST",
                 "platform": "2",
                 "arrival_offset": 420,
-                "departure_offset": 480,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 480
+},
             {
                 "station": "ZONE D",
                 "platform": "DOWN",
                 "arrival_offset": 820,
                 "departure_offset": 820,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -1416,49 +1307,38 @@
                 "station": "EDGEMEAD",
                 "platform": "",
                 "arrival_offset": 80,
-                "departure_offset": 140,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 140
+},
             {
                 "station": "WESTERCOAST",
                 "platform": "1",
                 "arrival_offset": 260,
-                "departure_offset": 320,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 320
+},
             {
                 "station": "MILLCASTLE",
                 "platform": "2",
                 "arrival_offset": 420,
-                "departure_offset": 480,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 480
+},
             {
                 "station": "WESTWYVERN",
                 "platform": "1",
                 "arrival_offset": 680,
-                "departure_offset": 740,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 740
+},
             {
                 "station": "NORTHSHORE",
                 "platform": "2",
                 "arrival_offset": 900,
-                "departure_offset": 960,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 960
+},
             {
                 "station": "LLYN",
                 "platform": "",
                 "arrival_offset": 1120,
                 "departure_offset": 1180,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 19
             }
         ],
@@ -1540,56 +1420,44 @@
                 "station": "LLYN",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "NORTHSHORE",
                 "platform": "3",
                 "arrival_offset": 220,
-                "departure_offset": 280,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 280
+},
             {
                 "station": "WESTWYVERN",
                 "platform": "2",
                 "arrival_offset": 480,
-                "departure_offset": 540,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 540
+},
             {
                 "station": "MILLCASTLE",
                 "platform": "3",
                 "arrival_offset": 720,
-                "departure_offset": 780,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 780
+},
             {
                 "station": "WESTERCOAST",
                 "platform": "2",
                 "arrival_offset": 860,
-                "departure_offset": 920,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 920
+},
             {
                 "station": "EDGEMEAD",
                 "platform": "3",
                 "arrival_offset": 1040,
-                "departure_offset": 1100,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 1100
+},
             {
                 "station": "ZONE D",
                 "platform": "DOWN",
                 "arrival_offset": 1180,
                 "departure_offset": 1180,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -1617,49 +1485,38 @@
                 "station": "EDGEMEAD",
                 "platform": "1",
                 "arrival_offset": 90,
-                "departure_offset": 150,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 150
+},
             {
                 "station": "WESTERCOAST",
                 "platform": "1",
                 "arrival_offset": 270,
-                "departure_offset": 330,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 330
+},
             {
                 "station": "MILLCASTLE",
                 "platform": "1",
                 "arrival_offset": 450,
-                "departure_offset": 510,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 510
+},
             {
                 "station": "WESTWYVERN",
                 "platform": "2",
                 "arrival_offset": 700,
-                "departure_offset": 760,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 760
+},
             {
                 "station": "NORTHSHORE",
                 "platform": "1",
                 "arrival_offset": 920,
-                "departure_offset": 980,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 980
+},
             {
                 "station": "LLYN",
                 "platform": "",
                 "arrival_offset": 1140,
                 "departure_offset": 1200,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 21
             }
         ],
@@ -1734,64 +1591,50 @@
                 "station": "LLYN",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "NORTHSHORE",
                 "platform": "4",
                 "arrival_offset": 260,
-                "departure_offset": 320,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 320
+},
             {
                 "station": "WESTWYVERN",
                 "platform": "4",
                 "arrival_offset": 600,
-                "departure_offset": 660,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 660
+},
             {
                 "station": "MILLCASTLE",
                 "platform": "4",
                 "arrival_offset": 900,
-                "departure_offset": 960,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 960
+},
             {
                 "station": "WESTERCOAST",
                 "platform": "2",
                 "arrival_offset": 1160,
-                "departure_offset": 1220,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 1220
+},
             {
                 "station": "FAYMERE",
                 "platform": "2",
                 "arrival_offset": 1360,
-                "departure_offset": 1420,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 1420
+},
             {
                 "station": "EDGEMEAD",
                 "platform": "3",
                 "arrival_offset": 1500,
-                "departure_offset": 1560,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 1560
+},
             {
                 "station": "ZONE D",
                 "platform": "DOWN",
                 "arrival_offset": 1650,
                 "departure_offset": 1650,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -1819,57 +1662,44 @@
                 "station": "EDGEMEAD",
                 "platform": "",
                 "arrival_offset": 80,
-                "departure_offset": 140,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 140
+},
             {
                 "station": "FAYMERE",
                 "platform": "1",
                 "arrival_offset": 240,
-                "departure_offset": 300,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 300
+},
             {
                 "station": "WESTERCOAST",
                 "platform": "1",
                 "arrival_offset": 420,
-                "departure_offset": 480,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 480
+},
             {
                 "station": "MILLCASTLE",
                 "platform": "1",
                 "arrival_offset": 600,
-                "departure_offset": 660,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 660
+},
             {
                 "station": "WESTWYVERN",
                 "platform": "1",
                 "arrival_offset": 860,
-                "departure_offset": 920,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 920
+},
             {
                 "station": "NORTHSHORE",
                 "platform": "1",
                 "arrival_offset": 1080,
-                "departure_offset": 1140,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 1140
+},
             {
                 "station": "LLYN",
                 "platform": "",
                 "arrival_offset": 1300,
                 "departure_offset": 1360,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 23
             }
         ],
@@ -1955,64 +1785,50 @@
                 "station": "LLYN",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "NORTHSHORE",
                 "platform": "1",
                 "arrival_offset": 240,
-                "departure_offset": 300,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 300
+},
             {
                 "station": "WESTWYVERN",
                 "platform": "2",
                 "arrival_offset": 500,
-                "departure_offset": 560,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 560
+},
             {
                 "station": "MILLCASTLE",
                 "platform": "4",
                 "arrival_offset": 760,
-                "departure_offset": 820,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 820
+},
             {
                 "station": "WESTERCOAST",
                 "platform": "2",
                 "arrival_offset": 940,
-                "departure_offset": 1000,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 1000
+},
             {
                 "station": "FAYMERE",
                 "platform": "2",
                 "arrival_offset": 1120,
-                "departure_offset": 1180,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 1180
+},
             {
                 "station": "EDGEMEAD",
                 "platform": "3",
                 "arrival_offset": 1280,
-                "departure_offset": 1340,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 1340
+},
             {
                 "station": "ZONE D",
                 "platform": "DOWN",
                 "arrival_offset": 1420,
                 "departure_offset": 1420,
-                "reverse_direction": false,
+                
                 "despawn": true
             }
         ],
@@ -2041,8 +1857,7 @@
                 "platform": "",
                 "arrival_offset": 0,
                 "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 25
             }
         ],
@@ -2138,73 +1953,56 @@
                 "station": "EDGEMEAD",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "FAYMERE",
                 "platform": "1",
                 "arrival_offset": 180,
-                "departure_offset": 240,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 240
+},
             {
                 "station": "WESTERCOAST",
                 "platform": "1",
                 "arrival_offset": 360,
-                "departure_offset": 420,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 420
+},
             {
                 "station": "MILLCASTLE RACECOURSE",
                 "platform": "1",
                 "arrival_offset": 500,
-                "departure_offset": 560,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 560
+},
             {
                 "station": "MILLCASTLE",
                 "platform": "1",
                 "arrival_offset": 620,
-                "departure_offset": 680,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 680
+},
             {
                 "station": "WESTWYVERN",
                 "platform": "1",
                 "arrival_offset": 900,
-                "departure_offset": 960,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 960
+},
             {
                 "station": "STARRYLOCH",
                 "platform": "1",
                 "arrival_offset": 1100,
-                "departure_offset": 1160,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 1160
+},
             {
                 "station": "NORTHSHORE",
                 "platform": "1",
                 "arrival_offset": 1220,
-                "departure_offset": 1280,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 1280
+},
             {
                 "station": "LLYN",
                 "platform": "",
                 "arrival_offset": 1440,
                 "departure_offset": 1500,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 26
             }
         ],
@@ -2232,73 +2030,56 @@
                 "station": "LLYN",
                 "platform": "",
                 "arrival_offset": 0,
-                "departure_offset": 60,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 60
+},
             {
                 "station": "NORTHSHORE",
                 "platform": "4",
                 "arrival_offset": 260,
-                "departure_offset": 320,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 320
+},
             {
                 "station": "STARRYLOCH",
                 "platform": "2",
                 "arrival_offset": 380,
-                "departure_offset": 440,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 440
+},
             {
                 "station": "WESTWYVERN",
                 "platform": "2",
                 "arrival_offset": 600,
-                "departure_offset": 660,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 660
+},
             {
                 "station": "MILLCASTLE",
                 "platform": "4",
                 "arrival_offset": 900,
-                "departure_offset": 960,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 960
+},
             {
                 "station": "MILLCASTLE RACECOURSE",
                 "platform": "4",
                 "arrival_offset": 1020,
-                "departure_offset": 1080,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 1080
+},
             {
                 "station": "WESTERCOAST",
                 "platform": "2",
                 "arrival_offset": 1160,
-                "departure_offset": 1220,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 1220
+},
             {
                 "station": "FAYMERE",
                 "platform": "2",
                 "arrival_offset": 1360,
-                "departure_offset": 1420,
-                "reverse_direction": false,
-                "despawn": false
-            },
+                "departure_offset": 1420
+},
             {
                 "station": "EDGEMEAD",
                 "platform": "3",
                 "arrival_offset": 1500,
                 "departure_offset": 1500,
-                "reverse_direction": false,
-                "despawn": false,
+                
                 "change_timetable": 25
             }
         ],

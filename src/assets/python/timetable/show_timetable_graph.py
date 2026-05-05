@@ -53,10 +53,11 @@ def extract_stations(data):
     for entry in data:
         route = []
 
-        route.append(get_display_station(
-            entry["start_location"]["station"],
-            entry["start_location"].get("platform", "")
-        ))
+        if entry.get("start_location"):
+            route.append(get_display_station(
+                entry["start_location"]["station"],
+                entry["start_location"].get("platform", "")
+            ))
 
         for stop in entry["stops"]:
             route.append(get_display_station(
@@ -111,13 +112,14 @@ def build_train_path(entry, data, base_time, station_index):
     current_entry = entry
     current_time = base_time
 
-    start_station = get_display_station(
-        current_entry["start_location"]["station"],
-        current_entry["start_location"].get("platform", "")
-    )
+    if current_entry.get("start_location"):
+        start_station = get_display_station(
+            current_entry["start_location"]["station"],
+            current_entry["start_location"].get("platform", "")
+        )
 
-    times.append(current_time)
-    positions.append(station_index[start_station])
+        times.append(current_time)
+        positions.append(station_index[start_station])
 
     while True:
         stops = current_entry["stops"]

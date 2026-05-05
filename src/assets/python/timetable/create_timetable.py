@@ -6,7 +6,7 @@ CWD = os.path.dirname(__file__)
 JSON_PATH = os.path.join("..", "..","..", "json")
 
 class TimetableCreator:
-    def __init__(self, segments_file=os.path.join(CWD, JSON_PATH, "zone_A_annotated_segments.json")):
+    def __init__(self, segments_file=os.path.join(CWD, JSON_PATH, "zone_F_annotated_segments.json")):
         with open(segments_file, "r") as f:
             data = json.load(f)
 
@@ -118,7 +118,9 @@ class TimetableCreator:
 
     def input_stops(self, filename):
         print("Enter stops (station and platform names). When done, type 'done'.")
-        last_stop_coord = self.timetable['start_location'][self.timetable['direction']]
+        last_stop_coord = None
+        if self.timetable.get('start_location'):
+            last_stop_coord = self.timetable['start_location'][self.timetable['direction']]
         last_value = 0
 
         while True:
@@ -141,8 +143,11 @@ class TimetableCreator:
                 continue
 
             # ✅ Distance
-            distance = abs(last_stop_coord[0] - second_last_stop_coord[0]) + \
-                       abs(last_stop_coord[1] - second_last_stop_coord[1])
+            if last_stop_coord is not None:
+                distance = abs(last_stop_coord[0] - second_last_stop_coord[0]) + \
+                           abs(last_stop_coord[1] - second_last_stop_coord[1])
+            else:
+                distance = None
 
             # ✅ Wait time from JSON
             wait_time = matched_seg.get("wait_time", 1)
@@ -150,7 +155,7 @@ class TimetableCreator:
                 wait_time = 1
 
             # ✅ Adjusted travel time
-            adjusted_time = round(distance / wait_time)
+            adjusted_time = round(distance / wait_time) if distance is not None else wait_time
 
             travel_time = int(input(
                 f"Arrival time addition (sec) travel time is ({adjusted_time}): "
@@ -167,14 +172,16 @@ class TimetableCreator:
 
             last_stop_coord = second_last_stop_coord
 
-            self.timetable['stops'].append({
+            stop_entry = {
                 "station": station,
                 "platform": platform,
                 "arrival_offset": arr,
-                "departure_offset": dep,
-                "reverse_direction": reverse,
-                "despawn": False
-            })
+                "departure_offset": dep
+            }
+            if reverse:
+                stop_entry["reverse_direction"] = True
+
+            self.timetable['stops'].append(stop_entry)
 
         if self.timetable['stops']:
             last_stop = self.timetable['stops'][-1]
@@ -194,7 +201,10 @@ class TimetableCreator:
                 new_tt_code = input(f"Enter new timetable index (e.g., {next_index}): ").strip().upper()
                 last_stop['change_timetable'] = int(new_tt_code)
 
-            last_stop['despawn'] = input("Despawn at last stop? (y/n): ").strip().lower() == "y"
+            if input("Despawn at last stop? (y/n): ").strip().lower() == "y":
+                last_stop['despawn'] = True
+            elif 'despawn' in last_stop:
+                del last_stop['despawn']
 
     def save_timetable(self, filename):
         all_timetables = []
@@ -218,10 +228,13 @@ class TimetableCreator:
     def run(self):
         self.input_headcode()
         self.input_spawn_times()
-        self.input_start_location()
+
+        if self.timetable["spawn_times"]:
+            self.input_start_location()
+
         self.input_direction()
-        self.input_stops(os.path.join(CWD, JSON_PATH, "zone_A_timetable.json"))
-        self.save_timetable(os.path.join(CWD, JSON_PATH, "zone_A_timetable.json"))
+        self.input_stops(os.path.join(CWD, JSON_PATH, "zone_F_timetable.json"))
+        self.save_timetable(os.path.join(CWD, JSON_PATH, "zone_F_timetable.json"))
 
 
 if __name__ == "__main__":
