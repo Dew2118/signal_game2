@@ -348,26 +348,18 @@ class Train:
                 print("direction change is ", direction_change)
             if direction == "right":
                 amended_x = x+1
-                opposite_direction = "left"
-                if (amended_x >= len(lines[y])) or (lines[y][x] in "b]" or (lines[y][amended_x] in "c[" and lines[y][x] in "a")):
+                if (amended_x >= len(lines[y])) or (lines[y][x] in "b]nl" or (lines[y][amended_x] in "c[om" and lines[y][x] in "a")):
                     self.coords.insert(0, coords)
                     self.direction = direction
                     print("blocked by ", lines[y][x], " or ", lines[y][amended_x], " at ", (x,y), " or ", (amended_x,y))
                     return
             else:
                 amended_x = x-1
-                opposite_direction = "right"
-                if (amended_x < 0) or (lines[y][x] in "c[" or (lines[y][amended_x] in "b]" and lines[y][x] in "a")):
+                if (amended_x < 0) or (lines[y][x] in "c[om" or (lines[y][amended_x] in "b]nl" and lines[y][x] in "a")):
                     print("blocked by ", lines[y][x], " or ", lines[y][amended_x], " at ", (x,y), " or ", (amended_x,y))
                     self.coords.insert(0, coords)
                     self.direction = direction
                     return
-            # for signal in signals:
-            #     if self.signal_condition_check(signal, x, y, direction) or self.signal_condition_check(signal, amended_x, y, opposite_direction):
-            #         # print("blocked by signal at ", signal.coord, " with color ", signal.color)
-            #         self.coords.insert(0, coords)
-            #         self.direction = direction
-            #         return
             if last_char == "x" and len(self.coords[0]) > 1:
                 self.despawn = True
                 # print("blocked by last char at ", (x,y))
@@ -478,25 +470,5 @@ class Train:
                 if display.get_char_color_at_coord(x, y, text) != (255, 255, 255):
                     display.set_char_color_at_coord(x, y, "white",text)
         # self.last_colored_route_coords = self.route_coords.copy()
-    
-    # def despawn_train(self, text, display, game):
-    #     f = StringIO(text)
-    #     lines = f.readlines()
-    #     grid = [list(line.rstrip('\n')) for line in lines]
-    #     for coords in self.coords:
-    #         for i,coord in enumerate(coords):
-    #             x, y = coord
-    #             if self.last_signal and self.last_signal[-1].route_set and (x,y) in self.last_signal[-1].route_coords:
-    #                 display.set_char_color_at_coord(x, y, "white",text)
-    #             else:
-    #                 display.set_char_color_at_coord(x, y, "gray",text)
-        
-    #     for last_signal in self.last_signal:
-    #         last_signal.train_in_block = False
-    #         # game.update_signals()
-        
-    # def add_last_direction(self):
-    #     if not self.last_three_directions or self.direction != self.last_three_directions[-1]:
-    #         self.last_three_directions.append(self.direction)
         
         

@@ -312,13 +312,13 @@ class Game:
                     if direction == "right" and not buffer:
                         if lines[y][x+1] in "sr":
                             shunt = True
-                        elif lines[y][x+1] not in "q":
+                        elif lines[y][x+1] not in "qÂ":
                             continue
                     elif direction == "left" and not buffer:
                         if lines[y][x-1] in "sr":
                             self.display_class.add_log("shunt to the left")
                             shunt = True
-                        elif lines[y][x-1] not in "q":
+                        elif lines[y][x-1] not in "qÂ":
                             continue
                     mount = mount_map.get(char, "up")
                     
@@ -566,10 +566,10 @@ class Game:
             self.display_class.set_char_color_at_coord(self.entry_signal.coord[0], self.entry_signal.coord[1], "white", self.text)
     
     def path_find(self, lines, x, y, direction, main_direction, last_char, last_last_char, temporary_characters = []):
-        right_up = 'k'
-        right_down = "io"
-        left_up = "hn"
-        left_down = 'j'
+        right_up = 'ko'
+        right_down = "im"
+        left_up = "hl"
+        left_down = 'jn'
         both_up = "z"
         both_down = "y"
         vertical = "|ö"
@@ -639,12 +639,12 @@ class Game:
             elif direction == "down":
                 y += 1
         elif direction == "up" or direction == "down":
-            if char in "ik":
+            if char in right_down or char in right_up:
                 direction = "left"
                 if direction != main_direction:
                     direction_change = [(x,y), direction]
                 x -= 1
-            elif char in "hj":
+            elif char in left_down or char in left_up:
                 direction = "right"
                 if direction != main_direction:
                     direction_change = [(x,y), direction]
@@ -653,7 +653,7 @@ class Game:
             
         elif char == "e" and last_char == "d":
             if direction == "right":
-                if last_last_char == "i":
+                if last_last_char in right_down:
                     direction = "down"
                     temporary_characters.append([(x-1,y), "d", "h"])
                     temporary_characters.append([(x,y), "e", "i"])
@@ -666,7 +666,7 @@ class Game:
                     x += 1
         elif char == "d" and last_char == "e":
             if direction == "left":
-                if last_last_char == "h":
+                if last_last_char in left_up:
                     direction = "up"
                     temporary_characters.append([(x,y), "d", "h"])
                     temporary_characters.append([(x+1,y), "e", "i"])
@@ -679,7 +679,7 @@ class Game:
 
         elif char == "g" and last_char == "f":
             if direction == "right":
-                if last_last_char == "k":
+                if last_last_char in right_up:
                     direction = "up"
                     temporary_characters.append([(x-1,y), "f", "j"])
                     temporary_characters.append([(x,y), "g", "k"])
@@ -691,7 +691,7 @@ class Game:
                     x += 1
         elif char == "f" and last_char == "g":
             if direction == "left":
-                if last_last_char == "j":
+                if last_last_char in left_down:
                     direction = "down"
                     temporary_characters.append([(x,y), "f", "j"])
                     temporary_characters.append([(x+1,y), "g", "k"])
