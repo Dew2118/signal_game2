@@ -46,7 +46,6 @@ class Train:
                     stop_coords.append(segment.get("left", segment.get("start")))
         return stop_coords
         
-        return None  # 🚨 Not found
     def _at_stop_coord(self, stop_coords):
         """
         Check if train's head is at stop_coord, or one tile above or below.
@@ -81,7 +80,6 @@ class Train:
 
     
     def TRTS(self, time_difference, signals, game, display, text, lines):
-        
         if time_difference >= 30:
             return
         if signals:
@@ -129,18 +127,16 @@ class Train:
                 self.current_stop_index = 0
                 self.route_coords = []
                 self.temporary_characters = []
-                self.last_signal = []
+                # self.last_signal = []
                 self.direction_change = None
-                self.last_three_directions = deque(maxlen=3)
                 self.game_seconds_at_spawn += dep_offset
                 time_since_spawn = current_game_time - self.game_seconds_at_spawn
                 self.start_to_stop_time = time_since_spawn
                 self.notified = False
                 self.notify_TRTS = False
-                # # self.set_headcode(text, game)
                 self.move_headcode(text, lines, game, game.signals, display)
 
-            if current_stop.get("reverse_direction"):
+            elif current_stop.get("reverse_direction"):
                 if self.direction == "right":
                     self.direction = "left"
                 else:
@@ -151,14 +147,13 @@ class Train:
                 self.coords[0].reverse()
             # else:
                 # self.reversed_direction = False
-            if current_stop.get("despawn"):
+            elif current_stop.get("despawn"):
                 self.despawn = True
                 # self.despawn_train(text, display, game)
                 # game.despawn_train(self)
                 return False
             self.TRTS(dep_offset-time_since_spawn, game.signals, game, display, text, lines)
             if time_since_spawn < dep_offset:
-                
                 return False
             
             elif (time_since_spawn - self.start_to_stop_time) < 2:
@@ -179,6 +174,7 @@ class Train:
         else:
             self.start_to_stop_time = 0
         return True
+    
     def move(self, text, lines, game, signals, display):
         """
         Move the train by pathfinding from the current head position.

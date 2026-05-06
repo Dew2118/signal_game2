@@ -61,33 +61,66 @@ def build_global_schedule(data):
 
 
 def resolve_global_conflicts(events, min_gap_seconds):
-    """Shift events forward, drop anything that exceeds 24h"""
     if not events:
         return events
 
-    resolved = [events[0]]
+    resolved = []
+    last_time_per_spawn = {}
+
     end_of_day = events[0]["time"].replace(hour=23, minute=59, second=59)
 
-    for e in events[1:]:
-        prev_time = resolved[-1]["time"]
+    for e in events:
+        spawn_key = e["spawn_key"]
         current_time = e["time"]
 
-        gap = (current_time - prev_time).total_seconds()
+        if spawn_key in last_time_per_spawn:
+            prev_time = last_time_per_spawn[spawn_key]
 
-        if gap < min_gap_seconds:
-            current_time = prev_time + timedelta(seconds=min_gap_seconds)
+            # ONLY compare if same spawn point
+            gap = (current_time - prev_time).total_seconds()
 
-        # 🚫 Drop anything beyond 24h
+            if gap < min_gap_seconds:
+                current_time = prev_time + timedelta(seconds=min_gap_seconds)
+
+        # Drop overflow
         if current_time > end_of_day:
-            break  # everything after will also be later → safe to stop
+            continue
+
+        # Update ONLY this spawn point's timeline
+        last_time_per_spawn[spawn_key] = current_time
 
         resolved.append({
             "time": current_time,
-            "timetable_index": e["timetable_index"]
+            "timetable_index": e["timetable_index"],
+            "spawn_key": spawn_key
         })
 
     return resolved
 
+def build_global_schedule(data):
+    events = []
+
+    for i, timetable in enumerate(data):
+        spawn_key = get_spawn_key(timetable)
+
+        for t in timetable.get("spawn_times", []):
+            events.append({
+                "time": parse_time(t),
+                "timetable_index": i,
+                "spawn_key": spawn_key
+            })
+
+    return sorted(events, key=lambda x: x["time"])
+
+def get_spawn_key(timetable):
+    loc = timetable.get("start_location", {})
+    return (
+        loc.get("station"),
+        loc.get("platform"),
+        loc.get("type"),
+        tuple(loc.get("left", [])),
+        tuple(loc.get("right", [])),
+    )
 
 def rebuild_timetables(data, resolved_events):
     """Put cleaned times back into timetables"""
@@ -130,6 +163,6 @@ def process_file(filename, min_gap_seconds=60):
 if __name__ == "__main__":
     CWD = os.path.dirname(__file__)
     JSON_PATH = os.path.join("..", "..", "..", "json")
-    filename = os.path.join(CWD, JSON_PATH, "zone_A_timetable.json")
+    filename = os.path.join(CWD, JSON_PATH, "zone_6_timetable.json")
 
     process_file(filename, min_gap_seconds=120)

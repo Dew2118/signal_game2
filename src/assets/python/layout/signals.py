@@ -212,27 +212,6 @@ class Signal:
             if len(intersection) > 0:
                 return (self.go_back_to_last_switch(trains, switch_stack, game, coords, original_text))
 
-    # def skip_parts(self, character, direction, x, y, lines):
-    #     passed = False
-    #     trash = False
-    #     while passed == False:
-    #         if direction == 'down':
-    #             y += 1
-    #         elif direction == 'up':
-    #             y -= 1
-    #         elif direction == 'left':
-    #             x -= 1
-    #         elif direction == 'right':
-    #             x += 1
-    #         char = lines[y][x]
-    #         if char == character:
-    #             if not trash:
-    #                 trash = True
-    #             else:
-    #                 passed = True
-    #                 break
-    #     return x, y
-
     def cancel_route(self, display, text, lines, autos, game):
         if self.signal_type == "manual" and self.route_set and self.route_coords:
             self.route_set = False
@@ -266,8 +245,6 @@ class Signal:
         direction = last_switch_tuple[2]
         x = last_switch[0]
         y = last_switch[1]
-        # x = switch_stack[0][0][0]
-        # y = switch_stack[0][0][1]
         result = self.duplicate_train_route_check(x, y, trains)
         if result and game.get_switch_position(last_switch_tuple[1], game.text) == "normal":
             print("checked last switch and train occupied normal")

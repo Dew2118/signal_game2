@@ -4,6 +4,8 @@ import matplotlib.cm as cm
 import os
 
 CYCLE_LENGTH = 2880
+DAY_LENGTH = 86400
+
 CWD = os.path.dirname(__file__)
 JSON_PATH = os.path.join("..", "..", "..", "json")
 
@@ -155,6 +157,71 @@ def build_train_path(entry, data, base_time, station_index):
     return times, positions
 
 
+# ---------------- ACTIVE TRAIN CALC ----------------
+def get_train_end_time(entry, data, base_time):
+    visited = set()
+    current_entry = entry
+    current_time = base_time
+
+    while True:
+        stops = current_entry["stops"]
+
+        for stop in stops:
+            departure = current_time + stop["departure_offset"]
+
+            if "change_timetable" in stop:
+                next_idx = stop["change_timetable"]
+
+                if next_idx in visited:
+                    return departure
+
+                visited.add(next_idx)
+                current_entry = data[next_idx]
+                current_time = departure
+                break
+        else:
+            return current_time + stops[-1]["departure_offset"]
+
+
+def collect_train_intervals(data):
+    intervals = []
+
+    for entry in data:
+        for spawn in entry.get("spawn_times", []):
+            start = time_to_seconds(spawn)
+            end = get_train_end_time(entry, data, start)
+
+            intervals.append((start, end))
+
+    return intervals
+
+
+def compute_average_trains(intervals, total_time=DAY_LENGTH):
+    events = []
+
+    for start, end in intervals:
+        events.append((start, 1))
+        events.append((end, -1))
+
+    events.sort()
+
+    active = 0
+    last_time = 0
+    weighted_sum = 0
+
+    for time, delta in events:
+        duration = time - last_time
+        weighted_sum += active * duration
+
+        active += delta
+        last_time = time
+
+    if last_time < total_time:
+        weighted_sum += active * (total_time - last_time)
+
+    return weighted_sum / total_time
+
+
 # ---------------- PLOT ----------------
 def plot_timetable(data):
     stations = extract_stations(data)
@@ -162,7 +229,6 @@ def plot_timetable(data):
 
     fig, ax = plt.subplots(figsize=(14, 7))
 
-    # Color mapping by headcode
     unique_headcodes = list(set(
         entry.get("headcode_prefix", str(i))
         for i, entry in enumerate(data)
@@ -187,7 +253,6 @@ def plot_timetable(data):
                 entry, data, base_time, station_index
             )
 
-            # Clip
             times_clipped = []
             positions_clipped = []
 
@@ -205,7 +270,6 @@ def plot_timetable(data):
                     alpha=0.85
                 )
 
-                # ---- LABEL HEADCODE ----
                 mid = len(times_clipped) // 2
                 ax.text(
                     times_clipped[mid],
@@ -239,5 +303,11 @@ def plot_timetable(data):
 
 # ---------------- MAIN ----------------
 if __name__ == "__main__":
-    data = load_data("zone_A_timetable.json")
+    data = load_data("zone_6_timetable.json")
+
+    intervals = collect_train_intervals(data)
+    avg_trains = compute_average_trains(intervals)
+
+    print(f"Average active trains over 24h: {avg_trains:.2f}")
+
     plot_timetable(data)

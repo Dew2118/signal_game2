@@ -187,7 +187,6 @@ class Game:
         self.lines = self.text.splitlines()
 
     def get_headcode_from_prefix(self, headcode_prefix):
-        
         if headcode_prefix not in self.headcode_suffix:
                 self.headcode_suffix[headcode_prefix] = 0  # Just in case, initialize to :0
 
@@ -199,6 +198,7 @@ class Game:
             self.headcode_suffix[headcode_prefix] += 1
         headcode = headcode_prefix + suffix
         return headcode
+    
     def find_first_spawn_signal(self,spawn_coord, direction):
         x,y = spawn_coord
         spawn_coords = []
@@ -288,7 +288,6 @@ class Game:
                 self.spawn_train(backlog_train["start_coord"], backlog_train["direction"], backlog_train["headcode"], backlog_train["timetable"])
 
     def check_if_spawnable(self, coords):
-        # for coord in coords:
         for coord in coords:
             if self.display_class.get_char_color_at_coord(coord[0], coord[1], self.lines) != (128, 128, 128) and self.display_class.get_char_color_at_coord(coord[0], coord[1], self.lines) != None:
                 return False
@@ -466,9 +465,6 @@ class Game:
         last_char = "F"
         last_last_char = "F"
         for signal in signals:
-            # self.display_class.add_log(signal)
-            # if signal.signal_type != "automatic":
-            #     continue
             if signal.buffer:
                 x,y = signal.coord
                 if signal.direction == "right":
@@ -764,7 +760,6 @@ class Game:
 
         last_last_char = last_char
         last_char = char
-        # print("finished with last char stuff")
         
         return x, y, direction, last_char, direction_change, last_last_char, temporary_characters
     
