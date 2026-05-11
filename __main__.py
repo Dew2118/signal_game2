@@ -109,7 +109,7 @@ class Game:
                 "last_spawn_time": self.last_spawn_time,
                 "headcode_suffix": self.headcode_suffix,
                 "timetables": self.timetables,
-                "timetable_obj": self.timetable_obj,
+                # "timetable_obj": self.timetable_obj,
                 "backlog_train_spawn": self.backlog_train_spawn,
                 "snapshot": self.snapshot,
                 "lines": self.lines,

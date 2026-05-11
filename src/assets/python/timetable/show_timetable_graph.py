@@ -303,7 +303,7 @@ def plot_timetable(data):
 
 # ---------------- MAIN ----------------
 if __name__ == "__main__":
-    data = load_data("zone_6_timetable.json")
+    data = load_data("zone_F_timetable.json")
 
     intervals = collect_train_intervals(data)
     avg_trains = compute_average_trains(intervals)

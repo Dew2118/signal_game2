@@ -123,6 +123,7 @@ class Train:
                 if self.direction != new_direction:
                     self.direction = new_direction
                     self.coords[0].reverse()
+                    print("from change timetable train direction changed to ", self.direction)
                 self.headcode = game.get_headcode_from_prefix(tt_headcode_prefix)
                 self.current_stop_index = 0
                 self.route_coords = []
@@ -134,6 +135,7 @@ class Train:
                 self.start_to_stop_time = time_since_spawn
                 self.notified = False
                 self.notify_TRTS = False
+                print("timetable changed will call move headcode")
                 self.move_headcode(text, lines, game, game.signals, display)
 
             elif current_stop.get("reverse_direction"):
@@ -391,7 +393,6 @@ class Train:
         last_last_char = "F"
         last_message = None
         while True:
-            
             if last_message != f"move headcode {x},{y}, direction is {direction}":
                 print(f"move headcode {x},{y}, direction is {direction}")
                 last_message = f"move headcode {x},{y}, direction is {direction}"

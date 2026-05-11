@@ -2,7 +2,7 @@ import json
 import os
 CWD = os.path.dirname(__file__)
 JSON_PATH = os.path.join("..", "..","..", "json")
-INPUT_FILE = os.path.join(CWD, JSON_PATH, "zone_6_timetable.json")
+INPUT_FILE = os.path.join(CWD, JSON_PATH, "zone_F_timetable.json")
 OUTPUT_FILE = os.path.join(CWD, JSON_PATH, "double_timetable.json")
 
 def to_seconds(t):
