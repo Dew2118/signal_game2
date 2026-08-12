@@ -97,7 +97,6 @@ class Game:
         else:
             filename = easygui.filesavebox(default=os.path.join(default_directory, "game_save.pkl"),
                                             filetypes=["*.pkl"])
-        
         if filename:  # Check if the user selected a file (not canceled)
             data = {
                 "text": self.text,
@@ -163,12 +162,10 @@ class Game:
                 self.backlog_train_spawn = data.get("backlog_train_spawn", [])
                 self.display_class = Display_Class(self.signals)
                 self.snapshot = data.get("snapshot", False)
-                self.lines = self.clone_lines(data.get("lines", self.text.splitlines()))
+                self.lines = data.get("lines", [])
                 self.layout_file = data.get("layout_file", None)
                 self.portals = data.get("portals", [])
                 self.wait_time = data.get("wait_time", 1)
-                self.update_lines()
-
                 for signal in self.signals:
                     signal.last_colored_color = None
                     signal.deactivate_TRTS(self, self.display_class, self.lines)
