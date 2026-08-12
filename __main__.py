@@ -18,13 +18,14 @@ import tkinter as tk
 import os
 from pathlib import Path
 
-JSON_PATH = os.path.join("src", "json") #
-SPAWN_SOUND = r"C:\Windows\Media\Speech On.wav"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+JSON_PATH = os.path.join(BASE_DIR, "src", "json")
+SPAWN_SOUND = os.path.join(BASE_DIR, "src", "assets", "sounds", "Speech On.wav")
 
 # Create a "saves" folder in the current directory if it doesn't exist
 if not os.path.exists('saves'):
     os.makedirs('saves')
-CWD = os.path.dirname(__file__) # CWD = Current Working Directory, pretend it is a const too
+CWD = BASE_DIR # CWD = Current Working Directory, pretend it is a const too
 from src.assets.python.timetable.display_timetable import Timetable
 class Game:
     def __init__(self, text, display_class, layout_file):
@@ -168,14 +169,14 @@ class Game:
                 self.wait_time = data.get("wait_time", 1)
                 for signal in self.signals:
                     signal.last_colored_color = None
-                    signal.deactivate_TRTS(self, self.display_class, self.lines)
+                    signal.deactivate_TRTS(self, self.display_class)
                     if signal.route_coords:
                         for coord in signal.route_coords:
                             self.display_class.set_char_color_at_coord(coord[0], coord[1], "white", self)
 
                 for train in self.trains:
                     print("train route_coord is ", train.route_coords)
-                    train.move_headcode(self.lines, self, self.signals, self.display_class)
+                    train.move_headcode(self, self.signals, self.display_class)
                     if train.route_coords:
                         for coord in train.route_coords:
                             self.display_class.set_char_color_at_coord(coord[0], coord[1], "white", self)
@@ -446,7 +447,7 @@ class Game:
                     if char == "{":
                         self.display_class.add_log(x,y-1, "{")
 
-    def change_switch(self, switch_index, switch_direction, lines=None):
+    def change_switch(self, switch_index, switch_direction, lines):
         x, y, new_char, direction = self.switches[switch_index]
         if switch_direction == "normal":
             new_char = "a"
@@ -462,9 +463,9 @@ class Game:
             else:
                 board[y][x] = new_char
 
-        if lines is None:
-            self.lines = board
-            return self.lines
+        # if lines is None:
+        #     self.lines = board
+        #     return self.lines
         return board
     
     def get_switch_position(self, switch_index, lines):
@@ -806,7 +807,7 @@ class Game:
         running = True
         clock = pygame.time.Clock()
         for signal in self.signals:
-            signal.deactivate_TRTS(self, self.display_class, self.lines)
+            signal.deactivate_TRTS(self, self.display_class)
         # try:
         for i in range(10):
             self.update_signals()

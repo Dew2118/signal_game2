@@ -1,10 +1,11 @@
 from collections import deque
 from io import StringIO
 from unittest import signals
+import os
 import winsound
 import threading
-NOTIFIED_SOUND = r"C:\Windows\Media\chord.wav"
-TRTS_SOUND = r"C:\Windows\Media\Windows Notify.wav"
+NOTIFIED_SOUND = os.path.join("src", "assets", "sounds", "chord.wav")
+TRTS_SOUND = os.path.join("src", "assets", "sounds", "Windows Notify.wav")
 
 
 
@@ -91,9 +92,9 @@ class Train:
                         display.add_log(f"{self.headcode} train TRTS at {signal.coord}")
                         self.notify_TRTS = True
                     if int(time_difference) % 2 == 1:
-                        signal.activate_TRTS(game, display, lines)
+                        signal.activate_TRTS(game, display)
                     else:
-                        signal.deactivate_TRTS(game, display, lines)
+                        signal.deactivate_TRTS(game, display)
 
     def timetable_check(self, game, lines, display, signals):
         current_stop = self.timetable[self.current_stop_index]
@@ -136,7 +137,7 @@ class Train:
                 self.notified = False
                 self.notify_TRTS = False
                 print(f"{self.headcode} timetable changed will call move headcode")
-                self.move_headcode(lines, game, game.signals, display)
+                self.move_headcode(game, game.signals, display)
 
             elif current_stop.get("reverse_direction"):
                 if self.direction == "right":
@@ -219,7 +220,7 @@ class Train:
                         self.notified = False
                         if self.last_action == "remove train tail":
                             signal.train_in_block = True
-                            signal.deactivate_TRTS(game, display, lines)
+                            signal.deactivate_TRTS(game, display)
                             lines = game.clone_lines(game.lines)
                             
                             # game.update_signals()
@@ -250,7 +251,7 @@ class Train:
                 self.last_action = "move train"
                 
 
-            self.move_headcode(lines, game, signals, display)
+            self.move_headcode(game, signals, display)
 
     def last_last_signal_check(self, game):
         # print(f"{self.headcode} train headcode is {self.headcode}, its direction is {self.direction}")
@@ -363,19 +364,19 @@ class Train:
     def signal_condition_check(self, signal, x, y, direction):
         return (signal.overlap == (x,y) and signal.direction == direction)
 
-    def move_headcode(self, lines, game, signals, display):
+    def move_headcode(self, game, signals, display):
         direction = self.direction
         if len(self.headcode_coords) >= 4:
             for i,element in enumerate(self.headcode_element):
                 x,y = self.headcode_coords[i]
-                lines[y][x] = element
+                game.lines[y][x] = element
                 display.set_char_color_at_coord(x, y, "gray", game)
 
             self.headcode_coords = []
             self.headcode_element = []
-        game.lines = [row[:] for row in lines]
+        # game.lines = [row[:] for row in lines]
         (x,y) = self.coords[0][0]
-        element = lines[y][x]
+        element = game.lines[y][x]
         last_char = "F"
         last_last_char = "F"
         last_message = None
@@ -400,15 +401,15 @@ class Train:
                         if signal.direction == "right":
                             x -= 3
                     for i in range(4):
-                        self.headcode_element.append(lines[y][x+i])
+                        self.headcode_element.append(game.lines[y][x+i])
                         self.headcode_coords.append((x+i,y))
                         char = self.headcode[i]
-                        lines[y][x+i] = char
+                        game.lines[y][x+i] = char
                         display.set_char_color_at_coord(x+i, y, "light blue", game)
-                    game.lines = [row[:] for row in lines]
+                    # game.lines = [row[:] for row in lines]
 
                     return
-            x, y, direction, last_char, direction_change, last_last_char, temporary_characters = game.path_find(lines, x, y, direction, self.direction, last_char, last_last_char, [])
+            x, y, direction, last_char, direction_change, last_last_char, temporary_characters = game.path_find(game.lines, x, y, direction, self.direction, last_char, last_last_char, [])
             if x == -1:
                 return
             if last_char == "x":

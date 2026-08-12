@@ -67,7 +67,6 @@ class Signal:
             x,y = self.overlap
             coords = deque()
             last_switch = None
-            # game_text = game.text
             restart = False
             while True:
                 
@@ -286,7 +285,8 @@ class Signal:
                     return True
         return False
     
-    def activate_TRTS(self, game, display, lines):
+    def activate_TRTS(self, game, display):
+        lines = [row[:] for row in game.lines]
         if not self.TRTS_button_coord:
             return
         x,y = self.TRTS_button_coord
@@ -294,7 +294,8 @@ class Signal:
         display.set_char_color_at_coord(x, y, "white", game)
         game.lines = [row[:] for row in lines]
 
-    def deactivate_TRTS(self, game, display, lines):
+    def deactivate_TRTS(self, game, display):
+        lines = [row[:] for row in game.lines]
         if not self.TRTS_button_coord:
             return lines
         x,y = self.TRTS_button_coord
