@@ -105,7 +105,7 @@ class Display_Class:
             )
         surf, width, height, rects = self.render_text_surface(font, lines)
     
-        self.cached_lines = lines.copy()
+        self.cached_lines = [line[:] for line in lines]  # Deep copy of lines
         self.cached_color_state = color_state
         self.cached_surface = surf
         self.cached_width = width
@@ -132,8 +132,9 @@ class Display_Class:
 
         for line in lines:
             x = 0
+            line_chars = list(line)
 
-            for char in line:
+            for char_index, char in enumerate(line_chars):
                 bg = None
 
                 if idx in self.char_colors:
@@ -143,8 +144,13 @@ class Display_Class:
                     color = (255, 165, 0)
 
                 elif char in "1234567890":
-                    color = (0, 0, 0)          # black number
-                    bg = (255, 165, 0)         # orange background
+                    left_has_orange_marker = char_index > 0 and line_chars[char_index - 1] == self.orange_char
+                    right_has_orange_marker = char_index < len(line_chars) - 1 and line_chars[char_index + 1] == self.orange_char
+                    if left_has_orange_marker or right_has_orange_marker:
+                        color = (0, 0, 0)          # black number
+                        bg = (255, 165, 0)         # orange background
+                    else:
+                        color = (128, 128, 128)    # default gray number
 
                 else:
                     color = (128, 128, 128)
@@ -243,7 +249,9 @@ class Display_Class:
         if event.key == pygame.K_UP:
 
             if shift_held:
-                self.scroll_x = max(self.scroll_x - self.scroll_speed, 0)
+                max_scroll_x = max(0, text_width - self.SCREEN_WIDTH)
+                self.scroll_x = max(self.scroll_x - self.scroll_speed, -self.SCREEN_WIDTH)
+                self.scroll_x = min(self.scroll_x, max_scroll_x)
             else:
                 self.scroll_y = max(self.scroll_y - self.scroll_speed, 0)
 
@@ -252,6 +260,7 @@ class Display_Class:
             if shift_held:
                 max_scroll_x = max(0, text_width - self.SCREEN_WIDTH)
                 self.scroll_x = min(self.scroll_x + self.scroll_speed, max_scroll_x)
+                self.scroll_x = max(self.scroll_x, -self.SCREEN_WIDTH)
 
             else:
                 max_scroll_y = max(0, text_height - (self.SCREEN_HEIGHT - reserved_height))
@@ -299,7 +308,7 @@ class Display_Class:
 
             max_scroll_x = max(0, text_width - self.SCREEN_WIDTH)
             self.scroll_x = min(
-                max(self.scroll_x - event.y * self.scroll_speed, 0),
+                max(self.scroll_x - event.y * self.scroll_speed, -self.SCREEN_WIDTH),
                 max_scroll_x
             )
 

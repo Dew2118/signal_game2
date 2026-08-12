@@ -239,17 +239,34 @@ class Game:
             if current_time not in spawn_seconds:
                 continue
             
-            start_seg = tt['start_location']
-            # Determine spawn coordinate
-            coord = tuple(start_seg['left'] if 'left' in start_seg else start_seg['right'])
+            start_seg = tt.get('start_location', {})
+            direction = tt.get('direction', 'right')
+
+            coord = None
+            start_type = start_seg.get('type')
+            start_station = start_seg.get('station')
+            start_platform = start_seg.get('platform')
+            if start_type is not None and start_station and start_platform:
+                for segment in self.annotated_segments:
+                    if (
+                        segment.get('type') == start_type
+                        and segment.get('station') == start_station
+                        and segment.get('platform') == start_platform
+                    ):
+                        if direction == 'right':
+                            coord = tuple(segment.get('right', segment.get('left', (0, 0))))
+                        else:
+                            coord = tuple(segment.get('left', segment.get('right', (0, 0))))
+                        break
+
+            if coord is None:
+                coord = tuple(start_seg.get('left') if 'left' in start_seg else start_seg.get('right', (0, 0)))
 
             # Prevent duplicate spawns at same 
-            
             if coord in spawned_positions_this_tick:
                 continue
             headcode_prefix = tt['headcode_prefix']
             headcode = self.get_headcode_from_prefix(headcode_prefix)
-            direction = tt['direction']
               # Example suffix
             train = self.spawn_train(
                 start_coord=coord,
