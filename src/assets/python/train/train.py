@@ -355,7 +355,7 @@ class Train:
                     return
             if last_char == "x" and len(self.coords[0]) > 1:
                 self.despawn = True
-                # print("blocked by last char at ", (x,y))
+                print(f"{self.headcode} blocked by last char at ", (x,y))
                 self.coords.insert(0, coords)
                 self.direction = direction
                 return
@@ -374,7 +374,6 @@ class Train:
 
             self.headcode_coords = []
             self.headcode_element = []
-        # game.lines = [row[:] for row in lines]
         (x,y) = self.coords[0][0]
         element = game.lines[y][x]
         last_char = "F"
@@ -406,7 +405,6 @@ class Train:
                         char = self.headcode[i]
                         game.lines[y][x+i] = char
                         display.set_char_color_at_coord(x+i, y, "light blue", game)
-                    # game.lines = [row[:] for row in lines]
 
                     return
             x, y, direction, last_char, direction_change, last_last_char, temporary_characters = game.path_find(game.lines, x, y, direction, self.direction, last_char, last_last_char, [])
