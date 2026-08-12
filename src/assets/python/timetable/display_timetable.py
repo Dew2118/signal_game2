@@ -16,7 +16,6 @@ class Timetable:
         style = ttk.Style(self.window)
         style.configure("Treeview", font=("JetBrain Mono", 10))
         style.configure("Treeview.Heading", font=("JetBrain Mono", 10, "bold"))
-        # self.window.resizable(False, False)
 
     def on_close(self):
         """ Handle window close event """

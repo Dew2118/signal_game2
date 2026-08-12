@@ -47,10 +47,16 @@ class Game:
         self.backlog_train_spawn = []
         self.display_class = display_class
         self.snapshot = False
-        self.lines = self.text.splitlines()
+        self.lines = self.clone_lines(self.text.splitlines())
         self.layout_file = layout_file
         self.portals = []
         self.wait_time = 1
+
+    @staticmethod
+    def clone_lines(lines):
+        if lines is None:
+            return []
+        return [list(row) for row in lines]
 
     #TODO : rework this to work better with file path
     def load_timetable_and_annotated_segments(self, filename, annotated_segments_file):
@@ -157,7 +163,7 @@ class Game:
                 self.backlog_train_spawn = data.get("backlog_train_spawn", [])
                 self.display_class = Display_Class(self.signals)
                 self.snapshot = data.get("snapshot", False)
-                self.lines = data.get("lines", None)
+                self.lines = self.clone_lines(data.get("lines", self.text.splitlines()))
                 self.layout_file = data.get("layout_file", None)
                 self.portals = data.get("portals", [])
                 self.wait_time = data.get("wait_time", 1)
@@ -165,17 +171,17 @@ class Game:
 
                 for signal in self.signals:
                     signal.last_colored_color = None
-                    signal.deactivate_TRTS(self, self.display_class, self.text, self.lines)
+                    signal.deactivate_TRTS(self, self.display_class, self.lines)
                     if signal.route_coords:
                         for coord in signal.route_coords:
-                            self.display_class.set_char_color_at_coord(coord[0], coord[1], "white", self.text)
+                            self.display_class.set_char_color_at_coord(coord[0], coord[1], "white", self)
 
                 for train in self.trains:
                     print("train route_coord is ", train.route_coords)
-                    train.move_headcode(self.text, self.lines, self, self.signals, self.display_class)
+                    train.move_headcode(self.lines, self, self.signals, self.display_class)
                     if train.route_coords:
                         for coord in train.route_coords:
-                            self.display_class.set_char_color_at_coord(coord[0], coord[1], "white", self.text)
+                            self.display_class.set_char_color_at_coord(coord[0], coord[1], "white", self)
                 for auto in self.autos:
                     auto.colored = False
                 self.display_class.add_log(f"Game loaded")
@@ -184,7 +190,7 @@ class Game:
                 self.display_class.add_log(f"Error: file not found!")
                 
     def update_lines(self):
-        self.lines = self.text.splitlines()
+        self.lines = self.clone_lines(self.text.splitlines())
 
     def get_headcode_from_prefix(self, headcode_prefix):
         if headcode_prefix not in self.headcode_suffix:
@@ -426,34 +432,28 @@ class Game:
                     if char == "{":
                         self.display_class.add_log(x,y-1, "{")
 
-    def change_switch(self, switch_index, switch_direction = "normal", text = None):
-        # Convert lines to a list of lists (mutable)
-        if not text:
-            text = self.text
-        f = StringIO(text)
-        lines = f.readlines()
+    def change_switch(self, switch_index, switch_direction, lines=None):
         x, y, new_char, direction = self.switches[switch_index]
         if switch_direction == "normal":
             new_char = "a"
-        grid = [list(line.rstrip('\n')) for line in lines]
 
-        # Change the character (safely)
-        if 0 <= y < len(grid) and 0 <= x < len(grid[y]):
+        board = self.lines if lines is None else self.clone_lines(lines)
+
+        if 0 <= y < len(board) and 0 <= x < len(board[y]):
             if switch_direction == "change":
-                if grid[y][x] != "a":
-                    grid[y][x] = "a"
+                if board[y][x] != "a":
+                    board[y][x] = "a"
                 else:
-                    grid[y][x] = new_char
+                    board[y][x] = new_char
             else:
-                grid[y][x] = new_char
+                board[y][x] = new_char
 
-        # If you want the modified text back as a single string
-        modified_text = '\n'.join(''.join(row) for row in grid)
-        return modified_text  # Update the text in Game
+        if lines is None:
+            self.lines = board
+            return self.lines
+        return board
     
-    def get_switch_position(self, switch_index, text):
-        f = StringIO(text)
-        lines = f.readlines()
+    def get_switch_position(self, switch_index, lines):
         x, y, new_char, direction = self.switches[switch_index]
         char = lines[y][x]
         if char == "a":
@@ -507,29 +507,24 @@ class Game:
                     break
                 # last_char = char
 
-    def handle_temporary_characters(self, temporary_characters, text):
-        f = StringIO(text)
-        lines = f.readlines()
-        grid = [list(line.rstrip('\n')) for line in lines]
+    def handle_temporary_characters(self, temporary_characters, lines):
         for temporary_character in temporary_characters:
             (x,y), original_char, new_char = temporary_character
-            grid[y][x] = new_char
-        modified_text = '\n'.join(''.join(row) for row in grid)
-        return modified_text
+            lines[y][x] = new_char
+        self.lines =  [row[:] for row in lines]
+        # return lines
+        # modified_text = '\n'.join(''.join(row) for row in lines)
 
-    def reset_temporary_characters(self, temporary_characters, text):
-        f = StringIO(text)
-        lines = f.readlines()
-        grid = [list(line.rstrip('\n')) for line in lines]
+    def reset_temporary_characters(self, temporary_characters, lines):
         for temporary_character in temporary_characters:
             (x,y), original_char, new_char = temporary_character
-            grid[y][x] = original_char
+            lines[y][x] = original_char
             print("resetting temporary character at", (x,y), "to", original_char)
-        modified_text = '\n'.join(''.join(row) for row in grid)
-        return modified_text
+        self.lines =  [row[:] for row in lines]
+        # # modified_text = '\n'.join(''.join(row) for row in grid)
+        # return lines
 
     def set_route(self):
-        self.display_class.set_char_color_at_coord(self.entry_signal.coord[0], self.entry_signal.coord[1], "gray", self.text)
         coords = self.entry_signal.get_coords_to_next_signal(self.exit_signal, self, self.switches, self.layout_file, self.signals, self.trains)
         if not coords:
             self.entry_signal = None
@@ -544,7 +539,7 @@ class Game:
             train_coords.extend(train.route_coords)
         filtered_coords = set(coords) - set(train_coords)
         for coord in filtered_coords:
-            self.display_class.set_char_color_at_coord(coord[0], coord[1], "white", self.text)
+            self.display_class.set_char_color_at_coord(coord[0], coord[1], "white", self)
         self.entry_signal = None
         self.exit_signal = None
         # self.update_signals()
@@ -558,9 +553,10 @@ class Game:
         self.timetable_obj.show_timetable_window()
 
     def color_entry_signal(self):
-        if self.entry_signal:
-            self.display_class.set_char_color_at_coord(self.entry_signal.coord[0], self.entry_signal.coord[1], "white", self.text)
-    
+        # The entry-signal highlight is handled by the flashing adjacent tile only.
+        # Do not force the signal lamp itself to white.
+        return
+
     def path_find(self, lines, x, y, direction, main_direction, last_char, last_last_char, temporary_characters = []):
         right_up = 'ko'
         right_down = "im"
@@ -790,13 +786,13 @@ class Game:
     def update_signals(self):
         for signal in self.signals:
             signal.update_color(self.trains)
-        self.display_class.display_signal_color(self.signals, self.text)
+        self.display_class.display_signal_color(self.signals, self)
 
     def run(self):
         running = True
         clock = pygame.time.Clock()
         for signal in self.signals:
-            signal.deactivate_TRTS(self, self.display_class, self.text, self.lines)
+            signal.deactivate_TRTS(self, self.display_class, self.lines)
         # try:
         for i in range(10):
             self.update_signals()
@@ -807,7 +803,7 @@ class Game:
                 minutes = (total_seconds % 3600) // 60
                 seconds = total_seconds % 60
                 time_str = f"{hours:02d}:{minutes:02d}:{seconds:02d} *{self.time_speed}"
-                running = self.display_class.update_and_draw(self, self.signals, self.autos, self.text, self.lines, time_str)
+                running = self.display_class.update_and_draw(self, self.signals, self.autos, self.lines, time_str)
                 if self.paused:
                     continue
                 self.check_backlog_train()
@@ -828,23 +824,17 @@ class Game:
                     self.snapshot = False
                 self.update_spawn()
                 for train in self.trains:
-                    # if not train.bounds_check(self.text, self.display_class, self):
-                    #     self.despawn_train(train)
-                    #     continue
-                    train.move(self.text, self.lines, self, self.signals, self.display_class)
-                    # train.station_check(self.text)
+                    train.move(self.lines, self, self.signals, self.display_class)
                     
                     if train in self.trains:
-                        train.color_route_coords(self.display_class, self.text)
-                        train.display_on(self.display_class, self.text, self.lines)
+                        train.color_route_coords(self.display_class, self.lines, self)
+                        train.display_on(self.display_class, self.lines, self)
                     
 
                 # Draw signal colors using self.signals
                 self.update_signals()
-                # for signal in self.signals:
-                #     signal.update_color(self.trains)
-                # self.display_class.display_signal_color(self.signals, self.text)
-                self.display_class.display_auto_button_color(self.autos, self.text)
+                self.display_class.update_entry_signal_flash(self, self.lines)
+                self.display_class.display_auto_button_color(self.autos, self)
                 # Draw and handle events
                 
                 if self.entry_signal and self.exit_signal:

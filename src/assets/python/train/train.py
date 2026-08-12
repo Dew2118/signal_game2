@@ -79,7 +79,7 @@ class Train:
         return False
 
     
-    def TRTS(self, time_difference, signals, game, display, text, lines):
+    def TRTS(self, time_difference, signals, game, display, lines):
         if time_difference >= 30:
             return
         if signals:
@@ -88,14 +88,14 @@ class Train:
                 if self.signal_condition_check(signal, x, y, self.direction):
                     if not self.notify_TRTS:
                         threading.Thread(target=winsound.PlaySound, args=(TRTS_SOUND, winsound.SND_FILENAME)).start()
-                        display.add_log(f"train {self.headcode} TRTS at {signal.coord}")
+                        display.add_log(f"{self.headcode} train TRTS at {signal.coord}")
                         self.notify_TRTS = True
                     if int(time_difference) % 2 == 1:
-                        signal.activate_TRTS(game, display, text, lines)
+                        signal.activate_TRTS(game, display, lines)
                     else:
-                        signal.deactivate_TRTS(game, display, text, lines)
+                        signal.deactivate_TRTS(game, display, lines)
 
-    def timetable_check(self, game, text, lines, display, signals):
+    def timetable_check(self, game, lines, display, signals):
         current_stop = self.timetable[self.current_stop_index]
         stop_coords = self._get_stop_coord(current_stop)  # defined below
         # Only apply timing logic if head is at the stop
@@ -114,16 +114,16 @@ class Train:
             if self.last_action == "move train":
                 last_last_signal = self.last_last_signal_check(game)
                 self.delete_train_tail(display, game, last_last_signal)
-                text = game.text
-                lines = game.lines
+                lines = game.clone_lines(game.lines)
                 self.last_action = "remove train tail"
             if "change_timetable" in current_stop:
+                self.delete_train_tail(display, game, last_last_signal)
                 tt_index = current_stop["change_timetable"]
                 self.timetable, tt_headcode_prefix, new_direction = game.get_tt_from_index(tt_index)
                 if self.direction != new_direction:
                     self.direction = new_direction
                     self.coords[0].reverse()
-                    print("from change timetable train direction changed to ", self.direction)
+                    print(f"{self.headcode} from change timetable train direction changed to {self.direction}")
                 self.headcode = game.get_headcode_from_prefix(tt_headcode_prefix)
                 self.current_stop_index = 0
                 self.route_coords = []
@@ -135,15 +135,15 @@ class Train:
                 self.start_to_stop_time = time_since_spawn
                 self.notified = False
                 self.notify_TRTS = False
-                print("timetable changed will call move headcode")
-                self.move_headcode(text, lines, game, game.signals, display)
+                print(f"{self.headcode} timetable changed will call move headcode")
+                self.move_headcode(lines, game, game.signals, display)
 
             elif current_stop.get("reverse_direction"):
                 if self.direction == "right":
                     self.direction = "left"
                 else:
                     self.direction = "right"
-                print("train direction reversed to ", self.direction)
+                print(f"{self.headcode} train direction reversed to {self.direction}")
                 # self.reversed_direction = True
                 # self.real_first_coord = self.coords[0][0]
                 self.coords[0].reverse()
@@ -154,13 +154,13 @@ class Train:
                 # self.despawn_train(text, display, game)
                 # game.despawn_train(self)
                 return False
-            self.TRTS(dep_offset-time_since_spawn, game.signals, game, display, text, lines)
+            self.TRTS(dep_offset-time_since_spawn, game.signals, game, display, lines)
             if time_since_spawn < dep_offset:
                 return False
             
             elif (time_since_spawn - self.start_to_stop_time) < 2:
                 # print(time_since_spawn, self.start_to_stop_time)
-                self.TRTS(dep_offset-time_since_spawn, game.signals, game, display, text, lines)
+                self.TRTS(dep_offset-time_since_spawn, game.signals, game, display, lines)
                 return False
             # ✅ Time to leave, move to next stop
             x, y = self.coords[0][0]
@@ -171,13 +171,13 @@ class Train:
             self.current_stop_index += 1
         elif self._past_stop_coord(stop_coords, self.direction):
             self.current_stop_index += 1
-            display.add_log(f"train {self.headcode} missed stop at {current_stop.get('station')}")
+            display.add_log(f"{self.headcode} missed stop at {current_stop.get('station')}")
             return False
         else:
             self.start_to_stop_time = 0
         return True
     
-    def move(self, text, lines, game, signals, display):
+    def move(self, lines, game, signals, display):
         """
         Move the train by pathfinding from the current head position.
         Uses the same rules as signal pathfinding.
@@ -192,17 +192,16 @@ class Train:
         self.wait_time = len(self.coords[0])/2
         if not self.coords:
             return
-        # 🚦 Timetable departure check
+        # Timetable departure check
         if self.despawn:
             last_last_signal = self.last_last_signal_check(game)
             self.delete_train_tail(display, game, last_last_signal)
-            text = game.text
-            lines = game.lines
+            lines = game.clone_lines(game.lines)
             self.last_action = "remove train tail"
             self.last_move_time = now
             return
         elif self.timetable and self.current_stop_index < len(self.timetable):
-            if not self.timetable_check(game, text, lines, display, signals):
+            if not self.timetable_check(game, lines, display, signals):
                 return
             self.notify_TRTS = False
             x, y = self.coords[0][0]  # Head of the train
@@ -215,12 +214,13 @@ class Train:
                             if not self.notified:
                                 threading.Thread(target=winsound.PlaySound, args=(NOTIFIED_SOUND, winsound.SND_FILENAME)).start()
                                 self.notified = True
-                                display.add_log(f"train {self.headcode} stopped at red signal at {signal.coord}")
+                                display.add_log(f"{self.headcode} stopped at red signal at {signal.coord}")
                             return
                         self.notified = False
                         if self.last_action == "remove train tail":
                             signal.train_in_block = True
-                            lines = signal.deactivate_TRTS(game, display, text, lines)
+                            signal.deactivate_TRTS(game, display, lines)
+                            lines = game.clone_lines(game.lines)
                             
                             # game.update_signals()
                             if not signal.auto:
@@ -238,13 +238,11 @@ class Train:
                             break
             
             self.last_move_time = now  # Update timestamp
-            # lines = text.splitlines()
             
             if self.last_action == "move train":
                 last_last_signal = self.last_last_signal_check(game)
                 self.delete_train_tail(display, game, last_last_signal)
-                text = game.text
-                lines = game.lines
+                lines = game.clone_lines(game.lines)
                 self.last_action = "remove train tail"
             elif self.last_action == "remove train tail":
                 if not self.despawn:
@@ -252,12 +250,12 @@ class Train:
                 self.last_action = "move train"
                 
 
-            self.move_headcode(text, lines, game, signals, display)
+            self.move_headcode(lines, game, signals, display)
 
     def last_last_signal_check(self, game):
-        # print("train headcode is ", self.headcode, "its direction is ", self.direction)
+        # print(f"{self.headcode} train headcode is {self.headcode}, its direction is {self.direction}")
         if len(self.last_signal) == 0:
-            print("last signal len is 0")
+            print(f"{self.headcode} last signal len is 0")
             return
         if self.direction_change:
             # direction = self.last_three_directions[-1]
@@ -272,25 +270,24 @@ class Train:
                 direction = self.direction
         else:
             direction = self.direction
-        print("last signal length", len(self.last_signal), "last last coord", self.coords[-1], "overlap", self.last_signal[0].overlap, "direction", self.last_signal[0].direction, "last action", self.last_action)
+        print(f"{self.headcode} last signal length {len(self.last_signal)} last last coord {self.coords[-1]} overlap {self.last_signal[0].overlap} direction {self.last_signal[0].direction} last action {self.last_action}")
         if len(self.last_signal) > 0 and self.signal_condition_check(self.last_signal[0], self.coords[-1][0][0], self.coords[-1][0][1], direction) and self.last_action == "move train" and (len(self.last_signal) >= 2 or self.last_signal[-1].signal_type == "manual"):
             last_last_signal = self.last_signal.pop()
-            print("last last signal check passed ", last_last_signal.coord, self.coords[-1])
+            print(f"{self.headcode} last last signal check passed {last_last_signal.coord} {self.coords[-1]}")
             last_last_signal.train_in_block = False
             return last_last_signal
         else:
-            print(len(self.last_signal) > 0, self.signal_condition_check(self.last_signal[0], self.coords[-1][0][0], self.coords[-1][0][1], direction), self.last_action == "move train", len(self.last_signal) >= 2 or self.last_signal[-1].signal_type == "manual")
-            print(self.last_signal[0].overlap, self.coords[-1][0][0], self.coords[-1][0][1], direction)
+            print(f"{self.headcode} last signal check failed: last_signal_exists={len(self.last_signal) > 0}, signal_condition={self.signal_condition_check(self.last_signal[0], self.coords[-1][0][0], self.coords[-1][0][1], direction)}, last_action_move={self.last_action == 'move train'}, signal_ok={len(self.last_signal) >= 2 or self.last_signal[-1].signal_type == 'manual'}")
+            print(f"{self.headcode} overlap={self.last_signal[0].overlap} coord={self.coords[-1][0][0]}, {self.coords[-1][0][1]} direction={direction}")
             
 
     def delete_train_tail(self, display, game, last_last_signal):
         if len(self.coords) < 2 and not self.despawn:
-            print("self.despawn is : ", self.despawn)
             return
         last_last_coord = self.coords.pop()
-        print("deleting train tail at coords ", last_last_coord)
+        print(f"{self.headcode} deleting train tail at coords {last_last_coord}")
         if self.direction_change and self.direction_change[0] in last_last_coord:
-            print("direction change removed")
+            print(f"{self.headcode} direction change removed")
             self.direction_change = None
 
         result = []
@@ -304,24 +301,21 @@ class Train:
                 self.route_coords.remove(coord)
 
             if last_last_signal and last_last_signal.route_set and coord in last_last_signal.route_coords:
-                display.set_char_color_at_coord(coord[0], coord[1], "white", game.text)
+                display.set_char_color_at_coord(coord[0], coord[1], "white", game)
             
             else:
                 
                 set_to_white = False
                 for signal in game.signals:
                     if signal.route_set and coord in signal.route_coords:
-                        display.set_char_color_at_coord(coord[0], coord[1], "white", game.text)
+                        display.set_char_color_at_coord(coord[0], coord[1], "white", game)
                         set_to_white = True
                         break
                 if not set_to_white:
-                    display.set_char_color_at_coord(coord[0], coord[1], "gray", game.text)
-
+                    display.set_char_color_at_coord(coord[0], coord[1], "gray", game)
         
-        game_text = game.reset_temporary_characters(result, game.text)
-        game.text = game_text
-        game.update_lines()
-        print("temporary character left: ", self.temporary_characters)
+        game.reset_temporary_characters(result, game.lines)
+        print(f"{self.headcode} temporary character left: {self.temporary_characters}")
 
         if self.coords == [] and self.despawn:
             for signal in self.last_signal:
@@ -339,22 +333,22 @@ class Train:
             x, y, direction, last_char, direction_change, last_last_char, temporary_characters = game.path_find(lines, x, y, direction, self.direction, last_char, last_last_char, [])
             if x == -1:
                 return
-            print("move train x, y, is ", x, y)
+            print(f"{self.headcode} move train x, y is {x}, {y}")
             coords.insert(0,(x,y))
             if direction_change:
                 self.direction_change = direction_change
-                print("direction change is ", direction_change)
+                print(f"{self.headcode} direction change is {direction_change}")
             if direction == "right":
                 amended_x = x+1
                 if (amended_x >= len(lines[y])) or (lines[y][x] in "b]nl" or (lines[y][amended_x] in "c[om" and lines[y][x] in "a")):
                     self.coords.insert(0, coords)
                     self.direction = direction
-                    print("blocked by ", lines[y][x], " or ", lines[y][amended_x], " at ", (x,y), " or ", (amended_x,y))
+                    print(f"{self.headcode} blocked by {lines[y][x]} or {lines[y][amended_x]} at {(x, y)} or {(amended_x, y)}")
                     return
             else:
                 amended_x = x-1
                 if (amended_x < 0) or (lines[y][x] in "c[om" or (lines[y][amended_x] in "b]nl" and lines[y][x] in "a")):
-                    print("blocked by ", lines[y][x], " or ", lines[y][amended_x], " at ", (x,y), " or ", (amended_x,y))
+                    print(f"{self.headcode} blocked by {lines[y][x]} or {lines[y][amended_x]} at {(x, y)} or {(amended_x, y)}")
                     self.coords.insert(0, coords)
                     self.direction = direction
                     return
@@ -369,33 +363,26 @@ class Train:
     def signal_condition_check(self, signal, x, y, direction):
         return (signal.overlap == (x,y) and signal.direction == direction)
 
-    def move_headcode(self, text, lines, game, signals, display):
-        # lines = text.splitlines()
-        grid = [list(line.rstrip('\n')) for line in lines]
+    def move_headcode(self, lines, game, signals, display):
         direction = self.direction
         if len(self.headcode_coords) >= 4:
             for i,element in enumerate(self.headcode_element):
                 x,y = self.headcode_coords[i]
-                grid[y][x] = element
-                display.set_char_color_at_coord(x, y, "gray", text)
-            modified_text = '\n'.join(''.join(row) for row in grid)
-            game.text = modified_text
-            game.update_lines()
+                lines[y][x] = element
+                display.set_char_color_at_coord(x, y, "gray", game)
+
             self.headcode_coords = []
             self.headcode_element = []
-            text = modified_text
-            # lines = text.splitlines()
-            lines = game.lines
-            grid = [list(line.rstrip('\n')) for line in lines]
+        game.lines = [row[:] for row in lines]
         (x,y) = self.coords[0][0]
-        element = grid[y][x]
+        element = lines[y][x]
         last_char = "F"
         last_last_char = "F"
         last_message = None
         while True:
-            if last_message != f"move headcode {x},{y}, direction is {direction}":
-                print(f"move headcode {x},{y}, direction is {direction}")
-                last_message = f"move headcode {x},{y}, direction is {direction}"
+            if last_message != f"{self.headcode} move headcode {x},{y}, direction is {direction}":
+                print(f"{self.headcode} move headcode {x},{y}, direction is {direction}")
+                last_message = f"{self.headcode} move headcode {x},{y}, direction is {direction}"
             for signal in signals:
                 if (x,y) == signal.overlap and signal.direction == direction:
                     if signal.buffer:
@@ -416,12 +403,9 @@ class Train:
                         self.headcode_element.append(lines[y][x+i])
                         self.headcode_coords.append((x+i,y))
                         char = self.headcode[i]
-                        grid[y][x+i] = char
-                        display.set_char_color_at_coord(x+i, y, "light blue", text)
-
-                    modified_text = '\n'.join(''.join(row) for row in grid)
-                    game.text = modified_text
-                    game.update_lines()
+                        lines[y][x+i] = char
+                        display.set_char_color_at_coord(x+i, y, "light blue", game)
+                    game.lines = [row[:] for row in lines]
 
                     return
             x, y, direction, last_char, direction_change, last_last_char, temporary_characters = game.path_find(lines, x, y, direction, self.direction, last_char, last_last_char, [])
@@ -429,43 +413,25 @@ class Train:
                 return
             if last_char == "x":
                 return
-    def display_on(self, display, text, lines):
+    def display_on(self, display, lines, game):
         """
         Turn every coord in the train red on the display.
         """
         for coords in self.coords:
             for i,coord in enumerate(coords):
                 x,y = coord
-                # if i >= 1 and i <= 4:
-                #     display.set_char_color_at_coord(x, y, "light blue", text)
-                # else:
                 if display.get_char_color_at_coord(x,y,lines) != (0, 255, 255):
-                    display.set_char_color_at_coord(x, y, "red", text)
+                    display.set_char_color_at_coord(x, y, "red", game)
         for coord in self.headcode_coords:
             x,y = coord
-            display.set_char_color_at_coord(x, y, "light blue", text)
+            display.set_char_color_at_coord(x, y, "light blue", game)
 
-    def bounds_check(self, text,display, game):
-        x, y = self.coords[0][0]
-        f = StringIO(text)
-        lines = f.readlines()
-        grid = [list(line.rstrip('\n')) for line in lines]
-        if x < 0 or x > len(lines[y]):
-            display.add_log("failed bounds check")
-            # self.despawn_train(text, display, game)
-            self.despawn = True
-            return False
-        return True
     
-    def color_route_coords(self, display, text):
-        # if self.last_colored_route_coords == self.route_coords:
-        #     return
+    def color_route_coords(self, display, lines, game):
         for coord in self.route_coords:
             if coord:
                 x, y = coord
-                # print("coloring", x, y, "white")
-                if display.get_char_color_at_coord(x, y, text) != (255, 255, 255):
-                    display.set_char_color_at_coord(x, y, "white",text)
-        # self.last_colored_route_coords = self.route_coords.copy()
-        
+                if display.get_char_color_at_coord(x, y, lines) != (255, 255, 255):
+                    display.set_char_color_at_coord(x, y, "white", game)
+
         

@@ -6,32 +6,18 @@ class Auto:
         self.direction = direction
         self.colored = False
     
-    def pressed(self, text, game):
+    def pressed(self, game):
         x,y = self.coord
         self.signal.auto = True
-        f = StringIO(text)
-        lines = f.readlines()
-        grid = [list(line.rstrip('\n')) for line in lines]
-        # Change the character (safely)
-        if 0 <= y < len(grid) and 0 <= x < len(grid[y]):
-            grid[y][x] = 'q'
+        if 0 <= y < len(game.lines) and 0 <= x < len(game.lines[y]):
+            game.lines[y][x] = 'q'
         self.signal.auto = True
         # Convert back to string
-        new_text = '\n'.join(''.join(line) for line in grid)
-        game.text = new_text
-        game.update_lines()
-    
-    def depressed(self, text, game):
+        print("Auto button pressed at", self.coord)
+        
+    def depressed(self, game):
         x,y = self.coord
         self.signal.auto = True
-        f = StringIO(text)
-        lines = f.readlines()
-        grid = [list(line.rstrip('\n')) for line in lines]
-        # Change the character (safely)
-        if 0 <= y < len(grid) and 0 <= x < len(grid[y]):
-            grid[y][x] = 'p'
+        if 0 <= y < len(game.lines) and 0 <= x < len(game.lines[y]):
+            game.lines[y][x] = 'p'
         self.signal.auto = False
-        # Convert back to string
-        new_text = '\n'.join(''.join(line) for line in grid)
-        game.text = new_text
-        game.update_lines()

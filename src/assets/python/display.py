@@ -42,7 +42,7 @@ class Display_Class:
         self.cached_width = 0
         self.cached_height = 0
         self.cached_char_rects = None
-        self.cached_text = None
+        self.cached_lines = None
         self.cached_color_state = None
 
     def color_name_to_rgb(self, name):
@@ -60,19 +60,24 @@ class Display_Class:
         }
         return colors.get(name.lower(), (255, 255, 255))
 
-    def set_char_color_at_coord(self, x, y, color_name, text):
-        lines = text.splitlines()
+    def set_char_color_at_coord(self, x, y, color_name, game, is_flashing_call=False):
+        lines = game.lines
         if y < 0 or y >= len(lines):
             return
         line = lines[y]
         if x < 0 or x >= len(line):
             return
         idx = sum(len(l) + 1 for l in lines[:y]) + x
-        self.char_colors[idx] = self.color_name_to_rgb(color_name)
+        rgb_color = self.color_name_to_rgb(color_name)
+        self.char_colors[idx] = rgb_color
+
+        if not is_flashing_call:
+            signal = game.entry_signal
+            if signal and signal.entry_flash_coord == (x, y):
+                print("Updating entry flash color for signal at", (x, y), "to", rgb_color)
+                signal.entry_flash_original_color = rgb_color
 
     def get_char_color_at_coord(self, x, y, lines):
-        
-        # lines = text.splitlines()
         if y < 0 or y >= len(lines):
             return
         line = lines[y]
@@ -83,25 +88,24 @@ class Display_Class:
             return None
         return self.char_colors[idx]
     
-    def get_rendered_surface(self, font, text, lines):
+    def get_rendered_surface(self, font, lines):
 
         color_state = tuple(sorted(self.char_colors.items()))
-
         if (
-            text == self.cached_text
+            lines == self.cached_lines
             and color_state == self.cached_color_state
             and self.cached_surface is not None
         ):
+            # print("Using cached surface")
             return (
                 self.cached_surface,
                 self.cached_width,
                 self.cached_height,
                 self.cached_char_rects,
             )
-
         surf, width, height, rects = self.render_text_surface(font, lines)
-
-        self.cached_text = text
+    
+        self.cached_lines = lines.copy()
         self.cached_color_state = color_state
         self.cached_surface = surf
         self.cached_width = width
@@ -111,7 +115,6 @@ class Display_Class:
         return surf, width, height, rects
 
     def render_text_surface(self, font, lines):
-        # lines = text.splitlines()
 
         line_height = self.line_height
         char_width = font.size('M')[0]
@@ -188,14 +191,13 @@ class Display_Class:
         if len(self.log_lines) > self.max_log_lines:
             self.log_lines.pop(0)
 
-    def update_and_draw(self, game, signals, autos, text, lines, time):
+    def update_and_draw(self, game, signals, autos, lines, time):
 
         font = self.font
 
-        # text_surface, text_width, text_height, char_rects = self.render_text_surface(font, text)
-        text_surface, text_width, text_height, char_rects = self.get_rendered_surface(font, text, lines)
+        text_surface, text_width, text_height, char_rects = self.get_rendered_surface(font, lines)
 
-        if not self.handle_events(game, signals, autos, text, lines, text_width, text_height, char_rects, font):
+        if not self.handle_events(game, signals, autos, lines, text_width, text_height, char_rects, font):
             return False
 
         self.draw(text_surface, text_width, text_height, time, font)
@@ -203,7 +205,7 @@ class Display_Class:
         return True
 
 
-    def handle_events(self, game, signals, autos, text, lines, text_width, text_height, char_rects, font):
+    def handle_events(self, game, signals, autos, lines, text_width, text_height, char_rects, font):
 
         reserved_height = self.line_height * (self.max_log_lines + 1)
 
@@ -221,11 +223,9 @@ class Display_Class:
             elif event.type == pygame.MOUSEBUTTONDOWN:
 
                 if event.button == 1:
-                    self.handle_left_click(event, game, signals, autos, text, char_rects, font)
-
+                    self.handle_left_click(event, game, signals, autos, lines, char_rects, font)
                 elif event.button == 3:
-                    self.handle_right_click(event, game, signals, autos, text, lines, char_rects, font)
-
+                    self.handle_right_click(event, game, signals, autos, lines, char_rects, font)
             elif event.type == pygame.VIDEORESIZE:
                 self.SCREEN_WIDTH, self.SCREEN_HEIGHT = event.w, event.h
                 self.screen = pygame.display.set_mode(
@@ -304,7 +304,7 @@ class Display_Class:
             )
 
 
-    def handle_left_click(self, event, game, signals, autos, text, char_rects, font):
+    def handle_left_click(self, event, game, signals, autos, lines, char_rects, font):
 
         mx, my = event.pos
 
@@ -328,8 +328,12 @@ class Display_Class:
 
             if signal.coord in [(x, y), (x + 1, y), (x - 1, y)]:
 
+                if game.entry_signal is not None and game.entry_signal is not signal:
+                    game.entry_signal.clear_entry_flash(self, lines)
+
                 if game.entry_signal is None and signal.signal_type == "manual":
                     game.entry_signal = signal
+                    signal.prepare_entry_flash(self, lines)
                     self.add_log("entry signal selected")
 
                 else:
@@ -345,7 +349,7 @@ class Display_Class:
 
                 else:
                     self.add_log("auto button pressed at", auto.coord)
-                    auto.pressed(text, game)
+                    auto.pressed(game)
 
                 break
 
@@ -358,7 +362,7 @@ class Display_Class:
                 break
 
 
-    def handle_right_click(self, event, game, signals, autos, text, lines, char_rects, font):
+    def handle_right_click(self, event, game, signals, autos, lines, char_rects, font):
 
         mx, my = event.pos
 
@@ -384,13 +388,13 @@ class Display_Class:
 
                 if signal.signal_type == "manual":
                     self.add_log("canceling route for signal at", signal.coord)
-                    signal.cancel_route(self, text, lines, autos, game)
+                    signal.cancel_route(self, lines, autos, game)
 
         for auto in autos:
 
             if auto.coord in [(x, y), (x + 1, y), (x - 1, y)]:
                 self.add_log("auto button depressed at", auto.coord)
-                auto.depressed(text, game)
+                auto.depressed(game)
                 break
 
 
@@ -429,27 +433,41 @@ class Display_Class:
 
         pygame.display.flip()
 
-    def display_signal_color(self, signals, text):
+    def display_signal_color(self, signals, game):
         """
-        Loop through each signal, get the coord of the signal.
-        If direction is right, x + 1; if left, x - 1.
-        Then turn that coord the signal's color.
+        Restore the actual signal lamp color at the signal coord itself,
+        and separately color the adjacent tile next to the lamp based on route state.
         """
         for signal in signals:
             if signal.buffer:
                 continue
-            if signal.last_colored_color and signal.last_colored_color == signal.color:
-                continue
+
             x, y = signal.coord
-            if signal.direction == "right":
-                x += 1
-            elif signal.direction == "left":
-                x -= 1
-            print("setting color of", (x, y), "to", signal.color)
-            self.set_char_color_at_coord(x, y, signal.color, text)
+            self.set_char_color_at_coord(x, y, signal.color, game)
             signal.last_colored_color = signal.color
 
-    def display_auto_button_color(self, autos, text):
+            if signal.direction == "right":
+                target_x = x + 1
+            elif signal.direction == "left":
+                target_x = x - 1
+
+            target_color = "white" if signal.route_set else "gray"
+            self.set_char_color_at_coord(target_x,y, signal.color, game)
+            self.set_char_color_at_coord(x, y, target_color, game)
+            signal.route_highlight_color = target_color
+
+    def update_entry_signal_flash(self, game, lines):
+        for signal in game.signals:
+            if signal is game.entry_signal:
+                if signal.entry_flash_coord is None:
+                    signal.prepare_entry_flash(self, lines)
+                x, y = signal.entry_flash_coord
+                flash_color = "white" if int(game.game_seconds * 2) % 2 == 0 else "black"
+                self.set_char_color_at_coord(x, y, flash_color, game, is_flashing_call=True)
+            elif signal.entry_flash_coord is not None:
+                signal.clear_entry_flash(self, lines)
+
+    def display_auto_button_color(self, autos, game):
         for auto in autos:
             if auto.colored:
                 continue
@@ -458,6 +476,6 @@ class Display_Class:
                 x1 = x + 1
             elif auto.direction == "left":
                 x1 = x - 1
-            self.set_char_color_at_coord(x, y, "light blue", text)
-            self.set_char_color_at_coord(x1, y, "light blue", text)
+            self.set_char_color_at_coord(x, y, "light blue", game)
+            self.set_char_color_at_coord(x1, y, "light blue", game)
             auto.colored = True
