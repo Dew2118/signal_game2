@@ -1,5 +1,6 @@
 
 import pygame
+import time
 
 class Display_Class:
     def __init__(self, signals=None):
@@ -268,6 +269,9 @@ class Display_Class:
 
         elif event.key == pygame.K_p:
             game.paused = not game.paused
+            if not game.paused:
+                # When unpausing, reset the time tracker so the pause duration isn't added to the clock
+                game._last_real_time = time.time()
             self.add_log(f"Game paused: {game.paused}")
 
         elif event.key in (pygame.K_PLUS, pygame.K_KP_PLUS):

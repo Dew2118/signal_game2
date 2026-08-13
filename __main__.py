@@ -49,6 +49,7 @@ class Game:
         self.spawned_start_coords = set()
         self.display_class = display_class
         self.snapshot = False
+        self.last_snapshot_interval = -1  # Track the last 5-minute interval we created a snapshot for
         self.lines = self.clone_lines(self.text.splitlines())
         self.layout_file = layout_file
         self.portals = []
@@ -164,6 +165,7 @@ class Game:
                 self.backlog_train_spawn = data.get("backlog_train_spawn", [])
                 self.display_class = Display_Class(self.signals)
                 self.snapshot = data.get("snapshot", False)
+                self.last_snapshot_interval = -1  # Reset snapshot interval tracker on load
                 self.lines = data.get("lines", [])
                 self.layout_file = data.get("layout_file", None)
                 self.portals = data.get("portals", [])
@@ -829,12 +831,11 @@ class Game:
                 if not self.paused:
                     self.game_seconds += delta_real * self.time_speed
                 # Move all trains
-                if math.floor(self.game_seconds) % (5*60) == 0 and not self.snapshot:
-                    # current_datetime = datetime.datetime.now()
+                total_seconds = int(self.game_seconds)
+                current_interval = total_seconds // (5*60)
+                if total_seconds % (5*60) == 0 and current_interval != self.last_snapshot_interval:
                     self.save_game(f"snapshot_{hours:02d}{minutes:02d}{seconds:02d}.pkl")
-                    self.snapshot = True
-                elif math.floor(self.game_seconds) % (5*60) != 0:
-                    self.snapshot = False
+                    self.last_snapshot_interval = current_interval
                 self.update_spawn()
                 for train in self.trains:
                     train.move(self.lines, self, self.signals, self.display_class)
