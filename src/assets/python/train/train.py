@@ -315,7 +315,7 @@ class Train:
                 if not set_to_white:
                     display.set_char_color_at_coord(coord[0], coord[1], "gray", game)
         
-        game.reset_temporary_characters(result, game.lines)
+        game.reset_temporary_characters(result)
         print(f"{self.headcode} temporary character left: {self.temporary_characters}")
 
         if self.coords == [] and self.despawn:
@@ -400,7 +400,10 @@ class Train:
                         if signal.direction == "right":
                             x -= 3
                     for i in range(4):
-                        self.headcode_element.append(game.lines[y][x+i])
+                        if (game.lines[y][x+i] in "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"):
+                            self.headcode_element.append('a')
+                        else:
+                            self.headcode_element.append(game.lines[y][x+i])
                         self.headcode_coords.append((x+i,y))
                         char = self.headcode[i]
                         game.lines[y][x+i] = char

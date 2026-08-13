@@ -46,6 +46,7 @@ class Game:
         self.timetables = None
         self.timetable_obj = None
         self.backlog_train_spawn = []
+        self.spawned_start_coords = set()
         self.display_class = display_class
         self.snapshot = False
         self.lines = self.clone_lines(self.text.splitlines())
@@ -287,7 +288,10 @@ class Game:
             annotated_segments = self.annotated_segments
         # coords = [start_coord for _ in range(length)]
         signal_coords = self.find_first_spawn_signal(start_coord, direction)
-        if not self.check_if_spawnable(signal_coords):
+        if start_coord in self.spawned_start_coords:
+            self.backlog_train_spawn.append({"start_coord": start_coord, "direction": direction, "headcode": headcode, "timetable": timetable, "game_seconds": game_seconds, "annotated_segments": annotated_segments})
+            return
+        elif not self.check_if_spawnable(signal_coords):
             self.backlog_train_spawn.append({"start_coord": start_coord, "direction": direction, "headcode": headcode, "timetable": timetable, "game_seconds": game_seconds, "annotated_segments": annotated_segments})
             return
         threading.Thread(target=winsound.PlaySound, args=(SPAWN_SOUND, winsound.SND_FILENAME)).start()
@@ -297,20 +301,22 @@ class Game:
         train.route_coords = signal_coords
         # train.color_route_coords(self.display_class, self.text)
         self.trains.append(train)
+        self.spawned_start_coords.add(start_coord)
         return train
 
     def check_backlog_train(self):
-        for backlog_train in self.backlog_train_spawn:
+        self.spawned_start_coords.clear()
+        for backlog_train in list(self.backlog_train_spawn):
             coord = backlog_train["start_coord"]
             signal_coords = self.find_first_spawn_signal(coord, backlog_train["direction"])
             if self.check_if_spawnable(signal_coords):
                 self.backlog_train_spawn.remove(backlog_train)
-                self.display_class.add_log('removed')
                 self.spawn_train(backlog_train["start_coord"], backlog_train["direction"], backlog_train["headcode"], backlog_train["timetable"])
 
     def check_if_spawnable(self, coords):
         for coord in coords:
-            if self.display_class.get_char_color_at_coord(coord[0], coord[1], self.lines) != (128, 128, 128) and self.display_class.get_char_color_at_coord(coord[0], coord[1], self.lines) != None:
+            color = self.display_class.get_char_color_at_coord(coord[0], coord[1], self.lines)
+            if color != (128, 128, 128) and color != None:
                 return False
         return True
 
@@ -452,21 +458,17 @@ class Game:
         if switch_direction == "normal":
             new_char = "a"
 
-        board = self.lines if lines is None else self.clone_lines(lines)
 
-        if 0 <= y < len(board) and 0 <= x < len(board[y]):
+        if 0 <= y < len(lines) and 0 <= x < len(lines[y]):
             if switch_direction == "change":
-                if board[y][x] != "a":
-                    board[y][x] = "a"
+                if lines[y][x] != "a":
+                    lines[y][x] = "a"
                 else:
-                    board[y][x] = new_char
+                    lines[y][x] = new_char
             else:
-                board[y][x] = new_char
+                lines[y][x] = new_char
 
-        # if lines is None:
-        #     self.lines = board
-        #     return self.lines
-        return board
+        return lines
     
     def get_switch_position(self, switch_index, lines):
         x, y, new_char, direction = self.switches[switch_index]
@@ -522,22 +524,18 @@ class Game:
                     break
                 # last_char = char
 
-    def handle_temporary_characters(self, temporary_characters, lines):
+    def handle_temporary_characters(self, temporary_characters):
         for temporary_character in temporary_characters:
             (x,y), original_char, new_char = temporary_character
-            lines[y][x] = new_char
-        self.lines =  [row[:] for row in lines]
-        # return lines
-        # modified_text = '\n'.join(''.join(row) for row in lines)
+            self.lines[y][x] = new_char
+        # self.lines =  [row[:] for row in lines]
 
-    def reset_temporary_characters(self, temporary_characters, lines):
+    def reset_temporary_characters(self, temporary_characters):
         for temporary_character in temporary_characters:
             (x,y), original_char, new_char = temporary_character
-            lines[y][x] = original_char
+            self.lines[y][x] = original_char
             print("resetting temporary character at", (x,y), "to", original_char)
-        self.lines =  [row[:] for row in lines]
-        # # modified_text = '\n'.join(''.join(row) for row in grid)
-        # return lines
+        # self.lines =  [row[:] for row in lines]
 
     def set_route(self):
         coords = self.entry_signal.get_coords_to_next_signal(self.exit_signal, self, self.switches, self.layout_file, self.signals, self.trains)
