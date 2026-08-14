@@ -34,3 +34,5 @@
 | `Numpad -` | Slow down game |
 | `Ctrl + S` | Save |
 | `Ctrl + L` | Load |
+
+If you have any problems/any questions at all or find any bugs please DM me in Dicord

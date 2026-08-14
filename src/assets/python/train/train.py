@@ -145,25 +145,17 @@ class Train:
                 else:
                     self.direction = "right"
                 print(f"{self.headcode} train direction reversed to {self.direction}")
-                # self.reversed_direction = True
-                # self.real_first_coord = self.coords[0][0]
                 self.coords[0].reverse()
-            # else:
-                # self.reversed_direction = False
             elif current_stop.get("despawn"):
                 self.despawn = True
-                # self.despawn_train(text, display, game)
-                # game.despawn_train(self)
                 return False
             self.TRTS(dep_offset-time_since_spawn, game.signals, game, display, lines)
             if time_since_spawn < dep_offset:
                 return False
             
-            elif (time_since_spawn - self.start_to_stop_time) < 2:
-                # print(time_since_spawn, self.start_to_stop_time)
+            elif (time_since_spawn - self.start_to_stop_time) < 30:
                 self.TRTS(dep_offset-time_since_spawn, game.signals, game, display, lines)
                 return False
-            # ✅ Time to leave, move to next stop
             x, y = self.coords[0][0]
             for signal in signals:
                 if self.signal_condition_check(signal, x, y, self.direction) and signal.color == "red":
