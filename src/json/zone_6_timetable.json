@@ -2489,16 +2489,16 @@
         "headcode_prefix": "1L",
         "start_location": {
             "left": [
-                0,
+                10,
                 17
             ],
             "right": [
-                0,
+                10,
                 17
             ],
             "type": "entrance_exit",
             "station": "ZONE 5",
-            "platform": "up FAST"
+            "platform": "UP FAST"
         },
         "direction": "right",
         "stops": [
@@ -2517,7 +2517,7 @@
             }
         ],
         "spawn_times": [
-            "00:23:20",
+            "00:00:03",
             "00:25:20",
             "00:27:20",
             "00:29:20",
