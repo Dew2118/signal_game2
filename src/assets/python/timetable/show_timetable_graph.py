@@ -1,10 +1,11 @@
 import json
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
 import os
+
+import matplotlib.pyplot as plt
 
 CYCLE_LENGTH = 2880
 DAY_LENGTH = 86400
+START_TIME = "00:01:51"
 
 CWD = os.path.dirname(__file__)
 JSON_PATH = os.path.join("..", "..", "..", "json")
@@ -223,9 +224,10 @@ def compute_average_trains(intervals, total_time=DAY_LENGTH):
 
 
 # ---------------- PLOT ----------------
-def plot_timetable(data):
+def plot_timetable(data, start_time=START_TIME):
     stations = extract_stations(data)
     station_index = build_station_index(stations)
+    start_seconds = time_to_seconds(start_time)
 
     fig, ax = plt.subplots(figsize=(14, 7))
 
@@ -234,7 +236,7 @@ def plot_timetable(data):
         for i, entry in enumerate(data)
     ))
 
-    cmap = cm.get_cmap("tab20", len(unique_headcodes))
+    cmap = plt.get_cmap("tab20", len(unique_headcodes))
     headcode_to_color = {
         hc: cmap(i) for i, hc in enumerate(unique_headcodes)
     }
@@ -257,8 +259,8 @@ def plot_timetable(data):
             positions_clipped = []
 
             for t, p in zip(times, positions):
-                if 0 <= t <= CYCLE_LENGTH:
-                    times_clipped.append(t)
+                if start_seconds <= t <= CYCLE_LENGTH:
+                    times_clipped.append(t - start_seconds)
                     positions_clipped.append(p)
 
             if len(times_clipped) > 1:
@@ -290,12 +292,13 @@ def plot_timetable(data):
     ax.set_yticks(range(len(stations)))
     ax.set_yticklabels(stations, fontsize=8)
 
-    ax.set_xlabel("Time (seconds)")
+    ax.set_xlabel(f"Time (seconds from {start_time})")
     ax.set_ylabel("Stations")
-    ax.set_title("Train Timetable Graph")
+    ax.set_title(f"Train Timetable Graph ({start_time} start)")
 
     ax.grid(True)
     ax.invert_yaxis()
+    ax.set_xlim(0, max(CYCLE_LENGTH - start_seconds, 1))
 
     plt.tight_layout()
     plt.show()
@@ -303,11 +306,11 @@ def plot_timetable(data):
 
 # ---------------- MAIN ----------------
 if __name__ == "__main__":
-    data = load_data("zone_F_timetable.json")
+    data = load_data("zone_6_timetable.json")
 
     intervals = collect_train_intervals(data)
     avg_trains = compute_average_trains(intervals)
 
     print(f"Average active trains over 24h: {avg_trains:.2f}")
 
-    plot_timetable(data)
+    plot_timetable(data, START_TIME)

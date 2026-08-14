@@ -97,20 +97,19 @@ class Signal:
                                     break
                         else:
                             if last_char not in "a[]bc":
-                                if game.get_switch_position(i, lines) == "reverse" or not self.duplicate_train_route_check(x, y, trains):
+                                if game.get_switch_position(i, game.lines) == "reverse" or not self.duplicate_train_route_check(x, y, trains):
                                     switch_stack.append((switch,i, direction, True, "reverse"))
                                     print("change trailing switch to reverse at ", switch)
                                 else:
-                                    
                                     x, y, last_switch, switch_stack, direction, lines, coords = self.go_back_to_last_switch(trains, switch_stack, game, coords, lines)
                                     restart = True
                                     break
                             else:
-                                if game.get_switch_position(i, lines) == "normal" or not self.duplicate_train_route_check(x, y, trains):
+                                if game.get_switch_position(i, game.lines) == "normal" or not self.duplicate_train_route_check(x, y, trains):
                                     switch_stack.append((switch,i, direction, True, "normal"))
                                     print("change trailing switch to normal at ", switch)
                                 else:
-                                    x, y, last_switch, switch_stack, direction, lines, coords = self.go_back_to_last_switch(trains, switch_stack, game, coords, lines)
+                                    x, y, last_switch, switch_stack, direction, lines, coords = self.go_back_to_last_switch(trains, switch_stack, game, coords, game.lines)
                                     restart = True
                                     break
                 if last_char in "yz" and self.duplicate_train_route_check(x, y, trains):

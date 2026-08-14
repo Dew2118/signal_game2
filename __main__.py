@@ -474,6 +474,7 @@ class Game:
     
     def get_switch_position(self, switch_index, lines):
         x, y, new_char, direction = self.switches[switch_index]
+        print("getswitchpos is", x,y, lines[y][x])
         char = lines[y][x]
         if char == "a":
             return "normal"
