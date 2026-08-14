@@ -525,20 +525,17 @@ class Game:
                             break
                 if signal.next_signal:
                     break
-                # last_char = char
 
     def handle_temporary_characters(self, temporary_characters):
         for temporary_character in temporary_characters:
             (x,y), original_char, new_char = temporary_character
             self.lines[y][x] = new_char
-        # self.lines =  [row[:] for row in lines]
 
     def reset_temporary_characters(self, temporary_characters):
         for temporary_character in temporary_characters:
             (x,y), original_char, new_char = temporary_character
             self.lines[y][x] = original_char
             print("resetting temporary character at", (x,y), "to", original_char)
-        # self.lines =  [row[:] for row in lines]
 
     def set_route(self):
         coords = self.entry_signal.get_coords_to_next_signal(self.exit_signal, self, self.switches, self.layout_file, self.signals, self.trains)
@@ -820,10 +817,24 @@ class Game:
                 seconds = total_seconds % 60
                 time_str = f"{hours:02d}:{minutes:02d}:{seconds:02d} *{self.time_speed}"
                 running = self.display_class.update_and_draw(self, self.signals, self.autos, self.lines, time_str)
+                # Draw signal colors using self.signals
+                self.update_signals()
+                self.display_class.update_entry_signal_flash(self, self.lines)
+                self.display_class.display_auto_button_color(self.autos, self)
+                # Draw and handle events
+                self.color_entry_signal()
+                if self.entry_signal and self.exit_signal:
+                    self.set_route()
+                for train in self.trains:
+                    if not self.paused:
+                        train.move(self.lines, self, self.signals, self.display_class)
+                    if train in self.trains:
+                        train.color_route_coords(self.display_class, self.lines, self)
+                        train.display_on(self.display_class, self.lines, self)
                 if self.paused:
                     continue
                 self.check_backlog_train()
-                self.color_entry_signal()
+                
                 now = time.time()
                 delta_real = now - self._last_real_time
                 self._last_real_time = now
@@ -838,22 +849,6 @@ class Game:
                     self.save_game(f"snapshot_{hours:02d}{minutes:02d}{seconds:02d}.pkl")
                     self.last_snapshot_interval = current_interval
                 self.update_spawn()
-                for train in self.trains:
-                    train.move(self.lines, self, self.signals, self.display_class)
-                    
-                    if train in self.trains:
-                        train.color_route_coords(self.display_class, self.lines, self)
-                        train.display_on(self.display_class, self.lines, self)
-                    
-
-                # Draw signal colors using self.signals
-                self.update_signals()
-                self.display_class.update_entry_signal_flash(self, self.lines)
-                self.display_class.display_auto_button_color(self.autos, self)
-                # Draw and handle events
-                
-                if self.entry_signal and self.exit_signal:
-                    self.set_route()
                 clock.tick(120)
             except Exception as e:
                 print("error in main loop:", e)
