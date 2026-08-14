@@ -1,0 +1,652 @@
+{
+    "segments": [
+        {
+            "left": [
+                133,
+                5
+            ],
+            "right": [
+                133,
+                5
+            ],
+            "type": "entrance_exit",
+            "station": "LEIGHTON SIDING",
+            "platform": ""
+        },
+        {
+            "left": [
+                195,
+                5
+            ],
+            "right": [
+                201,
+                5
+            ],
+            "type": "platform",
+            "station": "LEIGHTON STEPFORD ROAD",
+            "platform": "1"
+        },
+        {
+            "left": [
+                242,
+                5
+            ],
+            "right": [
+                248,
+                5
+            ],
+            "type": "platform",
+            "station": "LEIGHTON CITY",
+            "platform": "1"
+        },
+        {
+            "left": [
+                56,
+                6
+            ],
+            "right": [
+                62,
+                6
+            ],
+            "type": "platform",
+            "station": "WATER NEWTON",
+            "platform": "1"
+        },
+        {
+            "left": [
+                122,
+                6
+            ],
+            "right": [
+                128,
+                6
+            ],
+            "type": "platform",
+            "station": "ROCKET PARADE",
+            "platform": "1"
+        },
+        {
+            "left": [
+                195,
+                6
+            ],
+            "right": [
+                201,
+                6
+            ],
+            "type": "platform",
+            "station": "LEIGHTON STEPFORD ROAD",
+            "platform": "2"
+        },
+        {
+            "left": [
+                242,
+                6
+            ],
+            "right": [
+                248,
+                6
+            ],
+            "type": "platform",
+            "station": "LEIGHTON CITY",
+            "platform": "2"
+        },
+        {
+            "left": [
+                10,
+                7
+            ],
+            "right": [
+                10,
+                7
+            ],
+            "type": "entrance_exit",
+            "station": "ZONE 6",
+            "platform": "UP SLOW"
+        },
+        {
+            "left": [
+                10,
+                9
+            ],
+            "right": [
+                10,
+                9
+            ],
+            "type": "entrance_exit",
+            "station": "ZONE 6",
+            "platform": "DOWN SLOW"
+        },
+        {
+            "left": [
+                56,
+                10
+            ],
+            "right": [
+                62,
+                10
+            ],
+            "type": "platform",
+            "station": "WATER NEWTON",
+            "platform": "2"
+        },
+        {
+            "left": [
+                122,
+                10
+            ],
+            "right": [
+                128,
+                10
+            ],
+            "type": "platform",
+            "station": "ROCKET PARADE",
+            "platform": "2"
+        },
+        {
+            "left": [
+                56,
+                11
+            ],
+            "right": [
+                62,
+                11
+            ],
+            "type": "platform",
+            "station": "WATER NEWTON",
+            "platform": "3"
+        },
+        {
+            "left": [
+                195,
+                11
+            ],
+            "right": [
+                201,
+                11
+            ],
+            "type": "platform",
+            "station": "LEIGHTON STEPFORD ROAD",
+            "platform": "3"
+        },
+        {
+            "left": [
+                242,
+                11
+            ],
+            "right": [
+                248,
+                11
+            ],
+            "type": "platform",
+            "station": "LEIGHTON CITY",
+            "platform": "3"
+        },
+        {
+            "left": [
+                10,
+                12
+            ],
+            "right": [
+                10,
+                12
+            ],
+            "type": "entrance_exit",
+            "station": "ZONE 6",
+            "platform": "UP FAST"
+        },
+        {
+            "left": [
+                195,
+                12
+            ],
+            "right": [
+                201,
+                12
+            ],
+            "type": "platform",
+            "station": "LEIGHTON STEPFORD ROAD",
+            "platform": "4"
+        },
+        {
+            "left": [
+                242,
+                12
+            ],
+            "right": [
+                248,
+                12
+            ],
+            "type": "platform",
+            "station": "LEIGHTON CITY",
+            "platform": "4"
+        },
+        {
+            "left": [
+                10,
+                14
+            ],
+            "right": [
+                10,
+                14
+            ],
+            "type": "entrance_exit",
+            "station": "ZONE 6",
+            "platform": "DOWN FAST"
+        },
+        {
+            "left": [
+                56,
+                15
+            ],
+            "right": [
+                62,
+                15
+            ],
+            "type": "platform",
+            "station": "WATER NEWTON",
+            "platform": "4"
+        },
+        {
+            "left": [
+                195,
+                17
+            ],
+            "right": [
+                201,
+                17
+            ],
+            "type": "platform",
+            "station": "LEIGHTON STEPFORD ROAD",
+            "platform": "5"
+        },
+        {
+            "left": [
+                242,
+                17
+            ],
+            "right": [
+                248,
+                17
+            ],
+            "type": "platform",
+            "station": "LEIGHTON CITY",
+            "platform": "5"
+        },
+        {
+            "left": [
+                242,
+                18
+            ],
+            "right": [
+                248,
+                18
+            ],
+            "type": "platform",
+            "station": "LEIGHTON CITY",
+            "platform": "6"
+        },
+        {
+            "left": [
+                221,
+                22
+            ],
+            "right": [
+                227,
+                22
+            ],
+            "type": "platform",
+            "station": "LEIGHTON WEST",
+            "platform": "1"
+        },
+        {
+            "left": [
+                114,
+                24
+            ],
+            "right": [
+                114,
+                24
+            ],
+            "type": "entrance_exit",
+            "station": "FAYMERE DEPOT",
+            "platform": "1"
+        },
+        {
+            "left": [
+                114,
+                26
+            ],
+            "right": [
+                114,
+                26
+            ],
+            "type": "entrance_exit",
+            "station": "FAYMERE DEPOT",
+            "platform": "2"
+        },
+        {
+            "left": [
+                114,
+                28
+            ],
+            "right": [
+                114,
+                28
+            ],
+            "type": "entrance_exit",
+            "station": "FAYMERE DEPOT",
+            "platform": "3"
+        },
+        {
+            "left": [
+                176,
+                29
+            ],
+            "right": [
+                182,
+                29
+            ],
+            "type": "platform",
+            "station": "FAYMERE",
+            "platform": "2"
+        },
+        {
+            "left": [
+                10,
+                30
+            ],
+            "right": [
+                10,
+                30
+            ],
+            "type": "entrance_exit",
+            "station": "ZONE 10",
+            "platform": "DOWN SLOW"
+        },
+        {
+            "left": [
+                114,
+                30
+            ],
+            "right": [
+                114,
+                30
+            ],
+            "type": "entrance_exit",
+            "station": "FAYMERE DEPOT",
+            "platform": "4"
+        },
+        {
+            "left": [
+                28,
+                31
+            ],
+            "right": [
+                34,
+                31
+            ],
+            "type": "platform",
+            "station": "MILLCASTLE RACECOURSE",
+            "platform": "4"
+        },
+        {
+            "left": [
+                91,
+                31
+            ],
+            "right": [
+                97,
+                31
+            ],
+            "type": "platform",
+            "station": "WESTERCOAST",
+            "platform": "2"
+        },
+        {
+            "left": [
+                259,
+                31
+            ],
+            "right": [
+                265,
+                31
+            ],
+            "type": "platform",
+            "station": "EDGEMEAD",
+            "platform": "3"
+        },
+        {
+            "left": [
+                10,
+                32
+            ],
+            "right": [
+                10,
+                32
+            ],
+            "type": "entrance_exit",
+            "station": "ZONE 10",
+            "platform": "DOWN FAST"
+        },
+        {
+            "left": [
+                372,
+                34
+            ],
+            "right": [
+                378,
+                34
+            ],
+            "type": "platform",
+            "station": "RAYLEIGH BAY",
+            "platform": "1"
+        },
+        {
+            "left": [
+                10,
+                35
+            ],
+            "right": [
+                10,
+                35
+            ],
+            "type": "entrance_exit",
+            "station": "ZONE 10",
+            "platform": "UP FAST"
+        },
+        {
+            "left": [
+                372,
+                35
+            ],
+            "right": [
+                378,
+                35
+            ],
+            "type": "platform",
+            "station": "RAYLEIGH BAY",
+            "platform": "2"
+        },
+        {
+            "left": [
+                28,
+                36
+            ],
+            "right": [
+                34,
+                36
+            ],
+            "type": "platform",
+            "station": "MILLCASTLE RACECOURSE",
+            "platform": "1"
+        },
+        {
+            "left": [
+                91,
+                36
+            ],
+            "right": [
+                97,
+                36
+            ],
+            "type": "platform",
+            "station": "WESTERCOAST",
+            "platform": "1"
+        },
+        {
+            "left": [
+                259,
+                36
+            ],
+            "right": [
+                265,
+                36
+            ],
+            "type": "platform",
+            "station": "EDGEMEAD",
+            "platform": "2"
+        },
+        {
+            "left": [
+                10,
+                37
+            ],
+            "right": [
+                10,
+                37
+            ],
+            "type": "entrance_exit",
+            "station": "ZONE 10",
+            "platform": "UP SLOW"
+        },
+        {
+            "left": [
+                145,
+                37
+            ],
+            "right": [
+                145,
+                37
+            ],
+            "type": "entrance_exit",
+            "station": "FAYMERE DEPOT",
+            "platform": "UP 1"
+        },
+        {
+            "left": [
+                259,
+                37
+            ],
+            "right": [
+                265,
+                37
+            ],
+            "type": "platform",
+            "station": "EDGEMEAD",
+            "platform": "1"
+        },
+        {
+            "left": [
+                299,
+                37
+            ],
+            "right": [
+                305,
+                37
+            ],
+            "type": "platform",
+            "station": "ASLOCKBY",
+            "platform": "1"
+        },
+        {
+            "left": [
+                176,
+                38
+            ],
+            "right": [
+                182,
+                38
+            ],
+            "type": "platform",
+            "station": "FAYMERE",
+            "platform": "1"
+        },
+        {
+            "left": [
+                144,
+                39
+            ],
+            "right": [
+                144,
+                39
+            ],
+            "type": "entrance_exit",
+            "station": "FAYMERE DEPOT",
+            "platform": "UP 2"
+        },
+        {
+            "left": [
+                329,
+                39
+            ],
+            "right": [
+                335,
+                39
+            ],
+            "type": "platform",
+            "station": "CARNALEA BRIDGE",
+            "platform": "1"
+        },
+        {
+            "left": [
+                372,
+                39
+            ],
+            "right": [
+                378,
+                39
+            ],
+            "type": "platform",
+            "station": "RAYLEIGH BAY",
+            "platform": "3"
+        },
+        {
+            "left": [
+                299,
+                41
+            ],
+            "right": [
+                305,
+                41
+            ],
+            "type": "platform",
+            "station": "ASLOCKBY",
+            "platform": "2"
+        }
+    ],
+    "portals": [
+        [
+            [
+                319,
+                10
+            ],
+            [
+                323,
+                32
+            ],
+            "opposite"
+        ],
+        [
+            [
+                319,
+                13
+            ],
+            [
+                323,
+                35
+            ],
+            "opposite"
+        ]
+    ]
+}
