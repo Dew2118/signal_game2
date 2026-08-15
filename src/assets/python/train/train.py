@@ -418,10 +418,14 @@ class Train:
         for coords in self.coords:
             for i,coord in enumerate(coords):
                 x,y = coord
+                if lines[y][x] == "x":
+                    continue
                 if display.get_char_color_at_coord(x,y,lines) != (0, 255, 255):
                     display.set_char_color_at_coord(x, y, "red", game)
         for coord in self.headcode_coords:
             x,y = coord
+            if lines[y][x] == "x":
+                continue
             display.set_char_color_at_coord(x, y, "light blue", game)
 
     

@@ -68,6 +68,8 @@ class Display_Class:
         line = lines[y]
         if x < 0 or x >= len(line):
             return
+        if line[x] == "x":
+            return
         idx = sum(len(l) + 1 for l in lines[:y]) + x
         rgb_color = self.color_name_to_rgb(color_name)
         self.char_colors[idx] = rgb_color

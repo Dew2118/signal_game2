@@ -50,6 +50,7 @@ class Game:
         self.approach_map = {}
         self.approach_displayed = {}
         self.last_sent = {}
+        self.last_sent_coords = {}
         self.display_class = display_class
         self.snapshot = False
         self.last_snapshot_interval = -1  # Track the last 5-minute interval we created a snapshot for
@@ -124,6 +125,7 @@ class Game:
                 "backlog_train_spawn": self.backlog_train_spawn,
                 "approach_map": self.approach_map,
                 "last_sent": self.last_sent,
+                "last_sent_coords": getattr(self, "last_sent_coords", {}),
                 "snapshot": self.snapshot,
                 "lines": self.lines,
                 "layout_file": self.layout_file,
@@ -170,6 +172,7 @@ class Game:
                 self.backlog_train_spawn = data.get("backlog_train_spawn", [])
                 self.approach_map = data.get("approach_map", {})
                 self.last_sent = data.get("last_sent", {})
+                self.last_sent_coords = data.get("last_sent_coords", {})
                 self.display_class = Display_Class(self.signals)
                 self.snapshot = data.get("snapshot", False)
                 self.last_snapshot_interval = -1  # Reset snapshot interval tracker on load
@@ -359,6 +362,7 @@ class Game:
         self.approach_map = {}
         self.approach_displayed = {}
         self.last_sent = {}
+        self.last_sent_coords = {}  # Store coords for last_sent separately
         print("[APPROACH] setup_approach_and_last_sent starting")
 
         for segment in getattr(self, "annotated_segments", []):
@@ -386,6 +390,7 @@ class Game:
                     print(f"[APPROACH] mapped entrance {(x, y)} to coords {coords} (direction={direction})")
                 else:
                     self.last_sent[(x, y)] = None
+                    self.last_sent_coords[(x, y)] = coords  # Store coords for display
                     print(f"[LAST_SENT] mapped entrance {(x, y)} to last_sent default (direction={direction})")
 
                 for coord_x, coord_y in coords:
@@ -467,9 +472,6 @@ class Game:
             color = "light blue" if headcode else "gray"
             self.display_class.set_char_color_at_coord(coord_x, coord_y, color, self)
 
-        # if headcode:
-            # print(f"[APPROACH] rendered {headcode} at {coords}: {[self.lines[y][x] for x, y in coords]}")
-            # print(f"[APPROACH] colors: {[(coord, self.display_class.get_char_color_at_coord(coord[0], coord[1], self.lines)) for coord in coords]}")
 
     def check_approach(self):
         for train in self.trains:
@@ -480,6 +482,7 @@ class Game:
             for coord in train.coords[0]:
                 if coord in self.last_sent:
                     self.last_sent[coord] = train.headcode
+                    print("REPLACED with ", train.headcode, "at", coord)
 
         for entrance_coord, approach_data in self.approach_map.items():
             coords = approach_data["coords"]
@@ -537,7 +540,7 @@ class Game:
         for entrance_coord, last_headcode in list(self.last_sent.items()):
             if entrance_coord in self.approach_map:
                 continue
-            coords, _ = self.get_entrance_coords_for_coord(*entrance_coord)
+            coords = self.last_sent_coords.get(entrance_coord)
             if coords is None:
                 continue
             self._display_approach_headcode(coords, last_headcode)
