@@ -47,6 +47,9 @@ class Game:
         self.timetable_obj = None
         self.backlog_train_spawn = []
         self.spawned_start_coords = set()
+        self.approach_map = {}
+        self.approach_displayed = {}
+        self.last_sent = {}
         self.display_class = display_class
         self.snapshot = False
         self.last_snapshot_interval = -1  # Track the last 5-minute interval we created a snapshot for
@@ -119,6 +122,8 @@ class Game:
                 "timetables": self.timetables,
                 # "timetable_obj": self.timetable_obj,
                 "backlog_train_spawn": self.backlog_train_spawn,
+                "approach_map": self.approach_map,
+                "last_sent": self.last_sent,
                 "snapshot": self.snapshot,
                 "lines": self.lines,
                 "layout_file": self.layout_file,
@@ -163,6 +168,8 @@ class Game:
                 self.timetables = data.get("timetables", None)
                 self.timetable_obj = None
                 self.backlog_train_spawn = data.get("backlog_train_spawn", [])
+                self.approach_map = data.get("approach_map", {})
+                self.last_sent = data.get("last_sent", {})
                 self.display_class = Display_Class(self.signals)
                 self.snapshot = data.get("snapshot", False)
                 self.last_snapshot_interval = -1  # Reset snapshot interval tracker on load
@@ -296,8 +303,9 @@ class Game:
         elif not self.check_if_spawnable(signal_coords):
             self.backlog_train_spawn.append({"start_coord": start_coord, "direction": direction, "headcode": headcode, "timetable": timetable, "game_seconds": game_seconds, "annotated_segments": annotated_segments})
             return
-        threading.Thread(target=winsound.PlaySound, args=(SPAWN_SOUND, winsound.SND_FILENAME)).start()
-        self.display_class.add_log(f"train {headcode} spawned at {start_coord}")
+        if start_coord not in self.approach_map:
+            threading.Thread(target=winsound.PlaySound, args=(SPAWN_SOUND, winsound.SND_FILENAME)).start()
+            self.display_class.add_log(f"train {headcode} spawned at {start_coord}")
         train = Train(start_coord,direction, headcode, timetable, int(self.game_seconds), self.annotated_segments, self.wait_time)
         print("signal coords is ", signal_coords)
         train.route_coords = signal_coords
@@ -314,6 +322,225 @@ class Game:
             if self.check_if_spawnable(signal_coords):
                 self.backlog_train_spawn.remove(backlog_train)
                 self.spawn_train(backlog_train["start_coord"], backlog_train["direction"], backlog_train["headcode"], backlog_train["timetable"])
+
+    def get_entrance_coords_for_coord(self, x, y):
+        if not (0 <= y < len(self.lines) and 0 <= x < len(self.lines[y])):
+            return None, None
+
+        left_char = self.lines[y][x - 1] if x > 0 else None
+        right_char = self.lines[y][x + 1] if x + 1 < len(self.lines[y]) else None
+
+        if left_char == "\\":
+            return [(x - offset, y) for offset in range(4, 0, -1)], "left"
+        if right_char == "\\":
+            return [(x + offset, y) for offset in range(1, 5)], "right"
+        return None, None
+
+    def matches_timetable_start_location(self, segment):
+        segment_type = segment.get("type")
+        segment_station = segment.get("station")
+        segment_platform = segment.get("platform")
+        if segment_type is None or not segment_station or not segment_platform:
+            return False
+
+        for tt in self.timetables or []:
+            start_seg = tt.get("start_location", {})
+            if not start_seg:
+                continue
+            if (
+                start_seg.get("type") == segment_type
+                and start_seg.get("station") == segment_station
+                and start_seg.get("platform") == segment_platform
+            ):
+                return True
+        return False
+
+    def setup_approach_and_last_sent(self):
+        self.approach_map = {}
+        self.approach_displayed = {}
+        self.last_sent = {}
+        print("[APPROACH] setup_approach_and_last_sent starting")
+
+        for segment in getattr(self, "annotated_segments", []):
+            if segment.get("type") != "entrance_exit":
+                continue
+
+            left_coord = tuple(segment.get("left", (0, 0))) if segment.get("left") is not None else None
+            right_coord = tuple(segment.get("right", (0, 0))) if segment.get("right") is not None else None
+            entrance_coords = []
+            if left_coord is not None:
+                entrance_coords.append(left_coord)
+            if right_coord is not None and right_coord != left_coord:
+                entrance_coords.append(right_coord)
+
+            for x, y in entrance_coords:
+                coords, direction = self.get_entrance_coords_for_coord(x, y)
+                if coords is None:
+                    continue
+
+                if self.matches_timetable_start_location(segment):
+                    self.approach_map[(x, y)] = {
+                        "coords": coords,
+                        "direction": direction,
+                    }
+                    print(f"[APPROACH] mapped entrance {(x, y)} to coords {coords} (direction={direction})")
+                else:
+                    self.last_sent[(x, y)] = None
+                    print(f"[LAST_SENT] mapped entrance {(x, y)} to last_sent default (direction={direction})")
+
+                for coord_x, coord_y in coords:
+                    self.display_class.set_char_color_at_coord(coord_x, coord_y, "gray", self)
+                    self.lines[coord_y][coord_x] = "\\"
+
+    def get_approach_preview_headcode(self, headcode_prefix):
+        current_suffix = self.headcode_suffix.get(headcode_prefix, 0)
+        return f"{headcode_prefix}{current_suffix:02d}"
+
+    def get_next_approach_spawn(self, entrance_coord):
+        if not self.timetables:
+            # print(f"[APPROACH] no timetables for {entrance_coord}")
+            return None
+
+        current_time = int(self.game_seconds) % 86400
+        best = None
+        # print(f"[APPROACH] checking next spawn for {entrance_coord} at {current_time}s")
+
+        for tt in self.timetables:
+            start_seg = tt.get("start_location", {})
+            if not start_seg:
+                continue
+
+            coord = None
+            start_type = start_seg.get("type")
+            start_station = start_seg.get("station")
+            start_platform = start_seg.get("platform")
+            if start_type is not None and start_station and start_platform:
+                for segment in self.annotated_segments:
+                    if (
+                        segment.get("type") == start_type
+                        and segment.get("station") == start_station
+                        and segment.get("platform") == start_platform
+                    ):
+                        direction = tt.get("direction", "right")
+                        if direction == "right":
+                            coord = tuple(segment.get("right", segment.get("left", (0, 0))))
+                        else:
+                            coord = tuple(segment.get("left", segment.get("right", (0, 0))))
+                        break
+
+            if coord is None:
+                if "left" in start_seg:
+                    coord = tuple(start_seg.get("left"))
+                else:
+                    coord = tuple(start_seg.get("right", (0, 0)))
+
+            if tuple(coord) != tuple(entrance_coord):
+                continue
+
+            for spawn_time in tt.get("spawn_times", []):
+                h, m, s = map(int, spawn_time.split(":"))
+                total_seconds = h * 3600 + m * 60 + s
+                wait_seconds = (total_seconds - current_time) % 86400
+                if 0 <= wait_seconds <= 30:
+                    candidate = {
+                        "headcode": self.get_approach_preview_headcode(tt.get("headcode_prefix", "")),
+                        "wait_seconds": wait_seconds,
+                    }
+                    if best is None or candidate["wait_seconds"] < best["wait_seconds"]:
+                        best = candidate
+                    # print(f"[APPROACH] candidate at {entrance_coord}: {candidate['headcode']} in {candidate['wait_seconds']}s")
+
+        if best:
+            # print(f"[APPROACH] selected {best['headcode']} for {entrance_coord} (next in {best['wait_seconds']}s)")
+            return best["headcode"]
+        # print(f"[APPROACH] no timetable spawn within 30s for {entrance_coord}")
+        return None
+
+    def _display_approach_headcode(self, coords, headcode):
+        display_chars = list(headcode[:4]) if headcode else []
+        if len(display_chars) < len(coords):
+            display_chars.extend(["\\"] * (len(coords) - len(display_chars)))
+
+        for idx, (coord_x, coord_y) in enumerate(coords):
+            char = display_chars[idx] if idx < len(display_chars) else "\\"
+            self.lines[coord_y][coord_x] = char
+            color = "light blue" if headcode else "gray"
+            self.display_class.set_char_color_at_coord(coord_x, coord_y, color, self)
+
+        # if headcode:
+            # print(f"[APPROACH] rendered {headcode} at {coords}: {[self.lines[y][x] for x, y in coords]}")
+            # print(f"[APPROACH] colors: {[(coord, self.display_class.get_char_color_at_coord(coord[0], coord[1], self.lines)) for coord in coords]}")
+
+    def check_approach(self):
+        for train in self.trains:
+            if not getattr(train, "coords", None):
+                continue
+            if not train.coords:
+                continue
+            for coord in train.coords[0]:
+                if coord in self.last_sent:
+                    self.last_sent[coord] = train.headcode
+
+        for entrance_coord, approach_data in self.approach_map.items():
+            coords = approach_data["coords"]
+
+            previous_headcode = self.approach_displayed.get(entrance_coord)
+
+            matching_live_train_at_approach = False
+            for train in self.trains:
+                if not getattr(train, "coords", None):
+                    continue
+                if entrance_coord in train.coords[0]:
+                    matching_live_train_at_approach = True
+                    break
+
+            if matching_live_train_at_approach:
+                self.approach_displayed[entrance_coord] = None
+                continue
+
+            backlog_headcode = None
+            for backlog_train in self.backlog_train_spawn:
+                if backlog_train.get("start_coord") == entrance_coord:
+                    backlog_headcode = backlog_train.get("headcode")
+                    break
+
+            if backlog_headcode:
+                if backlog_headcode != previous_headcode:
+                    threading.Thread(target=winsound.PlaySound, args=(SPAWN_SOUND, winsound.SND_FILENAME)).start()
+                    self.display_class.add_log(f"train {backlog_headcode} approaching at {entrance_coord}")
+                self.approach_displayed[entrance_coord] = backlog_headcode
+                self._display_approach_headcode(coords, backlog_headcode)
+                continue
+
+            timetable_headcode = self.get_next_approach_spawn(entrance_coord)
+            if timetable_headcode:
+                if timetable_headcode != previous_headcode:
+                    threading.Thread(target=winsound.PlaySound, args=(SPAWN_SOUND, winsound.SND_FILENAME)).start()
+                    self.display_class.add_log(f"train {timetable_headcode} approaching at {entrance_coord}")
+                self.approach_displayed[entrance_coord] = timetable_headcode
+                self._display_approach_headcode(coords, timetable_headcode)
+            else:
+                if previous_headcode is not None:
+                    print(f"[APPROACH] no train, resetting approach at {entrance_coord} to backslashes")
+                self.approach_displayed[entrance_coord] = None
+                self._display_approach_headcode(coords, None)
+
+            for train in self.trains:
+                if getattr(train, "headcode", None) == timetable_headcode and getattr(train, "coords", None):
+                    current_head = train.coords[0][0]
+                    if current_head != entrance_coord:
+                        print(f"[APPROACH] clearing preview at {entrance_coord}: same headcode train has moved beyond entrance coord")
+                        self.approach_displayed[entrance_coord] = None
+                        self._display_approach_headcode(coords, None)
+                        break
+
+        for entrance_coord, last_headcode in list(self.last_sent.items()):
+            if entrance_coord in self.approach_map:
+                continue
+            coords, _ = self.get_entrance_coords_for_coord(*entrance_coord)
+            if coords is None:
+                continue
+            self._display_approach_headcode(coords, last_headcode)
 
     def check_if_spawnable(self, coords):
         for coord in coords:
@@ -809,6 +1036,7 @@ class Game:
         # try:
         for i in range(10):
             self.update_signals()
+        self.setup_approach_and_last_sent()
         while running:
             try:
                 total_seconds = int(self.game_seconds)
@@ -821,6 +1049,7 @@ class Game:
                 self.update_signals()
                 self.display_class.update_entry_signal_flash(self, self.lines)
                 self.display_class.display_auto_button_color(self.autos, self)
+                self.check_approach()
                 # Draw and handle events
                 self.color_entry_signal()
                 if self.entry_signal and self.exit_signal:

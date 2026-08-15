@@ -293,6 +293,10 @@ class Train:
             if coord in self.route_coords:
                 self.route_coords.remove(coord)
 
+            if coord in self.headcode_coords:
+                display.set_char_color_at_coord(coord[0], coord[1], "gray", game)
+                continue
+
             if last_last_signal and last_last_signal.route_set and coord in last_last_signal.route_coords:
                 display.set_char_color_at_coord(coord[0], coord[1], "white", game)
             
@@ -304,7 +308,7 @@ class Train:
                         display.set_char_color_at_coord(coord[0], coord[1], "white", game)
                         set_to_white = True
                         break
-                if not set_to_white:
+                if not set_to_white and not (self.despawn and len(self.coords) == 0 and coord == last_last_coord[0]):
                     display.set_char_color_at_coord(coord[0], coord[1], "gray", game)
         
         game.reset_temporary_characters(result)
