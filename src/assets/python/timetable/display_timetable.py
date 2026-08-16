@@ -29,7 +29,7 @@ class Timetable:
         seconds = seconds % 60
         return f"{int(hrs):02}:{int(mins):02}:{int(seconds):02}"
 
-    def show_timetable_window(self):
+    def show_timetable_window(self, game):
         self.tree.heading("Station", text="Station")
         self.tree.heading("Platform", text="Platform")
         self.tree.heading("Arrival", text="Arrival")
@@ -42,30 +42,62 @@ class Timetable:
 
         self.tree.pack(fill="both", expand=True, padx=10, pady=10)
         
-        self.populate_table()
-        self.update_table()
+        self.populate_table(game)
+        self.update_table(game)
         self.window.update()
 
-    def populate_table(self):
-        
+    def populate_table(self, game):
         self.tree_items.clear()
         self.tree.delete(*self.tree.get_children())
-        for stop in self.stops[self.current_index:]:
-            self.tree_items.append(self.tree.insert("", "end", values=("", "", "", "")))
-        # self.window.after(1000, self.populate_table)
 
-    def update_table(self):
+        current_stops = self.stops[self.current_index:]
+
+        # Add the timetable stops
+        for stop in current_stops:
+            self.tree_items.append(
+                self.tree.insert("", "end", values=("", "", "", ""))
+            )
+
+        # If the final stop changes timetable, show the next route immediately
+        if current_stops:
+            last_stop = current_stops[-1]
+
+            if "change_timetable" in last_stop:
+                tt_index = last_stop["change_timetable"]
+                tt, tt_headcode_prefix, new_direction, index = game.get_tt_from_index(tt_index)
+                headcode = game.get_headcode_from_prefix(tt_headcode_prefix)
+                game.headcode_suffix[tt_headcode_prefix] -= 1
+                self.tree.insert(
+                    "",
+                    "end",
+                    values=("", f"N: {headcode}", "", "")
+                )
+
+    def update_table(self, game):
         start_time = getattr(self.train, "game_seconds_at_spawn", 0)
-        print(start_time)
+
         current_index = getattr(self.train, "current_stop_index", 0)
-        for i, stop in enumerate(self.stops[current_index:]):
+        current_stops = self.stops[current_index:]
+
+        for i, stop in enumerate(current_stops):
             arr_time = start_time + stop["arrival_offset"]
             dep_time = start_time + stop["departure_offset"]
 
             arr_str = self.format_seconds_to_time(arr_time)
             dep_str = self.format_seconds_to_time(dep_time)
+
             if dep_str == arr_str:
                 arr_str = "-"
 
-            self.tree.item(self.tree_items[i], values=(stop["station"], stop["platform"], arr_str, dep_str))
+            self.tree.item(
+                self.tree_items[i],
+                values=(
+                    stop["station"],
+                    stop["platform"],
+                    arr_str,
+                    dep_str
+                )
+            )
+
+
         self.window.update()

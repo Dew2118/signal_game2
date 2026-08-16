@@ -34,5 +34,5 @@
 | `Numpad -` | Slow down game |
 | `Ctrl + S` | Save |
 | `Ctrl + L` | Load |
-
+| `Ctrl + R` | ARS: **EXPERIMENTAL, MAY DESTROY THE GAME, ZONE 6 ONLY** |
 If you have any problems/any questions at all or find any bugs please DM me in Dicord

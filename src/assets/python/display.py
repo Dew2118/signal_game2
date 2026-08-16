@@ -283,7 +283,8 @@ class Display_Class:
         elif event.key in (pygame.K_MINUS, pygame.K_KP_MINUS):
             game.time_speed = max(1, game.time_speed - 1)
             self.add_log(f"Time speed decreased: {game.time_speed}")
-
+        elif (pygame.key.get_mods() & pygame.KMOD_CTRL) and event.key == pygame.K_r:
+            game.ars_on = not game.ars_on
         elif (pygame.key.get_mods() & pygame.KMOD_CTRL) and event.key == pygame.K_s:
             game.save_game()
 

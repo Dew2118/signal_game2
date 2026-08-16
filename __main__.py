@@ -17,6 +17,7 @@ import math
 import tkinter as tk
 import os
 from pathlib import Path
+from src.assets.python.layout.ars import ARSManager
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 JSON_PATH = os.path.join(BASE_DIR, "src", "json")
@@ -28,7 +29,8 @@ if not os.path.exists('saves'):
 CWD = BASE_DIR # CWD = Current Working Directory, pretend it is a const too
 from src.assets.python.timetable.display_timetable import Timetable
 class Game:
-    def __init__(self, text, display_class, layout_file):
+    def __init__(self, text, display_class, layout_file, scenario):
+        self.ars_on = False
         self.text = text
         self.trains = []
         self.signals = []  # Add signals to Game, not Display_Class
@@ -51,6 +53,7 @@ class Game:
         self.approach_displayed = {}
         self.last_sent = {}
         self.last_sent_coords = {}
+        self.ars_manager = ARSManager(routes_path=os.path.join(JSON_PATH, f"{scenario}_ars_routes.json"))
         self.display_class = display_class
         self.snapshot = False
         self.last_snapshot_interval = -1  # Track the last 5-minute interval we created a snapshot for
@@ -80,6 +83,10 @@ class Game:
             self.portals = data.get("portals", [])
             self.wait_time = data.get("wait_time", 1)
 
+        ars_path = os.path.join(JSON_PATH, "ars_routes.json")
+        if os.path.exists(ars_path):
+            self.ars_manager.load(ars_path)
+
         # Initialize headcode suffixes
         for seg in self.timetables:
             headcode_prefix = seg.get('headcode_prefix', '')
@@ -90,7 +97,7 @@ class Game:
         for template in self.timetables:
             if template.get("index") == index:
                 # self.display_class.add_log("found tt from index")
-                return template["stops"], template["headcode_prefix"], template["direction"]
+                return template["stops"], template["headcode_prefix"], template["direction"], template["index"]
 
 
     # Function to save the game, defaulting to the "saves" folder
@@ -200,9 +207,6 @@ class Game:
             except FileNotFoundError:
                 self.display_class.add_log(f"Error: file not found!")
                 
-    def update_lines(self):
-        self.lines = self.clone_lines(self.text.splitlines())
-
     def get_headcode_from_prefix(self, headcode_prefix):
         if headcode_prefix not in self.headcode_suffix:
                 self.headcode_suffix[headcode_prefix] = 0  # Just in case, initialize to :0
@@ -286,14 +290,15 @@ class Game:
                 start_coord=coord,
                 direction=direction,
                 headcode=headcode,
-                timetable=tt['stops']
+                timetable=tt['stops'],
+                timetable_index=tt.get('index', 1),
             )
 
             spawned_positions_this_tick.add(coord)
         self.last_spawn_time = current_time
 
 
-    def spawn_train(self, start_coord, direction='right', headcode = "4H69", timetable = [], game_seconds = None, annotated_segments = None):
+    def spawn_train(self, start_coord, direction='right', headcode = "4H69", timetable = [], timetable_index = 1, game_seconds = None, annotated_segments = None):
         if not game_seconds:
             game_seconds = self.game_seconds
         if not annotated_segments:
@@ -301,15 +306,15 @@ class Game:
         # coords = [start_coord for _ in range(length)]
         signal_coords = self.find_first_spawn_signal(start_coord, direction)
         if start_coord in self.spawned_start_coords:
-            self.backlog_train_spawn.append({"start_coord": start_coord, "direction": direction, "headcode": headcode, "timetable": timetable, "game_seconds": game_seconds, "annotated_segments": annotated_segments})
+            self.backlog_train_spawn.append({"start_coord": start_coord, "direction": direction, "headcode": headcode, "timetable": timetable, "timetable_index": timetable_index, "game_seconds": game_seconds, "annotated_segments": annotated_segments})
             return
         elif not self.check_if_spawnable(signal_coords):
-            self.backlog_train_spawn.append({"start_coord": start_coord, "direction": direction, "headcode": headcode, "timetable": timetable, "game_seconds": game_seconds, "annotated_segments": annotated_segments})
+            self.backlog_train_spawn.append({"start_coord": start_coord, "direction": direction, "headcode": headcode, "timetable": timetable, "timetable_index": timetable_index, "game_seconds": game_seconds, "annotated_segments": annotated_segments})
             return
         if start_coord not in self.approach_map:
             threading.Thread(target=winsound.PlaySound, args=(SPAWN_SOUND, winsound.SND_FILENAME)).start()
             self.display_class.add_log(f"train {headcode} spawned at {start_coord}")
-        train = Train(start_coord,direction, headcode, timetable, int(self.game_seconds), self.annotated_segments, self.wait_time)
+        train = Train(start_coord,direction, headcode, timetable, int(self.game_seconds), self.annotated_segments, timetable_index, self.wait_time)
         print("signal coords is ", signal_coords)
         train.route_coords = signal_coords
         # train.color_route_coords(self.display_class, self.text)
@@ -324,7 +329,7 @@ class Game:
             signal_coords = self.find_first_spawn_signal(coord, backlog_train["direction"])
             if self.check_if_spawnable(signal_coords):
                 self.backlog_train_spawn.remove(backlog_train)
-                self.spawn_train(backlog_train["start_coord"], backlog_train["direction"], backlog_train["headcode"], backlog_train["timetable"])
+                self.spawn_train(backlog_train["start_coord"], backlog_train["direction"], backlog_train["headcode"], backlog_train["timetable"], backlog_train["timetable_index"])
 
     def get_entrance_coords_for_coord(self, x, y):
         if not (0 <= y < len(self.lines) and 0 <= x < len(self.lines[y])):
@@ -690,7 +695,6 @@ class Game:
         if switch_direction == "normal":
             new_char = "a"
 
-
         if 0 <= y < len(lines) and 0 <= x < len(lines[y]):
             if switch_direction == "change":
                 if lines[y][x] != "a":
@@ -698,8 +702,9 @@ class Game:
                 else:
                     lines[y][x] = new_char
             else:
+                print("BEFORE CHANGE SWITCH", self.lines[y][x], "NEW CHAR IS", new_char)
                 lines[y][x] = new_char
-
+                print("AFTER CHANGE SWITCH", self.lines[y][x])
         return lines
     
     def get_switch_position(self, switch_index, lines):
@@ -793,7 +798,7 @@ class Game:
 
     def open_timetable_window(self, train):
         self.timetable_obj = Timetable(train)
-        self.timetable_obj.show_timetable_window()
+        self.timetable_obj.show_timetable_window(self)
 
     def color_entry_signal(self):
         # The entry-signal highlight is handled by the flashing adjacent tile only.
@@ -1057,12 +1062,14 @@ class Game:
                 self.color_entry_signal()
                 if self.entry_signal and self.exit_signal:
                     self.set_route()
+                # if hasattr(self, "ars_manager"):
+                #     self.ars_manager.update(self)
                 for train in self.trains:
                     if not self.paused:
                         train.move(self.lines, self, self.signals, self.display_class)
-                    if train in self.trains:
-                        train.color_route_coords(self.display_class, self.lines, self)
-                        train.display_on(self.display_class, self.lines, self)
+                    # if train in self.trains:
+                        # train.color_route_coords(self.display_class, self.lines, self)
+                        # train.display_on(self.display_class, self.lines, self)
                 if self.paused:
                     continue
                 self.check_backlog_train()
@@ -1169,7 +1176,7 @@ def main():
     #! TODO Rework this to be less tweaking moment
     with open(layout_file, "r", encoding="utf-8") as f:
         text = f.read()
-    game = Game(text, Display_Class(), layout_file)
+    game = Game(text, Display_Class(), layout_file, scenario)
     signals = game.create_signals_from_file(target_chars, signal_type_map, direction_map, mount_map,buffer_map)
 
     # game.display_class = 

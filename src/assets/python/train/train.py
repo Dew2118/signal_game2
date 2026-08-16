@@ -10,8 +10,9 @@ TRTS_SOUND = os.path.join("src", "assets", "sounds", "Windows Notify.wav")
 
 
 class Train:
-    def __init__(self, head_coord, direction, headcode, timetable, game_seconds_at_spawn, annotated_segments, wait_time=1):
+    def __init__(self, head_coord, direction, headcode, timetable, game_seconds_at_spawn, annotated_segments, timetable_index, wait_time=1):
         self.coords = [[head_coord]]  # List of (x, y) tuples
+        self.timetable_index = timetable_index
         self.last_move_time = game_seconds_at_spawn  # Timestamp for last move
         self.last_signal = []
         self.direction = direction
@@ -25,6 +26,7 @@ class Train:
         self.current_stop_index = 0
         self.start_to_stop_time = 0
         self.route_coords = []
+        self.route_coords_direction_dict = {}
         self.notified = False
         self.last_action = "remove train tail"
         self.notify_TRTS = False
@@ -120,7 +122,7 @@ class Train:
             if "change_timetable" in current_stop:
                 self.delete_train_tail(display, game, last_last_signal)
                 tt_index = current_stop["change_timetable"]
-                self.timetable, tt_headcode_prefix, new_direction = game.get_tt_from_index(tt_index)
+                self.timetable, tt_headcode_prefix, new_direction, self.timetable_index = game.get_tt_from_index(tt_index)
                 if self.direction != new_direction:
                     self.direction = new_direction
                     self.coords[0].reverse()
@@ -128,6 +130,7 @@ class Train:
                 self.headcode = game.get_headcode_from_prefix(tt_headcode_prefix)
                 self.current_stop_index = 0
                 self.route_coords = []
+                self.route_coords_direction_dict = {}
                 self.temporary_characters = []
                 # self.last_signal = []
                 self.direction_change = None
@@ -159,6 +162,7 @@ class Train:
             x, y = self.coords[0][0]
             for signal in signals:
                 if self.signal_condition_check(signal, x, y, self.direction) and signal.color == "red":
+                    game.ars_manager.try_set_route_for_signal(game, signal, self.timetable_index)
                     return False
                 
             self.current_stop_index += 1
@@ -178,6 +182,7 @@ class Train:
         Only move if 1 second has passed since last move.
         Before moving, check for blocking signals above/below.
         """
+        ars = False
         now = int(game.game_seconds)
         if now - self.last_move_time < self.wait_time:
             return  # Don't move yet
@@ -204,10 +209,14 @@ class Train:
                 for signal in signals:
                     if self.signal_condition_check(signal, x, y, self.direction):
                         if signal.color == "red" and self.last_action == "remove train tail":
-                            if not self.notified:
+                            if signal.signal_type == "manual" and hasattr(game, "ars_manager"):
+                                ars = game.ars_manager.try_set_route_for_signal(game, signal, self.timetable_index)
+                                
+                            if not self.notified and not ars:
                                 threading.Thread(target=winsound.PlaySound, args=(NOTIFIED_SOUND, winsound.SND_FILENAME)).start()
                                 self.notified = True
                                 display.add_log(f"{self.headcode} stopped at red signal at {signal.coord}")
+                            ars = False
                             return
                         self.notified = False
                         if self.last_action == "remove train tail":
@@ -221,7 +230,9 @@ class Train:
                                 # game.update_signals()
                                 if signal.route_coords:
                                     self.route_coords = signal.route_coords.copy()
+                                    self.route_coords_direction_dict = signal.route_coords_direction_dict.copy()
                                     signal.route_coords = []
+                                    signal.route_coords_direction_dict = {}
                                     self.temporary_characters = signal.temporary_characters.copy()
                                     signal.temporary_characters = []
                                 else:
@@ -240,6 +251,7 @@ class Train:
             elif self.last_action == "remove train tail":
                 if not self.despawn:
                     self.move_train(x, y, lines, game, signals, display)
+                    self.display_on(display, lines, game)
                 self.last_action = "move train"
                 
 
@@ -310,7 +322,11 @@ class Train:
                         break
                 if not set_to_white and not (self.despawn and len(self.coords) == 0 and coord == last_last_coord[0]):
                     display.set_char_color_at_coord(coord[0], coord[1], "gray", game)
-        
+        for temporary_character in result:
+            for signal in game.signals:
+                if signal.route_coords and temporary_character[0] in signal.route_coords:
+                    result.remove(temporary_character)
+                    print("removing: ", temporary_character[0])
         game.reset_temporary_characters(result)
         print(f"{self.headcode} temporary character left: {self.temporary_characters}")
 
@@ -366,7 +382,8 @@ class Train:
             for i,element in enumerate(self.headcode_element):
                 x,y = self.headcode_coords[i]
                 game.lines[y][x] = element
-                display.set_char_color_at_coord(x, y, "gray", game)
+
+                display.set_char_color_at_coord(x, y, "red", game)
 
             self.headcode_coords = []
             self.headcode_element = []
@@ -418,6 +435,8 @@ class Train:
         for coords in self.coords:
             for i,coord in enumerate(coords):
                 x,y = coord
+                if (x,y) in self.route_coords:
+                    self.route_coords.remove((x,y))
                 if lines[y][x] == "x":
                     continue
                 if display.get_char_color_at_coord(x,y,lines) != (0, 255, 255):
