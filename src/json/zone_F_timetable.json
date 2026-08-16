@@ -362,16 +362,22 @@
                 "departure_offset": 710
             },
             {
+                "station": "FARADAY ROAD",
+                "platform": "",
+                "arrival_offset": 750,
+                "departure_offset": 810
+            },
+            {
                 "station": "EDEN QUAY",
                 "platform": "",
-                "arrival_offset": 820,
-                "departure_offset": 880
+                "arrival_offset": 880,
+                "departure_offset": 940
             },
             {
                 "station": "NEWRY",
                 "platform": "",
-                "arrival_offset": 960,
-                "departure_offset": 1020,
+                "arrival_offset": 1020,
+                "departure_offset": 1080,
                 "change_timetable": 9
             }
         ],
