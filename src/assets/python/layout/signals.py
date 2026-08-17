@@ -177,8 +177,13 @@ class Signal:
             return list(set(coords))
         except Exception as e:
             game.display_class.add_log("route setting failed, please try again error message: ", str(e))
-            # game.reset_temporary_characters(self.temporary_characters)
-            # self.temporary_characters = []
+            for temporary_character in self.temporary_characters:
+                for train in game.trains:
+                    if temporary_character[0] in train.coords[0] or temporary_character[0] in train.coords[1] or temporary_character[0] in train.route_coords:
+                        self.temporary_characters.remove(temporary_character[0])
+    
+            game.reset_temporary_characters(self.temporary_characters)
+            self.temporary_characters = []
 
     def temporary_character_broken_check(self, last_last_char, last_char, char, direction):
         return True

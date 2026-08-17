@@ -824,7 +824,8 @@ class Game:
             elif (last_char in right_down and direction == 'right') or (last_char in left_down and direction == 'left'):
                 # self.display_class.add_log("direction is down")
                 direction = "down"
-        next_char = self.get_next_char_from_direction(direction, x, y, lines)
+        next_char = self.get_next_char_from_direction(direction, x, y,char, lines)
+        print("next char is", next_char)
         if next_char == "÷":
             if hasattr(self, 'portals'):
                 # Step 1: Compute tentative next position
@@ -1011,11 +1012,21 @@ class Game:
         passed = False
         trash = False
         direction_to_x_y_addition = {"right": (1, 0), "left": (-1, 0), "up": (0, -1), "down": (0, 1)}
+        right_up = 'ko'
+        right_down = "im"
+        left_up = "hl"
+        left_down = 'jn'
+        char = lines[y][x]
+        if char:
+            if (char in right_down and direction == "right") or (char in left_down and direction == "left"):
+                direction = "down"
+            elif (char in right_up and direction == "right") or (char in left_up and direction == "left"):
+                direction = "up"
         while passed == False:
             x_addition, y_addition = direction_to_x_y_addition[direction]
             x += x_addition
             y += y_addition
-            
+            print("skip parts x, y is ", x, y)
             char = lines[y][x]
             if char == character:
                 if not trash:
@@ -1025,10 +1036,19 @@ class Game:
                     break
         return x, y
     
-    def get_next_char_from_direction(self, direction, x, y, lines):
+    def get_next_char_from_direction(self, direction, x, y, char, lines):
         direction_to_x_y_addition = {"right": (1, 0), "left": (-1, 0), "up": (0, -1), "down": (0, 1)}
+        right_up = 'ko'
+        right_down = "im"
+        left_up = "hl"
+        left_down = 'jn'
+        if char:
+            if (char in right_down and direction == "right") or (char in left_down and direction == "left"):
+                direction = "down"
+            elif (char in right_up and direction == "right") or (char in left_up and direction == "left"):
+                direction = "up"
         x_addition, y_addition = direction_to_x_y_addition[direction]
-        # print(x,y)
+        print("next char coord", x + x_addition, y + y_addition, "direction ", direction)
         return lines[y + y_addition][x + x_addition]
     
     def update_signals(self):
