@@ -52,7 +52,7 @@ class Signal:
         else:
             self.color = "red"
 
-    def get_coords_to_next_signal(self, exit_signal, game, switches, filename, signals, trains):
+    def get_coords_to_next_signal(self, exit_signal, game, switches, filename, signals, trains, dont_set = False):
         try:
             with open(filename, "r", encoding="utf-8") as f:
                 original_text = f.read()
@@ -91,7 +91,8 @@ class Signal:
                                     else:
                                         x += 1
                                     coords.append((x, y))
-                                    self.route_coords_direction_dict[(x,y)] = direction
+                                    if not dont_set:
+                                        self.route_coords_direction_dict[(x,y)] = direction
                                     restart = True
                                     break
                         else:
@@ -114,9 +115,6 @@ class Signal:
                 if self.duplicate_train_direction_route_check(x, y, trains, direction):
                     x,y, last_switch, switch_stack, direction, lines, coords = self.go_back_to_last_switch(trains, switch_stack, game, coords, lines)
                     restart = True
-                # elif self.temporary_character_broken_check():
-                #     x,y, last_switch, switch_stack, direction, lines, coords = self.go_back_to_last_switch(trains, switch_stack, game, coords, lines)
-                #     restart = True
                 if restart:
                     restart = False
                     continue
@@ -130,12 +128,14 @@ class Signal:
                 if values:
                     x, y, last_switch, switch_stack, direction, lines, coords = values
                     continue
-                game.handle_temporary_characters(self.temporary_characters)
+                if not dont_set:
+                    game.handle_temporary_characters(self.temporary_characters)
                 if new_direction_change:
                     direction_change = new_direction_change
                 print(x,y, last_char, direction)
                 coords.append((x, y))
-                self.route_coords_direction_dict[(x,y)] = direction
+                if not dont_set:
+                    self.route_coords_direction_dict[(x,y)] = direction
                 
                 if (x+2,y) == exit_signal.coord and exit_signal.buffer:
                     break
@@ -147,42 +147,47 @@ class Signal:
                     x, y, last_switch, switch_stack, direction, lines, coords = self.go_back_to_last_switch(trains, switch_stack, game, coords, lines)
 
             print("GETTING TO THE FINAL STAGE WHERE SWITcH MOVE CHANGES")
-            for switch in switch_stack:
-                if switch[4] == "reverse":
-                    switch_index = switch[1]
-                    game.lines = game.change_switch(switch_index, "reverse", game.lines)
-                    print("afterwards changing switch to reverse at ", switch, game.lines[switch[0][1]][switch[0][0]])
-                else:
-                    switch_index = switch[1]
-                    game.lines = game.change_switch(switch_index, "normal", game.lines)
-                    print("afterwards changing switch to normal at ", switch)
-            direction_to_test_change = False
-            
-            for coord in coords:
-                x,y = coord
-                
-                for i,switch in enumerate(switches):
-                    if direction_change and ((x,y) == direction_change[0] or direction_to_test_change):
-                        if self.direction == "left":
-                            direction_to_test = "right"
-                        else:
-                            direction_to_test = "left"
-                        direction_to_test_change = True
+            if not dont_set:
+                for switch in switch_stack:
+                    if switch[4] == "reverse":
+                        switch_index = switch[1]
+                        game.lines = game.change_switch(switch_index, "reverse", game.lines)
+                        print("afterwards changing switch to reverse at ", switch, game.lines[switch[0][1]][switch[0][0]])
                     else:
-                        direction_to_test = self.direction
-                    if x == switch[0] and y == switch[1] and switch[3] == direction_to_test and (switch,i,direction_to_test, False, None) not in switch_stack:
-                        game.lines = game.change_switch(i, "reverse", game.lines)
-                        print("finally changing switch to reverse at ", switch, game.lines[switch[1]][switch[0]])
-            self.route_coords = list(set(coords))
+                        switch_index = switch[1]
+                        game.lines = game.change_switch(switch_index, "normal", game.lines)
+                        print("afterwards changing switch to normal at ", switch)
+                direction_to_test_change = False
+                
+                for coord in coords:
+                    x,y = coord
+                    
+                    for i,switch in enumerate(switches):
+                        if direction_change and ((x,y) == direction_change[0] or direction_to_test_change):
+                            if self.direction == "left":
+                                direction_to_test = "right"
+                            else:
+                                direction_to_test = "left"
+                            direction_to_test_change = True
+                        else:
+                            direction_to_test = self.direction
+                        if x == switch[0] and y == switch[1] and switch[3] == direction_to_test and (switch,i,direction_to_test, False, None) not in switch_stack:
+                            game.lines = game.change_switch(i, "reverse", game.lines)
+                            print("finally changing switch to reverse at ", switch, game.lines[switch[1]][switch[0]])
+                self.route_coords = list(set(coords))
+            if dont_set:
+                self.temporary_characters = []
             return list(set(coords))
         except Exception as e:
             game.display_class.add_log("route setting failed, please try again error message: ", str(e))
-            for temporary_character in self.temporary_characters:
-                for train in game.trains:
-                    if temporary_character[0] in train.coords[0] or temporary_character[0] in train.coords[1] or temporary_character[0] in train.route_coords:
-                        self.temporary_characters.remove(temporary_character[0])
-    
-            game.reset_temporary_characters(self.temporary_characters)
+            print(f"signal get coords to next signal error {e}")
+            if not dont_set:
+                for temporary_character in self.temporary_characters:
+                    for train in game.trains:
+                        if temporary_character[0] in train.coords[0] or  (len(train.coords) > 1 and temporary_character[0] in train.coords[1]) or temporary_character[0] in train.route_coords:
+                            self.temporary_characters.remove(temporary_character)
+                print(f"{self.coord} is calling reset temp char")
+                game.reset_temporary_characters(self.temporary_characters)
             self.temporary_characters = []
 
     def temporary_character_broken_check(self, last_last_char, last_char, char, direction):
@@ -244,8 +249,9 @@ class Signal:
             self.route_coords = None
         for temporary_character in self.temporary_characters:
             for train in game.trains:
-                if temporary_character[0] in train.coords[0] or temporary_character[0] in train.coords[1] or temporary_character[0] in train.route_coords:
-                    self.temporary_characters.remove(temporary_character[0])
+                if temporary_character[0] in train.coords[0] or (len(train.coords) > 1 and temporary_character[0] in train.coords[1]) or temporary_character[0] in train.route_coords:
+                    self.temporary_characters.remove(temporary_character)
+        print(f"cancel route is calling reset temp char")
         game.reset_temporary_characters(self.temporary_characters)
         self.temporary_characters = []
 

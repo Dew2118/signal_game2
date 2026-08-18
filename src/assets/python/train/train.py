@@ -33,6 +33,7 @@ class Train:
         self.direction_change = None
         self.despawn = False
         self.temporary_characters = []
+        self.last_ars_time = 0
 
     def _get_stop_coord(self, stop):
         """
@@ -162,8 +163,11 @@ class Train:
             x, y = self.coords[0][0]
             for signal in signals:
                 if self.signal_condition_check(signal, x, y, self.direction) and signal.color == "red":
-                    game.ars_manager.try_set_route_for_signal(game, signal, self.timetable_index)
+                    if (current_game_time - self.last_ars_time) > 1:
+                        game.ars_manager.try_set_route_for_signal(game, signal, self.timetable_index)
+                        self.last_ars_time = current_game_time
                     return False
+                    
                 
             self.current_stop_index += 1
         elif self._past_stop_coord(stop_coords, self.direction):
@@ -210,8 +214,11 @@ class Train:
                     if self.signal_condition_check(signal, x, y, self.direction):
                         if signal.color == "red" and self.last_action == "remove train tail":
                             if signal.signal_type == "manual" and hasattr(game, "ars_manager"):
-                                ars = game.ars_manager.try_set_route_for_signal(game, signal, self.timetable_index)
-                                
+                                if game.game_seconds - self.last_ars_time > 1:
+                                    self.last_ars_time = game.game_seconds
+                                    ars = game.ars_manager.try_set_route_for_signal(game, signal, self.timetable_index)
+                                else:
+                                    ars = False
                             if not self.notified and not ars:
                                 threading.Thread(target=winsound.PlaySound, args=(NOTIFIED_SOUND, winsound.SND_FILENAME)).start()
                                 self.notified = True

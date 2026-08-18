@@ -677,6 +677,20 @@ class ARSManager:
 
         return None
 
+    def find_intersection_with_headcodes(self, game, coords):
+        if not coords:
+            return True
+        coord_set = set(coords[1:])
+        headcode_list = []
+        for train in game.trains:
+            headcode_list.extend(train.headcode_coords)
+        print(headcode_list)
+        headcode_set = set(headcode_list)
+        print(len(coord_set & headcode_set))
+        if (len(coord_set & headcode_set) > 0):
+            return True
+        return False
+
     def try_set_route_for_signal(
         self,
         game,
@@ -717,7 +731,6 @@ class ARSManager:
                 timetable_index,
             )
         )
-        print("CANDIDATES: ", candidates)
         if not candidates:
             return False
 
@@ -744,34 +757,40 @@ class ARSManager:
                 None,
             )
 
-            try:
-                game.entry_signal = signal
-                game.exit_signal = next_signal
-                print("exit signal is: ", next_signal.coord)
+            # try:
+            game.entry_signal = signal
+            game.exit_signal = next_signal
+            coords = game.set_route(dont_set = True)
+            if not self.find_intersection_with_headcodes(game, coords):
+                print("INSIDE")
                 game.set_route()
+                # if signal.route_set:
+                #     self.retry_times.pop(
+                #         (
+                #             timetable_index,
+                #             tuple(signal.coord),
+                #         ),
+                #         None,
+                #     )
+                game.entry_signal = None
+                game.exit_signal = None
+                return True
+            else:
+                game.entry_signal = None
+                game.exit_signal = None
+                print("OUTSIDE")
 
-                if signal.route_set:
-                    self.retry_times.pop(
-                        (
-                            timetable_index,
-                            tuple(signal.coord),
-                        ),
-                        None,
-                    )
+            # except Exception as e:
+            #     print(f"error of setting: {e}")
+            #     pass
 
-                    return True
+            # finally:
+            #     game.entry_signal = (
+            #         existing_entry
+            #     )
 
-            except Exception as e:
-                print(f"error of setting: {e}")
-                pass
-
-            finally:
-                game.entry_signal = (
-                    existing_entry
-                )
-
-                game.exit_signal = (
-                    existing_exit
-                )
+            #     game.exit_signal = (
+            #         existing_exit
+            #     )
 
         return False

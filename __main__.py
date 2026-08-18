@@ -765,6 +765,7 @@ class Game:
         for temporary_character in temporary_characters:
             (x,y), original_char, new_char = temporary_character
             self.lines[y][x] = new_char
+            print("handling temporary character at", (x,y), "to", new_char)
 
     def reset_temporary_characters(self, temporary_characters):
         for temporary_character in temporary_characters:
@@ -772,25 +773,26 @@ class Game:
             self.lines[y][x] = original_char
             print("resetting temporary character at", (x,y), "to", original_char)
 
-    def set_route(self):
-        coords = self.entry_signal.get_coords_to_next_signal(self.exit_signal, self, self.switches, self.layout_file, self.signals, self.trains)
-        if not coords:
+    def set_route(self, dont_set = False):
+        coords = self.entry_signal.get_coords_to_next_signal(self.exit_signal, self, self.switches, self.layout_file, self.signals, self.trains, dont_set)
+        if not dont_set:
+            if not coords:
+                self.entry_signal = None
+                self.exit_signal = None
+                return
+            self.entry_signal.next_signal = self.exit_signal
+            self.entry_signal.route_set = True
+            train_coords = []
+            for train in self.trains:
+                for coord_list in train.coords:
+                    train_coords.extend(coord_list)
+                train_coords.extend(train.route_coords)
+            filtered_coords = set(coords) - set(train_coords)
+            for coord in filtered_coords:
+                self.display_class.set_char_color_at_coord(coord[0], coord[1], "white", self)
             self.entry_signal = None
             self.exit_signal = None
-            return
-        self.entry_signal.next_signal = self.exit_signal
-        self.entry_signal.route_set = True
-        train_coords = []
-        for train in self.trains:
-            for coord_list in train.coords:
-                train_coords.extend(coord_list)
-            train_coords.extend(train.route_coords)
-        filtered_coords = set(coords) - set(train_coords)
-        for coord in filtered_coords:
-            self.display_class.set_char_color_at_coord(coord[0], coord[1], "white", self)
-        self.entry_signal = None
-        self.exit_signal = None
-        # self.update_signals()
+        return coords
 
     def despawn_train(self, train):
         self.trains.remove(train)
