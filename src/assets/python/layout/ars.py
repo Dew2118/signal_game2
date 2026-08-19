@@ -757,21 +757,12 @@ class ARSManager:
                 None,
             )
 
-            # try:
             game.entry_signal = signal
             game.exit_signal = next_signal
             coords = game.set_route(dont_set = True)
             if not self.find_intersection_with_headcodes(game, coords):
                 print("INSIDE")
                 game.set_route()
-                # if signal.route_set:
-                #     self.retry_times.pop(
-                #         (
-                #             timetable_index,
-                #             tuple(signal.coord),
-                #         ),
-                #         None,
-                #     )
                 game.entry_signal = None
                 game.exit_signal = None
                 return True
@@ -779,18 +770,74 @@ class ARSManager:
                 game.entry_signal = None
                 game.exit_signal = None
                 print("OUTSIDE")
-
-            # except Exception as e:
-            #     print(f"error of setting: {e}")
-            #     pass
-
-            # finally:
-            #     game.entry_signal = (
-            #         existing_entry
-            #     )
-
-            #     game.exit_signal = (
-            #         existing_exit
-            #     )
-
         return False
+
+    def predictive_route_setting_try(self, game):
+        if not game.ars_on:
+            return
+        headcode_coord_to_signal_dict = {}
+        for signal in game.signals:
+            coord = signal.coord
+            if signal.mount == "up":
+                headcode_coord_to_signal_dict[(coord[0], coord[1] + 1)] = signal
+            else:
+                headcode_coord_to_signal_dict[(coord[0], coord[1] - 1)] = signal
+            
+        route_coords_master_dict = {}
+        time_to_entry_signal_dict = {}
+        for train in game.trains:
+            train_coord_list = []
+            entry_signal = None
+            for headcode_coord in train.headcode_coords:
+                if headcode_coord in headcode_coord_to_signal_dict:
+                    entry_signal = headcode_coord_to_signal_dict[headcode_coord]
+                    break
+
+            if not entry_signal:
+                continue
+            if entry_signal.next_signal and (entry_signal.signal_type == "automatic" or len(entry_signal.route_coords) > 0):
+                entry_signal = entry_signal.next_signal
+            if len(train.headcode_coords) == 0:
+                continue
+            dx = abs(train.headcode_coords[0][0] - entry_signal.coord[0])
+            dy = abs(train.headcode_coords[0][1] - entry_signal.coord[1])
+            time = dx+dy
+            current_stop = train.timetable[train.current_stop_index]
+            stop_coords = train._get_stop_coord(current_stop)
+            if train._at_stop_coord(stop_coords):
+                dep_offset = current_stop.get('departure_offset', 0)
+                arr_offset = current_stop.get('arrival_offset', 0)
+                
+                time_since_spawn = game.game_seconds - train.game_seconds_at_spawn
+                if dep_offset != arr_offset:
+                    time += max(dep_offset-time_since_spawn,30-train.start_to_stop_time)
+            candidates = self.get_candidates_for_signal(entry_signal.coord,train.timetable_index)
+            for next_coord in candidates:
+                next_signal = (
+                                self.find_signal_for_coord(
+                                    game,
+                                    next_coord,
+                                )
+                            )
+                if next_signal is None:
+                    continue
+                train_coord_list.append((entry_signal, next_signal))
+            route_coords_master_dict[train] = train_coord_list
+            time_to_entry_signal_dict[train] = time
+        sorted_dict = dict(sorted(time_to_entry_signal_dict.items(), key=lambda item: item[1]))
+        for train, time in sorted_dict.items():
+            for signal_tuple in route_coords_master_dict[train]:
+                game.entry_signal, game.exit_signal = signal_tuple
+                coords = game.set_route(dont_set = True)
+                if not self.find_intersection_with_headcodes(game, coords):
+                    game.set_route()
+                    game.entry_signal = None
+                    game.exit_signal = None
+                    break
+                else:
+                    game.entry_signal = None
+                    game.exit_signal = None
+        
+        
+
+            

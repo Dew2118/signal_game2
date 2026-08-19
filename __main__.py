@@ -61,6 +61,7 @@ class Game:
         self.layout_file = layout_file
         self.portals = []
         self.wait_time = 1
+        self.last_ars_time = 0
 
     @staticmethod
     def clone_lines(lines):
@@ -197,6 +198,7 @@ class Game:
                 for train in self.trains:
                     print("train route_coord is ", train.route_coords)
                     train.move_headcode(self, self.signals, self.display_class)
+                    train.display_on(self.display_class, self.lines, self)
                     if train.route_coords:
                         for coord in train.route_coords:
                             self.display_class.set_char_color_at_coord(coord[0], coord[1], "white", self)
@@ -461,9 +463,7 @@ class Game:
                     # print(f"[APPROACH] candidate at {entrance_coord}: {candidate['headcode']} in {candidate['wait_seconds']}s")
 
         if best:
-            # print(f"[APPROACH] selected {best['headcode']} for {entrance_coord} (next in {best['wait_seconds']}s)")
             return best["headcode"]
-        # print(f"[APPROACH] no timetable spawn within 30s for {entrance_coord}")
         return None
 
     def _display_approach_headcode(self, coords, headcode):
@@ -556,6 +556,9 @@ class Game:
             if color != (128, 128, 128) and color != None:
                 return False
         return True
+
+    def predictive_route_setting_try(self):
+        self.ars_manager.predictive_route_setting_try(self)
 
     def create_signals_from_file(self, target_chars, signal_type_map, direction_map, mount_map, buffer_map):
         signals = []
@@ -838,7 +841,6 @@ class Game:
                 for portal in self.portals:
                     (x1, y1), (x2, y2), portal_dir = portal
 
-                    # Step 3: Check if we're on either side of the portal
                     if (amended_x, y) == (x1, y1):
                         target_x, target_y = x2, y2
                     elif (amended_x, y) == (x2, y2):
@@ -846,10 +848,8 @@ class Game:
                     else:
                         continue  # not a portal match
 
-                    # Step 4: Apply portal teleport
                     amended_x, y = target_x, target_y
 
-                    # Step 5: Flip direction if "opposite"
                     if portal_dir == "opposite":
                         if direction == "right":
                             direction = "left"
@@ -1095,7 +1095,8 @@ class Game:
                 if self.paused:
                     continue
                 self.check_backlog_train()
-                
+                if self.game_seconds - self.last_ars_time > 1:
+                    self.predictive_route_setting_try()
                 now = time.time()
                 delta_real = now - self._last_real_time
                 self._last_real_time = now

@@ -164,7 +164,7 @@ class Train:
             for signal in signals:
                 if self.signal_condition_check(signal, x, y, self.direction) and signal.color == "red":
                     if (current_game_time - self.last_ars_time) > 1:
-                        game.ars_manager.try_set_route_for_signal(game, signal, self.timetable_index)
+                        # game.ars_manager.try_set_route_for_signal(game, signal, self.timetable_index)
                         self.last_ars_time = current_game_time
                     return False
                     
@@ -216,7 +216,7 @@ class Train:
                             if signal.signal_type == "manual" and hasattr(game, "ars_manager"):
                                 if game.game_seconds - self.last_ars_time > 1:
                                     self.last_ars_time = game.game_seconds
-                                    ars = game.ars_manager.try_set_route_for_signal(game, signal, self.timetable_index)
+                                    # ars = game.ars_manager.try_set_route_for_signal(game, signal, self.timetable_index)
                                 else:
                                     ars = False
                             if not self.notified and not ars:

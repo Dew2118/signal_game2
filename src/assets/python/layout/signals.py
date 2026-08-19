@@ -128,8 +128,7 @@ class Signal:
                 if values:
                     x, y, last_switch, switch_stack, direction, lines, coords = values
                     continue
-                if not dont_set:
-                    game.handle_temporary_characters(self.temporary_characters)
+                    
                 if new_direction_change:
                     direction_change = new_direction_change
                 print(x,y, last_char, direction)
@@ -175,11 +174,16 @@ class Signal:
                             game.lines = game.change_switch(i, "reverse", game.lines)
                             print("finally changing switch to reverse at ", switch, game.lines[switch[1]][switch[0]])
                 self.route_coords = list(set(coords))
+                for temporary_character in self.temporary_characters:
+                    if temporary_character[0] not in coords:
+                        self.temporary_characters.remove(temporary_character)
+                game.handle_temporary_characters(self.temporary_characters)
             if dont_set:
                 self.temporary_characters = []
             return list(set(coords))
         except Exception as e:
-            game.display_class.add_log("route setting failed, please try again error message: ", str(e))
+            if not dont_set:
+                game.display_class.add_log("route setting failed, please try again error message: ", str(e))
             print(f"signal get coords to next signal error {e}")
             if not dont_set:
                 for temporary_character in self.temporary_characters:
@@ -207,11 +211,27 @@ class Signal:
         return False
 
     def duplicate_train_direction_route_check(self, x, y, trains, direction):
+            
             for train in trains:
                 if train.route_coords:
                     if (x, y) in train.route_coords and train.route_coords_direction_dict.get((x,y)) and train.route_coords_direction_dict.get((x,y)) != direction:
                         print("route direction collision detected at ", (x,y), "train route direction is ", train.route_coords_direction_dict.get((x,y)), "direction is ", direction)
                         return True
+                if (x,y) in train.coords[0] or (len(train.coords) > 1 and (x,y) in train.coords[1]):
+                    if not train.direction_change and direction != train.direction:
+                        print("train body collision detected at ", (x,y), "train direction is ", train.direction, "signal direction is ", direction)
+                        return True
+                    elif train.direction_change:
+                        all_train_coord = [coord for coord_list in train.coords for coord in coord_list]
+                        train_direction = train.direction
+                        for coord in all_train_coord:
+                            if coord == (x,y) and direction == train_direction:
+                                return True
+                            if coord == train.direction_change[0]:
+                                if train_direction == "left":
+                                    train_direction = "right"
+                                else:
+                                    train_direction = "left"
             return False
         
     def duplicate_signal_route_check(self, x, y, exit_signal, direction, switch_stack, game, coords, lines, signals, trains):
