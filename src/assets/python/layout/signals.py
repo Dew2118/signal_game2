@@ -52,7 +52,7 @@ class Signal:
         else:
             self.color = "red"
 
-    def get_coords_to_next_signal(self, exit_signal, game, switches, filename, signals, trains, dont_set = False):
+    def get_coords_to_next_signal(self, exit_signal, game, switches, filename, signals, trains, dont_set = False, ordered = False):
         try:
             with open(filename, "r", encoding="utf-8") as f:
                 original_text = f.read()
@@ -66,7 +66,12 @@ class Signal:
                 return []
 
             x,y = self.overlap
+            if self.direction == "right":
+                x+=1
+            else:
+                x-=1
             coords = deque()
+            coords.append((x,y))
             last_switch = None
             restart = False
             while True:
@@ -79,13 +84,13 @@ class Signal:
                                 if self.duplicate_train_route_check(x, y, trains):
                                     if game.get_switch_position(i, game.lines) == "normal":
                                         switch_stack.append((switch,i, direction, False, None))
-                                        print("appened switch stack with normal at ", switch)
+                                        # print("appened switch stack with normal at ", switch)
                                     else:
                                         lines = game.change_switch(i, "reverse", lines)
                                         switch_stack.append((switch,i,direction, False, "reverse"))
                                 else:
                                     switch_stack.append((switch,i, direction, False, None))
-                                    print("pretend the switch is normal at ", switch)
+                                    # print("pretend the switch is normal at ", switch)
                                     if direction == "left":
                                         x -= 1
                                     else:
@@ -99,20 +104,23 @@ class Signal:
                             if last_char not in "a[]bc" and ((last_char not in "hljn" and direction == "right") or (last_char not in "koim" and direction == "left")):
                                 if game.get_switch_position(i, game.lines) == "reverse" or not self.duplicate_train_route_check(x, y, trains):
                                     switch_stack.append((switch,i, direction, True, "reverse"))
-                                    print("change trailing switch to reverse at ", switch)
+                                    # print("change trailing switch to reverse at ", switch)
                                 else:
+                                    # print("trailing switch in wrong direction (should be reverse), now going back to last switch")
                                     x, y, last_switch, switch_stack, direction, lines, coords = self.go_back_to_last_switch(trains, switch_stack, game, coords, lines)
                                     restart = True
                                     break
                             else:
                                 if game.get_switch_position(i, game.lines) == "normal" or not self.duplicate_train_route_check(x, y, trains):
                                     switch_stack.append((switch,i, direction, True, "normal"))
-                                    print("change trailing switch to normal at ", switch)
+                                    # print("change trailing switch to normal at ", switch)
                                 else:
+                                    # print("trailing switch in wrong direction (should be normal), now going back to last switch")
                                     x, y, last_switch, switch_stack, direction, lines, coords = self.go_back_to_last_switch(trains, switch_stack, game, coords, lines)
                                     restart = True
                                     break
                 if self.duplicate_train_direction_route_check(x, y, trains, direction):
+                    # print("duplicate train direction route check failed, going back to last switch")
                     x,y, last_switch, switch_stack, direction, lines, coords = self.go_back_to_last_switch(trains, switch_stack, game, coords, lines)
                     restart = True
                 if restart:
@@ -121,17 +129,19 @@ class Signal:
                 x, y, direction, last_char, new_direction_change, last_last_char, self.temporary_characters = game.path_find(lines, x, y, direction, self.direction, last_char, last_last_char, self.temporary_characters)
                 
                 if x == -1 or last_char == "x":
+                    # print("x,-1, going back to last switch")
                     x, y, last_switch, switch_stack, direction, lines, coords = self.go_back_to_last_switch(trains, switch_stack, game, coords, lines)
                     last_char = "a"
                     continue
                 values = self.duplicate_signal_route_check(x, y, exit_signal, direction, switch_stack, game, coords, lines, signals, trains)
                 if values:
+                    # print("duplicate signal route, going back to last switch")
                     x, y, last_switch, switch_stack, direction, lines, coords = values
                     continue
                     
                 if new_direction_change:
                     direction_change = new_direction_change
-                print(x,y, last_char, direction)
+                # print("signal get to next coord", x,y, last_char, direction)
                 coords.append((x, y))
                 if not dont_set:
                     self.route_coords_direction_dict[(x,y)] = direction
@@ -143,24 +153,24 @@ class Signal:
                 if (x,y) == exit_signal.overlap and exit_signal.direction == direction:
                     break
                 elif (x > (exit_signal.coord[0] + 10) and exit_signal.direction == 'right' and direction == 'right') or (x < (exit_signal.coord[0] - 10) and exit_signal.direction == 'left' and direction == 'left') or not (0 <= y < len(lines) and 0 <= x < len(lines[y])):
+                    # print("gone too far, now back to last switch")
                     x, y, last_switch, switch_stack, direction, lines, coords = self.go_back_to_last_switch(trains, switch_stack, game, coords, lines)
 
-            print("GETTING TO THE FINAL STAGE WHERE SWITcH MOVE CHANGES")
+            # print("GETTING TO THE FINAL STAGE WHERE SWITCH MOVE CHANGES")
             if not dont_set:
                 for switch in switch_stack:
                     if switch[4] == "reverse":
                         switch_index = switch[1]
                         game.lines = game.change_switch(switch_index, "reverse", game.lines)
-                        print("afterwards changing switch to reverse at ", switch, game.lines[switch[0][1]][switch[0][0]])
+                        # print("afterwards changing switch to reverse at ", switch, game.lines[switch[0][1]][switch[0][0]])
                     else:
                         switch_index = switch[1]
                         game.lines = game.change_switch(switch_index, "normal", game.lines)
-                        print("afterwards changing switch to normal at ", switch)
+                        # print("afterwards changing switch to normal at ", switch)
                 direction_to_test_change = False
                 
                 for coord in coords:
                     x,y = coord
-                    
                     for i,switch in enumerate(switches):
                         if direction_change and ((x,y) == direction_change[0] or direction_to_test_change):
                             if self.direction == "left":
@@ -172,23 +182,34 @@ class Signal:
                             direction_to_test = self.direction
                         if x == switch[0] and y == switch[1] and switch[3] == direction_to_test and (switch,i,direction_to_test, False, None) not in switch_stack:
                             game.lines = game.change_switch(i, "reverse", game.lines)
-                            print("finally changing switch to reverse at ", switch, game.lines[switch[1]][switch[0]])
+                            # print("finally changing switch to reverse at ", switch, game.lines[switch[1]][switch[0]])
                 self.route_coords = list(set(coords))
-                for temporary_character in self.temporary_characters:
+                for temporary_character in self.temporary_characters.copy():
                     if temporary_character[0] not in coords:
                         self.temporary_characters.remove(temporary_character)
                 game.handle_temporary_characters(self.temporary_characters)
             if dont_set:
                 self.temporary_characters = []
+            if ordered:
+                # Keep the order the coords were walked in, which route
+                # setting does not care about but timing prediction does.
+                ordered_coords = []
+                for coord in coords:
+                    if coord not in ordered_coords:
+                        ordered_coords.append(coord)
+                return ordered_coords
             return list(set(coords))
         except Exception as e:
             if not dont_set:
                 game.display_class.add_log("route setting failed, please try again error message: ", str(e))
-            print(f"signal get coords to next signal error {e}")
+            print(f"signal get coords to next signal error from {self.coord} to {exit_signal.coord}, {e}")
             if not dont_set:
-                for temporary_character in self.temporary_characters:
+                for temporary_character in self.temporary_characters.copy():
                     for train in game.trains:
                         if temporary_character[0] in train.coords[0] or  (len(train.coords) > 1 and temporary_character[0] in train.coords[1]) or temporary_character[0] in train.route_coords:
+                            self.temporary_characters.remove(temporary_character)
+                    for signal in game.signals:
+                        if signal != self and signal.route_coords != None and len(signal.route_coords) >  0 and temporary_character[0] in signal.route_coords:
                             self.temporary_characters.remove(temporary_character)
                 print(f"{self.coord} is calling reset temp char")
                 game.reset_temporary_characters(self.temporary_characters)
@@ -202,16 +223,15 @@ class Signal:
         for train in trains:
             if train.route_coords:
                 if (x, y) in train.route_coords:
-                    print("route collision detected at ", (x,y))
+                    print("route collision detected at ", (x,y), f"from train {train.headcode}")
                     return True
             for coord_list in train.coords:
                 if (x, y) in coord_list:
-                    print("train collision detected at ", (x,y))
+                    print("train collision detected at ", (x,y), f"from train {train.headcode}")
                     return True
         return False
 
     def duplicate_train_direction_route_check(self, x, y, trains, direction):
-            
             for train in trains:
                 if train.route_coords:
                     if (x, y) in train.route_coords and train.route_coords_direction_dict.get((x,y)) and train.route_coords_direction_dict.get((x,y)) != direction:
@@ -226,6 +246,7 @@ class Signal:
                         train_direction = train.direction
                         for coord in all_train_coord:
                             if coord == (x,y) and direction == train_direction:
+                                print("with direction change collision at ", (x,y), "train direction is", train_direction)
                                 return True
                             if coord == train.direction_change[0]:
                                 if train_direction == "left":
@@ -267,9 +288,12 @@ class Signal:
                     auto.depressed(game)
                     lines = [row[:] for row in game.lines]
             self.route_coords = None
-        for temporary_character in self.temporary_characters:
+        for temporary_character in self.temporary_characters.copy():
             for train in game.trains:
                 if temporary_character[0] in train.coords[0] or (len(train.coords) > 1 and temporary_character[0] in train.coords[1]) or temporary_character[0] in train.route_coords:
+                    self.temporary_characters.remove(temporary_character)
+            for signal in game.signals:
+                if signal != self and signal.route_coords != None and len(signal.route_coords) >  0 and temporary_character[0] in signal.route_coords:
                     self.temporary_characters.remove(temporary_character)
         print(f"cancel route is calling reset temp char")
         game.reset_temporary_characters(self.temporary_characters)
@@ -278,6 +302,7 @@ class Signal:
     def go_back_to_last_switch(self, trains, switch_stack, game, coords, lines):
         is_trailing = True
         while is_trailing:
+            print("switch stack pop")
             last_switch_tuple = switch_stack.pop()
             is_trailing = last_switch_tuple[3]
         last_switch = last_switch_tuple[0]
@@ -294,6 +319,7 @@ class Signal:
         lines = game.change_switch(last_switch_index, "reverse", lines)
         print("reversing switch at", last_switch)
         for i in range(len(coords)):
+            print("coords pop")
             if coords.pop() == (x,y):
                 coords.append((x, y))
                 break

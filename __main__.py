@@ -17,7 +17,7 @@ import math
 import tkinter as tk
 import os
 from pathlib import Path
-from src.assets.python.layout.ars import ARSManager
+from src.assets.python.layout.ars1 import ARSManager
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 JSON_PATH = os.path.join(BASE_DIR, "src", "json")
@@ -31,6 +31,7 @@ from src.assets.python.timetable.display_timetable import Timetable
 class Game:
     def __init__(self, text, display_class, layout_file, scenario):
         self.ars_on = False
+        self.ars_routes = []
         self.text = text
         self.trains = []
         self.signals = []  # Add signals to Game, not Display_Class
@@ -53,6 +54,7 @@ class Game:
         self.approach_displayed = {}
         self.last_sent = {}
         self.last_sent_coords = {}
+        self.scenario = scenario
         self.ars_manager = ARSManager(routes_path=os.path.join(JSON_PATH, f"{scenario}_ars_routes.json"))
         self.display_class = display_class
         self.snapshot = False
@@ -152,7 +154,7 @@ class Game:
         default_directory = os.path.join(os.getcwd(), 'saves', "*.pkl")
 
         # Open open file dialog with the default directory
-        print(default_directory)
+        # print(default_directory)
         filename = easygui.fileopenbox(default=default_directory)
         
         if filename:  # Check if the user selected a file (not canceled)
@@ -196,7 +198,7 @@ class Game:
                             self.display_class.set_char_color_at_coord(coord[0], coord[1], "white", self)
 
                 for train in self.trains:
-                    print("train route_coord is ", train.route_coords)
+                    # print("train route_coord is ", train.route_coords)
                     train.move_headcode(self, self.signals, self.display_class)
                     train.display_on(self.display_class, self.lines, self)
                     if train.route_coords:
@@ -237,6 +239,38 @@ class Game:
                     return spawn_coords
 
 
+    def get_timetable_start_coord(self, tt):
+        start_seg = tt.get('start_location', {})
+        direction = tt.get('direction', 'right')
+
+        coord = None
+        start_type = start_seg.get('type')
+        start_station = start_seg.get('station')
+        start_platform = start_seg.get('platform')
+        if start_type is not None and start_station and start_platform:
+            for segment in self.annotated_segments:
+                if (
+                    segment.get('type') == start_type
+                    and segment.get('station') == start_station
+                    and segment.get('platform') == start_platform
+                ):
+                    if direction == 'right':
+                        coord = tuple(segment.get('right', segment.get('left', (0, 0))))
+                    else:
+                        coord = tuple(segment.get('left', segment.get('right', (0, 0))))
+                    break
+
+        if coord is None:
+            coord = tuple(start_seg.get('left') if 'left' in start_seg else start_seg.get('right', (0, 0)))
+        return coord
+
+    def get_timetable_spawn_seconds(self, tt):
+        spawn_seconds = set()
+        for t in tt.get('spawn_times', []):
+            h, m, s = map(int, t.split(":"))
+            spawn_seconds.add(h * 3600 + m * 60 + s)
+        return spawn_seconds
+
     def update_spawn(self):
         spawned_positions_this_tick = set()
         current_time = int(self.game_seconds) # assume this is an int representing seconds since midnight
@@ -250,39 +284,15 @@ class Game:
                 continue
 
             # Convert spawn_times from "HH:MM:SS" to seconds
-            spawn_seconds = set()
-            for t in spawn_times:
-                h, m, s = map(int, t.split(":"))
-                total_seconds = h * 3600 + m * 60 + s
-                spawn_seconds.add(total_seconds)
+            spawn_seconds = self.get_timetable_spawn_seconds(tt)
             # Only consider timetables that should spawn now
             if current_time not in spawn_seconds:
                 continue
-            
-            start_seg = tt.get('start_location', {})
+
             direction = tt.get('direction', 'right')
+            coord = self.get_timetable_start_coord(tt)
 
-            coord = None
-            start_type = start_seg.get('type')
-            start_station = start_seg.get('station')
-            start_platform = start_seg.get('platform')
-            if start_type is not None and start_station and start_platform:
-                for segment in self.annotated_segments:
-                    if (
-                        segment.get('type') == start_type
-                        and segment.get('station') == start_station
-                        and segment.get('platform') == start_platform
-                    ):
-                        if direction == 'right':
-                            coord = tuple(segment.get('right', segment.get('left', (0, 0))))
-                        else:
-                            coord = tuple(segment.get('left', segment.get('right', (0, 0))))
-                        break
-
-            if coord is None:
-                coord = tuple(start_seg.get('left') if 'left' in start_seg else start_seg.get('right', (0, 0)))
-
-            # Prevent duplicate spawns at same 
+            # Prevent duplicate spawns at same
             if coord in spawned_positions_this_tick:
                 continue
             headcode_prefix = tt['headcode_prefix']
@@ -317,7 +327,7 @@ class Game:
             threading.Thread(target=winsound.PlaySound, args=(SPAWN_SOUND, winsound.SND_FILENAME)).start()
             self.display_class.add_log(f"train {headcode} spawned at {start_coord}")
         train = Train(start_coord,direction, headcode, timetable, int(self.game_seconds), self.annotated_segments, timetable_index, self.wait_time)
-        print("signal coords is ", signal_coords)
+        # print("signal coords is ", signal_coords)
         train.route_coords = signal_coords
         # train.color_route_coords(self.display_class, self.text)
         self.trains.append(train)
@@ -370,7 +380,7 @@ class Game:
         self.approach_displayed = {}
         self.last_sent = {}
         self.last_sent_coords = {}  # Store coords for last_sent separately
-        print("[APPROACH] setup_approach_and_last_sent starting")
+        # print("[APPROACH] setup_approach_and_last_sent starting")
 
         for segment in getattr(self, "annotated_segments", []):
             if segment.get("type") != "entrance_exit":
@@ -394,11 +404,11 @@ class Game:
                         "coords": coords,
                         "direction": direction,
                     }
-                    print(f"[APPROACH] mapped entrance {(x, y)} to coords {coords} (direction={direction})")
+                    # print(f"[APPROACH] mapped entrance {(x, y)} to coords {coords} (direction={direction})")
                 else:
                     self.last_sent[(x, y)] = None
                     self.last_sent_coords[(x, y)] = coords  # Store coords for display
-                    print(f"[LAST_SENT] mapped entrance {(x, y)} to last_sent default (direction={direction})")
+                    # print(f"[LAST_SENT] mapped entrance {(x, y)} to last_sent default (direction={direction})")
 
                 for coord_x, coord_y in coords:
                     self.display_class.set_char_color_at_coord(coord_x, coord_y, "gray", self)
@@ -460,7 +470,6 @@ class Game:
                     }
                     if best is None or candidate["wait_seconds"] < best["wait_seconds"]:
                         best = candidate
-                    # print(f"[APPROACH] candidate at {entrance_coord}: {candidate['headcode']} in {candidate['wait_seconds']}s")
 
         if best:
             return best["headcode"]
@@ -487,7 +496,7 @@ class Game:
             for coord in train.coords[0]:
                 if coord in self.last_sent:
                     self.last_sent[coord] = train.headcode
-                    print("REPLACED with ", train.headcode, "at", coord)
+                    # print("REPLACED with ", train.headcode, "at", coord)
 
         for entrance_coord, approach_data in self.approach_map.items():
             coords = approach_data["coords"]
@@ -528,8 +537,8 @@ class Game:
                 self.approach_displayed[entrance_coord] = timetable_headcode
                 self._display_approach_headcode(coords, timetable_headcode)
             else:
-                if previous_headcode is not None:
-                    print(f"[APPROACH] no train, resetting approach at {entrance_coord} to backslashes")
+                # if previous_headcode is not None:
+                    # print(f"[APPROACH] no train, resetting approach at {entrance_coord} to backslashes")
                 self.approach_displayed[entrance_coord] = None
                 self._display_approach_headcode(coords, None)
 
@@ -537,7 +546,7 @@ class Game:
                 if getattr(train, "headcode", None) == timetable_headcode and getattr(train, "coords", None):
                     current_head = train.coords[0][0]
                     if current_head != entrance_coord:
-                        print(f"[APPROACH] clearing preview at {entrance_coord}: same headcode train has moved beyond entrance coord")
+                        # print(f"[APPROACH] clearing preview at {entrance_coord}: same headcode train has moved beyond entrance coord")
                         self.approach_displayed[entrance_coord] = None
                         self._display_approach_headcode(coords, None)
                         break
@@ -558,7 +567,7 @@ class Game:
         return True
 
     def predictive_route_setting_try(self):
-        self.ars_manager.predictive_route_setting_try(self)
+        self.ars_manager.tick(self)
 
     def create_signals_from_file(self, target_chars, signal_type_map, direction_map, mount_map, buffer_map):
         signals = []
@@ -705,14 +714,14 @@ class Game:
                 else:
                     lines[y][x] = new_char
             else:
-                print("BEFORE CHANGE SWITCH", self.lines[y][x], "NEW CHAR IS", new_char)
+                # print("BEFORE CHANGE SWITCH", self.lines[y][x], "NEW CHAR IS", new_char)
                 lines[y][x] = new_char
-                print("AFTER CHANGE SWITCH", self.lines[y][x])
+                # print("AFTER CHANGE SWITCH", self.lines[y][x])
         return lines
     
     def get_switch_position(self, switch_index, lines):
         x, y, new_char, direction = self.switches[switch_index]
-        print("getswitchpos is", x,y, lines[y][x])
+        # print("getswitchpos is", x,y, lines[y][x])
         char = lines[y][x]
         if char == "a":
             return "normal"
@@ -732,7 +741,7 @@ class Game:
                 signal.overlap = (x,y)
                 continue
             x, y = signal.coord
-            print("signal coord is ", x,y)
+            # print("signal coord is ", x,y)
             if signal.mount == 'up':
                 y += 1
             elif signal.mount == 'down':
@@ -759,7 +768,7 @@ class Game:
                         if candidate and candidate.direction == direction and candidate.mount == mount:
                             if signal.signal_type == "automatic":
                                 signal.next_signal = candidate
-                                print("found next signal at", candidate.coord)
+                                # print("found next signal at", candidate.coord)
                             break
                 if signal.next_signal:
                     break
@@ -768,16 +777,16 @@ class Game:
         for temporary_character in temporary_characters:
             (x,y), original_char, new_char = temporary_character
             self.lines[y][x] = new_char
-            print("handling temporary character at", (x,y), "to", new_char)
+            # print("handling temporary character at", (x,y), "to", new_char)
 
     def reset_temporary_characters(self, temporary_characters):
         for temporary_character in temporary_characters:
             (x,y), original_char, new_char = temporary_character
             self.lines[y][x] = original_char
-            print("resetting temporary character at", (x,y), "to", original_char)
+            # print("resetting temporary character at", (x,y), "to", original_char)
 
-    def set_route(self, dont_set = False):
-        coords = self.entry_signal.get_coords_to_next_signal(self.exit_signal, self, self.switches, self.layout_file, self.signals, self.trains, dont_set)
+    def set_route(self, dont_set = False, ordered = False):
+        coords = self.entry_signal.get_coords_to_next_signal(self.exit_signal, self, self.switches, self.layout_file, self.signals, self.trains, dont_set, ordered)
         if not dont_set:
             if not coords:
                 self.entry_signal = None
@@ -825,17 +834,16 @@ class Game:
             # self.display_class.add_log(direction)
             if (last_char in right_up and direction == 'right') or (last_char in left_up and direction == 'left'):
                 direction = "up"
-                print("direction is up")
+                # print("direction is up")
             elif (last_char in right_down and direction == 'right') or (last_char in left_down and direction == 'left'):
                 # self.display_class.add_log("direction is down")
                 direction = "down"
         next_char = self.get_next_char_from_direction(direction, x, y,char, lines)
-        print("next char is", next_char)
         if next_char == "÷":
             if hasattr(self, 'portals'):
                 # Step 1: Compute tentative next position
                 amended_x = x + (1 if direction == "right" else -1 if direction == "left" else 0)
-                print("moving one step, position is", x, y)
+                # print("moving one step, position is", x, y)
 
                 # Step 2: Check all portals
                 for portal in self.portals:
@@ -865,7 +873,7 @@ class Game:
 
                     
 
-                    print("teleported to", amended_x, y, "new direction is", direction)
+                    # print("teleported to", amended_x, y, "new direction is", direction)
                     return amended_x, y, direction, last_char, direction_change, last_last_char, temporary_characters
             x, y = self.skip_parts("÷", direction, x, y, lines)
         elif next_char == "ö":
@@ -1028,7 +1036,7 @@ class Game:
             x_addition, y_addition = direction_to_x_y_addition[direction]
             x += x_addition
             y += y_addition
-            print("skip parts x, y is ", x, y)
+            # print("skip parts x, y is ", x, y)
             char = lines[y][x]
             if char == character:
                 if not trash:
@@ -1050,7 +1058,7 @@ class Game:
             elif (char in right_up and direction == "right") or (char in left_up and direction == "left"):
                 direction = "up"
         x_addition, y_addition = direction_to_x_y_addition[direction]
-        print("next char coord", x + x_addition, y + y_addition, "direction ", direction)
+        # print("next char coord", x + x_addition, y + y_addition, "direction ", direction)
         return lines[y + y_addition][x + x_addition]
     
     def update_signals(self):
@@ -1097,6 +1105,7 @@ class Game:
                 self.check_backlog_train()
                 if self.game_seconds - self.last_ars_time > 1:
                     self.predictive_route_setting_try()
+                    self.last_ars_time = self.game_seconds
                 now = time.time()
                 delta_real = now - self._last_real_time
                 self._last_real_time = now
@@ -1207,6 +1216,8 @@ def main():
     game.find_next_signals(signals)
     game.define_switches()
     game.define_auto_and_TRTS_buttons()
+    # Predicted route timings, built once and cached beside the routes JSON.
+    game.ars_manager.prepare_schedule(game)
     # game.spawn_train(6, (1, 10))
     game.run()
 

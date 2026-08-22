@@ -2,7 +2,7 @@ import json
 import time
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
-
+from src.assets.python.layout.ars_schedule import ensure_schedule
 Coord = Tuple[int, int]
 
 
@@ -509,6 +509,8 @@ class ARSManager:
         else:
             self.map_path = None
 
+    
+
         # Automatically load the matching JSON when
         # map_path/routes_path was supplied.
         if self.routes_path is not None:
@@ -532,6 +534,14 @@ class ARSManager:
         ] = {}
 
         self.retry_interval_seconds = 10.0
+
+    def prepare_schedule(self, game):
+        schedule = ensure_schedule(
+            game,
+            "zone_6_ars_routes.json",
+            game.ars_routes,
+            force=True,
+        )
 
     @staticmethod
     def _routes_path_from_map(
