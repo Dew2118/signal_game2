@@ -771,7 +771,6 @@ class ARSManager:
             game.exit_signal = next_signal
             coords = game.set_route(dont_set = True)
             if not self.find_intersection_with_headcodes(game, coords):
-                print("INSIDE")
                 game.set_route()
                 game.entry_signal = None
                 game.exit_signal = None

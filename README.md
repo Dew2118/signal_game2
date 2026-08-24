@@ -20,7 +20,7 @@
 
 ## Gameplay
 
-1. Choose a zone (do not choose "test" — any other zone will work)
+1. Choose a zone (do not choose "test" - any other zone will work)
 2. Set signals by clicking on the entrance signal, then the exit signal
 3. Cancel a route by right-clicking the entrance signal
 4. Check the schedule by clicking on the train's headcode

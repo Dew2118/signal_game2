@@ -147,7 +147,7 @@ class ARSManager:
 
         self.schedule: Dict[str, Any] = {}
         self.conflicts: Dict[Tuple[Coord, Coord], Dict[str, Any]] = {}
-        self.conflicts_by_entry: Dict[Coord, List[Dict[str, Any]]] = {}
+        self.conflicts_by_route: Dict[Tuple[Coord, Coord], List[Dict[str, Any]]] = {} # <-- CHANGED
         self.routes_by_timetable: Dict[Any, Dict[str, Any]] = {}
 
         self._prepared = False
@@ -158,6 +158,29 @@ class ARSManager:
         if self.routes_path is not None:
             self.load(self.routes_path)
         self.path_hop_coords: Dict[Tuple[Any, Any, Coord, Coord], set[Coord]] = {}
+
+    def print_signal_conflict_summary(self):
+        print("\n=== ROUTE CONFLICT SUMMARY ===")
+        conflict_map = {}
+        
+        for record in self.conflicts.values():
+            a_key = (tuple(record["route_a"]["entry"]), tuple(record["route_a"]["exit"]))
+            b_key = (tuple(record["route_b"]["entry"]), tuple(record["route_b"]["exit"]))
+            
+            conflict_map.setdefault(a_key, set()).add(b_key)
+            conflict_map.setdefault(b_key, set()).add(a_key)
+            
+        if not conflict_map:
+            print("No cross-route conflicts found.")
+            
+        for route_key, conflicts in sorted(conflict_map.items()):
+            entry, exit_sig = route_key
+            # Format the conflicting routes nicely
+            conflicts_str = ", ".join([f"({c[0]}->{c[1]})" for c in sorted(conflicts)])
+            # print(f"Route {entry} -> {exit_sig} conflicts with: {conflicts_str}")
+            
+        print("==============================\n")
+
 
     @staticmethod
     def _routes_path_from_map(map_path: str | Path) -> Path:
@@ -342,11 +365,12 @@ class ARSManager:
                 if position not in existing:
                     overlap_list.append(list(position))
 
+        self.conflicts_by_route = {}
         for record in self.conflicts.values():
             for side in ("route_a", "route_b"):
                 route = record[side]
-                entry = tuple(route["entry"])
-                self.conflicts_by_entry.setdefault(entry, []).append(record)
+                route_key = (tuple(route["entry"]), tuple(route["exit"]))
+                self.conflicts_by_route.setdefault(route_key, []).append(record)
 
         log(f"[ARS] conflict map contains {len(self.conflicts)} conflicting route pair(s)")
         return self.conflicts
@@ -616,13 +640,13 @@ class ARSManager:
         previous_entry, previous_exit = previous_hop
         is_set = self._route_is_already_set(game, previous_entry, previous_exit, caches)
         
-        if not is_set:
-            print(
-                "[ARS DEBUG] "
-                f"[Train:{headcode}] T{timetable_index}/P{path_index} "
-                f"previous_hop {previous_entry}->{previous_exit} is NOT set. "
-                f"(Train is currently at hop {active_hop})"
-            )
+        # if not is_set:
+            # print(
+            #     "[ARS DEBUG] "
+            #     f"[Train:{headcode}] T{timetable_index}/P{path_index} "
+            #     f"previous_hop {previous_entry}->{previous_exit} is NOT set. "
+            #     f"(Train is currently at hop {active_hop})"
+            # )
         return is_set
 
 
@@ -647,13 +671,9 @@ class ARSManager:
 
 
     def _route_has_conflict(self, route_key: Tuple[Coord, Coord]) -> bool:
-        entry, exit_signal = route_key
-        for record in self.conflicts_by_entry.get(entry, []):
-            for side in ("route_a", "route_b"):
-                route = record[side]
-                if tuple(route["entry"]) == entry and tuple(route["exit"]) == exit_signal:
-                    return True
-        return False
+        # Since the dictionary is now keyed by the exact Entry->Exit pair,
+        # we can just check if the list has any records in it!
+        return len(self.conflicts_by_route.get(route_key, [])) > 0
 
     def print_conflicts(self, limit: Optional[int] = None):
         records = list(self.conflicts.values())
@@ -765,15 +785,20 @@ class ARSManager:
             coords = game.set_route()
 
             if not coords:
+                # --- NEW: Print explicit failure with coordinates ---
+                # print(f"[ARS SET FAIL] [Train:{headcode}] T{timetable_index}/P{path_index} {entry_coord} -> {exit_coord} (SET_ROUTE_FAILED)")
                 return False, "SET_ROUTE_FAILED"
 
             absolute_time = prediction["absolute_time"]
             now = float(getattr(game, "game_seconds", 0))
-            print(f"[ARS SET] [Train:{headcode}] T{timetable_index}/P{path_index} {entry_coord} -> {exit_coord}")
+            # print(f"[ARS SET] [Train:{headcode}] T{timetable_index}/P{path_index} {entry_coord} -> {exit_coord}")
             return True, "SUCCESS"
 
         except Exception as exc:
+            # --- NEW: Print exceptions with coordinates too ---
+            # print(f"[ARS EXCEPTION] [Train:{headcode}] T{timetable_index}/P{path_index} {entry_coord} -> {exit_coord} Error: {exc}")
             return False, "EXCEPTION"
+            
         finally:
             game.entry_signal = old_entry
             game.exit_signal = old_exit
@@ -853,7 +878,6 @@ class ARSManager:
                 for prediction in train_paths[train]:
                     headcode = getattr(train, "headcode", "UNKNOWN")
                     path_idx = prediction["path_index"]
-                    
                     success, reason = self._try_route(game, prediction, caches)
                     
                     if success:
@@ -865,13 +889,9 @@ class ARSManager:
                         fail_count += 1
                         if hasattr(game, "display_class") and hasattr(game.display_class, "add_log"):
                             path_type = "Primary" if path_idx == 0 else f"Alt Path {path_idx}"
-                            game.display_class.add_log(
-                                f"ARS: {headcode} {path_type} failed ({reason})."
-                            )
+                            # print(
+                            #     f"ARS: {headcode} {path_type} failed ({reason})."
+                            # )
 
-                # ⚡ YOUR CHANGE: Do not go to the next train if this one failed.
-                # If the first train in line is stuck, everyone behind it must wait!
-                if not signal_claimed:
-                    break
 
 
