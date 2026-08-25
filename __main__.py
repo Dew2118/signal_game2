@@ -86,30 +86,31 @@ class Game:
             self.portals = data.get("portals", [])
             self.wait_time = data.get("wait_time", 1)
 
-        ars_path = os.path.join(JSON_PATH, "ars_routes.json")
-        if os.path.exists(ars_path):
-            self.ars_manager.load(ars_path)
+        # --- FIXED: Load scenario-specific ARS routes into game.ars_routes ---
+        scenario_ars_path = os.path.join(JSON_PATH, f"{self.scenario}_ars_routes.json")
+        if os.path.exists(scenario_ars_path):
+            self.ars_routes = self.ars_manager.load(scenario_ars_path)
+            print(f"[ARS] Loaded {len(self.ars_routes)} routes for scenario {self.scenario}")
+        else:
+            self.ars_routes = []
+            print(f"[ARS WARNING] No route file found at {scenario_ars_path}")
+        # ----------------------------------------------------------------------
 
-        # --- NEW: FRONT-LOADED ENTRANCE SCHEDULES ---
+        # --- FRONT-LOADED ENTRANCE SCHEDULES ---
         self.entrance_schedules = {}
-        
         for seg in self.timetables:
-            # Initialize headcode suffixes
             headcode_prefix = seg.get('headcode_prefix', '')
             if headcode_prefix and headcode_prefix not in self.headcode_suffix:
                 self.headcode_suffix[headcode_prefix] = 0
 
-            # Calculate the spawn coordinate once
             coord = self.get_timetable_start_coord(seg)
             if not coord:
                 continue
             coord = tuple(coord)
 
-            # Ensure the coordinate has a schedule list
             if coord not in self.entrance_schedules:
                 self.entrance_schedules[coord] = []
 
-            # Pre-parse all time strings into raw seconds
             for spawn_time in seg.get('spawn_times', []):
                 h, m, s = map(int, spawn_time.split(":"))
                 total_seconds = h * 3600 + m * 60 + s
@@ -119,10 +120,9 @@ class Game:
                     "prefix": headcode_prefix
                 })
 
-        # Sort all entrance schedules chronologically for fast lookup
         for coord in self.entrance_schedules:
             self.entrance_schedules[coord].sort(key=lambda x: x["time"])
-        # --------------------------------------------
+
 
     def get_tt_from_index(self, index):
         for template in self.timetables:
@@ -1190,6 +1190,10 @@ class Game:
         for i in range(10):
             self.update_signals()
         self.setup_approach_and_last_sent()
+
+        # --- FIX: Reset real time right here to discard startup loading lag ---
+        self._last_real_time = time.time()
+
         running = True
         clock = pygame.time.Clock()
         while running:
@@ -1327,10 +1331,9 @@ def main():
             print(f" -> Building cache for manual signal at {signal.coord}...")
             signal.build_route_cache(game, game.switches, layout_file, game.signals)
         signal.routes_cached = True 
-    print("done")
 
     game.ars_manager.prepare_schedule(game)
-    game.ars_manager.print_signal_conflict_summary()
+    # game.ars_manager.print_signal_conflict_summary()
     game.run()
 
 if __name__ == "__main__":

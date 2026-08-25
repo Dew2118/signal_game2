@@ -569,85 +569,77 @@ class ARSManager:
         train = prediction["train"]
         timetable_index = prediction["timetable_index"]
         path_index = prediction["path_index"]
-        current_relative = prediction["relative_time"]
-        headcode = getattr(train, "headcode", "UNKNOWN")
+        current_index = prediction.get("coord_index", -1)
 
-        head_coord = None
-        train_coords = getattr(train, "coords", [])
-        if train_coords:
-            try:
-                head_coord = _coord(train_coords[0][0])
-            except (IndexError, TypeError, ValueError):
-                try:
-                    head_coord = _coord(train_coords[0])
-                except (IndexError, TypeError, ValueError):
-                    pass
+        # If this is the very first signal in the route, there is no previous hop
+        if current_index <= 0:
+            return True
 
         schedule_routes = self.schedule.get("routes", []) or []
         target_path = None
         for route in schedule_routes:
-            if route.get("timetable_index") != timetable_index:
-                continue
-            paths = route.get("paths", []) or []
-            if path_index < len(paths):
-                target_path = paths[path_index]
-            break
+            if route.get("timetable_index") == timetable_index:
+                paths = route.get("paths", []) or []
+                if path_index < len(paths):
+                    target_path = paths[path_index]
+                break
 
         if not target_path:
             return True
 
         coords = target_path.get("coords", []) or []
-        head_index = -1
-        if head_coord:
-            for i, item in enumerate(coords):
-                try:
-                    if _coord(item) == head_coord:
-                        head_index = i
-                        break
-                except (ValueError, TypeError):
-                    continue
 
+        # Scan backwards to find the exact boundary of the previous hop
         previous_hop = None
-        previous_hop_last_index = -1
-
-        for i, item in enumerate(coords):
-            relative_time = _schedule_time(item)
-            if relative_time is None:
-                continue
-            if relative_time >= current_relative:
-                break
-            entry = _schedule_entry_signal(item)
-            exit_signal = _schedule_exit_signal(item)
-            if entry is not None and exit_signal is not None:
-                previous_hop = (tuple(entry), tuple(exit_signal))
-                previous_hop_last_index = i
+        previous_entry_first_index = -1
+        
+        for i in range(current_index - 1, -1, -1):
+            e = _schedule_entry_signal(coords[i])
+            x = _schedule_exit_signal(coords[i])
+            if e is not None and x is not None:
+                if previous_hop is None:
+                    previous_hop = (tuple(e), tuple(x))
+                    previous_entry_first_index = i
+                elif (tuple(e), tuple(x)) == previous_hop:
+                    # Keep moving the boundary back to the start of the hop
+                    previous_entry_first_index = i
+                else:
+                    # Hit an even older hop, stop scanning
+                    break
 
         if previous_hop is None:
             return True
 
-        active_hop = None
-        if head_index != -1:
-            e = _schedule_entry_signal(coords[head_index])
-            x = _schedule_exit_signal(coords[head_index])
-            if e is not None and x is not None:
-                active_hop = (tuple(e), tuple(x))
+        # Robustly determine how far the train is along the path
+        train_body_coords = set()
+        for coord_group in getattr(train, "coords", []) or []:
+            if isinstance(coord_group, (list, tuple)):
+                for c in coord_group:
+                    if c:
+                        try: train_body_coords.add(tuple(_coord(c)))
+                        except (ValueError, TypeError): pass
+            else:
+                if coord_group:
+                    try: train_body_coords.add(tuple(_coord(coord_group)))
+                    except (ValueError, TypeError): pass
 
-        if active_hop == previous_hop:
-            return True
-        if head_index > previous_hop_last_index:
+        max_train_index = -1
+        for i, item in enumerate(coords):
+            try:
+                if tuple(_coord(item)) in train_body_coords:
+                    max_train_index = i
+            except (ValueError, TypeError): continue
+
+        # FIX: If any part of the train has reached or passed the start of the previous hop,
+        # it is physically inside (or past) the previous hop. It does NOT need the signal behind it to be green.
+        if max_train_index >= previous_entry_first_index:
             return True
 
+        # Otherwise, the train is still approaching. 
+        # The previous hop MUST be set for us to safely project forward.
         previous_entry, previous_exit = previous_hop
-        is_set = self._route_is_already_set(game, previous_entry, previous_exit, caches)
-        
-        # if not is_set:
-            # print(
-            #     "[ARS DEBUG] "
-            #     f"[Train:{headcode}] T{timetable_index}/P{path_index} "
-            #     f"previous_hop {previous_entry}->{previous_exit} is NOT set. "
-            #     f"(Train is currently at hop {active_hop})"
-            # )
-        return is_set
+        return self._route_is_already_set(game, previous_entry, previous_exit, caches)
+
 
 
     # ======================================================================
@@ -782,26 +774,27 @@ class ARSManager:
         try:
             game.entry_signal = entry_signal
             game.exit_signal = exit_signal
+            
+            print(f"[ARS ATTEMPT] [Train:{headcode}] trying to set route {entry_coord} -> {exit_coord}")
             coords = game.set_route()
 
             if not coords:
-                # --- NEW: Print explicit failure with coordinates ---
-                # print(f"[ARS SET FAIL] [Train:{headcode}] T{timetable_index}/P{path_index} {entry_coord} -> {exit_coord} (SET_ROUTE_FAILED)")
+                print(f"[ARS SET FAIL] [Train:{headcode}] T{timetable_index}/P{path_index} {entry_coord} -> {exit_coord} (SET_ROUTE_FAILED)")
                 return False, "SET_ROUTE_FAILED"
 
             absolute_time = prediction["absolute_time"]
             now = float(getattr(game, "game_seconds", 0))
-            # print(f"[ARS SET] [Train:{headcode}] T{timetable_index}/P{path_index} {entry_coord} -> {exit_coord}")
+            print(f"[ARS SET SUCCESS] [Train:{headcode}] T{timetable_index}/P{path_index} set route {entry_coord} -> {exit_coord} (ETA: {absolute_time - now:.1f}s)")
             return True, "SUCCESS"
 
         except Exception as exc:
-            # --- NEW: Print exceptions with coordinates too ---
             # print(f"[ARS EXCEPTION] [Train:{headcode}] T{timetable_index}/P{path_index} {entry_coord} -> {exit_coord} Error: {exc}")
             return False, "EXCEPTION"
             
         finally:
             game.entry_signal = old_entry
             game.exit_signal = old_exit
+
 
 
     def tick(self, game):
@@ -867,31 +860,30 @@ class ARSManager:
                     train_paths[t] = []
                 train_paths[t].append(pred)
 
-            signal_claimed = False
+            if not train_queue:
+                continue
 
-            # Loop through trains in order of priority (1st place, 2nd place, etc)
-            for train in train_queue:
-                if signal_claimed:
-                    break 
+            # --- FIX: Only allow the FIRST train (highest priority) to attempt a route here. ---
+            # If this train's paths all fail, we DO NOT fall through to the next train. 
+            # This prevents trains from behind "stealing" the route while the front train is blocked.
+            top_train = train_queue[0]
                 
-                # Loop through the current train's paths (Path 0, Path 1, etc)
-                for prediction in train_paths[train]:
-                    headcode = getattr(train, "headcode", "UNKNOWN")
-                    path_idx = prediction["path_index"]
-                    success, reason = self._try_route(game, prediction, caches)
-                    
-                    if success:
-                        signal_claimed = True
-                        if reason == "SUCCESS":
-                            set_count += 1
-                        break # Success! Stop trying alternative paths for this train.
-                    else:
-                        fail_count += 1
-                        if hasattr(game, "display_class") and hasattr(game.display_class, "add_log"):
-                            path_type = "Primary" if path_idx == 0 else f"Alt Path {path_idx}"
-                            # print(
-                            #     f"ARS: {headcode} {path_type} failed ({reason})."
-                            # )
+            # Loop through the top train's paths (Path 0, Path 1, etc)
+            for prediction in train_paths[top_train]:
+                headcode = getattr(top_train, "headcode", "UNKNOWN")
+                path_idx = prediction["path_index"]
+                success, reason = self._try_route(game, prediction, caches)
+                
+                if success:
+                    if reason == "SUCCESS":
+                        set_count += 1
+                    break # Success! Stop trying alternative paths for this train.
+                else:
+                    fail_count += 1
+                    if hasattr(game, "display_class") and hasattr(game.display_class, "add_log"):
+                        path_type = "Primary" if path_idx == 0 else f"Alt Path {path_idx}"
+                        # print(f"ARS: {headcode} {path_type} failed ({reason}).")
+
 
 
 

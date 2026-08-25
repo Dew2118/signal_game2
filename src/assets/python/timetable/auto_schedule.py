@@ -65,7 +65,7 @@ def time_to_sec(time_str):
         return 0
 
 def run_auto_scheduler(scenario):
-    template_path = JSON_PATH / f"{scenario}_timetable1.json"
+    template_path = JSON_PATH / f"{scenario}_timetable.json"
     output_path = JSON_PATH / f"{scenario}_timetable.json"
     ars_path = JSON_PATH / f"{scenario}_ars_schedule.json"
 
@@ -160,56 +160,60 @@ def run_auto_scheduler(scenario):
         
         # Skip chained routes (they don't spawn independently)
         if idx in chained_targets:
+            tt["spawn_times"] = [] # Clear spawns just to be safe
             continue
             
+        start_type = tt.get("start_location", {}).get("type", "")
+        
+        # If the start location is not an entrance/exit, empty the spawns and skip
+        if start_type != "entrance_exit":
+            print(f" -> Timetable {idx} (Station Spawn): Removing all spawn times as requested.")
+            tt["spawn_times"] = []
+            continue
+
         footprint = get_footprint(idx, 0)
         
-        # Baseline Traffic (Index < 2)
-        if idx < 2:
-            print(f" -> Timetable {idx} (Baseline): Keeping original {len(tt.get('spawn_times', []))} spawn(s).")
-            for sp_str in tt.get("spawn_times", []):
-                add_to_occupancy(footprint, time_to_sec(sp_str))
+        print(f" -> Timetable {idx} (Entrance/Exit): Scanning 24h clock to thread {MAX_SPAWNS_PER_DAY} spawns...")
+        
+        safe_times = []
+        
+        # Scan every 30 seconds
+        for t in range(MIN_SPAWN_SECONDS, 86400, 30):
+            if is_safe(t, footprint):
+                safe_times.append(t)
                 
-        # Auto-Scheduler (Index >= 2)
-        else:
-            print(f" -> Timetable {idx} (Auto-Scheduler): Scanning 24h clock...")
-            safe_times = []
+        if not safe_times:
+            print(f"    [!] NO SAFE SPAWN TIMES FOUND for Timetable {idx}. Network is congested.")
+            tt["spawn_times"] = []
+            continue
             
-            # --- FIXED: Start scanning from MIN_SPAWN_SECONDS (3 seconds past midnight) ---
-            for t in range(MIN_SPAWN_SECONDS, 86400, 30):
-                if is_safe(t, footprint):
-                    safe_times.append(t)
+        # Filter the safe times to spread them out evenly
+        picked_spawns = []
+        last_spawn = -99999
+        
+        for t in safe_times:
+            # Only pick a time if it respects our MIN_GAP (e.g., 15 mins) from the last train
+            if t - last_spawn >= MIN_GAP_SECONDS:
+                picked_spawns.append(t)
+                last_spawn = t
+                if len(picked_spawns) >= MAX_SPAWNS_PER_DAY:
+                    break
                     
-            if not safe_times:
-                print(f"    [!] NO SAFE SPAWN TIMES FOUND for Timetable {idx}. Network is congested.")
-                continue
-                
-            # Filter the safe times to spread them out evenly
-            picked_spawns = []
-            last_spawn = -99999
-            
-            for t in safe_times:
-                # Only pick a time if it respects our MIN_GAP (e.g., 15 mins) from the last train
-                if t - last_spawn >= MIN_GAP_SECONDS:
-                    picked_spawns.append(t)
-                    last_spawn = t
-                    if len(picked_spawns) >= MAX_SPAWNS_PER_DAY:
-                        break
-                        
-            print(f"    [+] Successfully threaded {len(picked_spawns)} spawn times (Target: {MAX_SPAWNS_PER_DAY}).")
-            
-            # Format and apply back to the timetable dictionary
-            tt["spawn_times"] = [sec_to_time(s) for s in picked_spawns]
-            
-            # Claim this footprint on the master map so the next timetable weaves around it!
-            for sp in picked_spawns:
-                add_to_occupancy(footprint, sp)
+        print(f"    [+] Successfully threaded {len(picked_spawns)} spawn times (Target: {MAX_SPAWNS_PER_DAY}).")
+        
+        # Format and apply back to the timetable dictionary
+        tt["spawn_times"] = [sec_to_time(s) for s in picked_spawns]
+        
+        # Claim this footprint on the master map so the next timetable weaves around it!
+        for sp in picked_spawns:
+            add_to_occupancy(footprint, sp)
 
     # Save to the final live game file
     output_path.write_text(json.dumps(tt_data, indent=4), encoding="utf-8")
     print(f"\n=== SUCCESS! ===")
     print(f"Optimized schedule saved to {output_path.name}")
     print(f"Your game is now ready to play.")
+
 
 if __name__ == "__main__":
     scenario_name = choose_scenario()
