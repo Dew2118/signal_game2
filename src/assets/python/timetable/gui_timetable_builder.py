@@ -133,6 +133,10 @@ class UnifiedBuilder:
         self.panning, self.pan_start, self.pan_start_camera = False, (0, 0), (0, 0)
         self.node_list_scroll_y = 0 
         
+        # --- UI Notifications ---
+        self.notification_text = ""
+        self.notification_timer = 0
+        
         # --- UI Elements Layout ---
         self.btn_prev_tt = pygame.Rect(10, 25, 30, 30)
         self.input_load_tt = TextInput(50, 25, 80, 30, "Load TT #", "")
@@ -167,17 +171,25 @@ class UnifiedBuilder:
         self.available_tt_indices = []
         self._refresh_available_tts()
 
+    def show_notification(self, text, duration_frames=180):
+        self.notification_text = text
+        self.notification_timer = duration_frames
+        print(f"[UI NOTIFY]: {text}")
+
     def _get_display_path(self):
-        """Returns ONLY the list corresponding to the currently active tab."""
-        if self.active_mode == "timetable":
-            return self.station_path
-        else:
-            if self.active_signal_path_idx < len(self.signal_paths):
-                return self.signal_paths[self.active_signal_path_idx]
-            return []
+        active_signals = self.signal_paths[self.active_signal_path_idx] if self.active_signal_path_idx < len(self.signal_paths) else []
+        combined = self.station_path + active_signals
+        unique_nodes, seen_coords = [], set()
+        for node in combined:
+            if tuple(node['coord']) not in seen_coords:
+                unique_nodes.append(node)
+                seen_coords.add(tuple(node['coord']))
+        
+        if self.direction_val == 'right': unique_nodes.sort(key=lambda n: (n['coord'][0], n['coord'][1]))
+        else: unique_nodes.sort(key=lambda n: (-n['coord'][0], n['coord'][1]))
+        return unique_nodes
 
     def _find_node_by_station(self, station_name, platform_name):
-        """Helper to find a node, falling back safely if platform is empty."""
         for coord, data in self.nodes.items():
             if data.get("station") == station_name and data.get("platform") == platform_name: return dict(data)
         if platform_name == "" or platform_name is None:
@@ -186,7 +198,6 @@ class UnifiedBuilder:
         return None
 
     def _activate_platform_menu(self, station_name, position):
-        """Prepares and opens the popup menu for platform selection."""
         platforms = sorted({n['platform'] for n in self.nodes.values() if n.get('station') == station_name})
         if len(platforms) > 0:
             self.platform_menu.update({'active': True, 'station_name': station_name, 'options': [("Any Platform", "")] + [(f"Platform {p}" if p else "Unnamed", p) for p in platforms], 'rects': []})
@@ -211,6 +222,7 @@ class UnifiedBuilder:
             self.signal_paths = last_state.get("signal_paths", [[]])
             self.active_signal_path_idx = last_state.get("active_signal_path_idx", 0)
             self.replace_idx, self.insert_idx = -1, -1
+            self.show_notification("Undo successful.", 90)
 
     def load_new_timetable_workspace(self):
         self.save_state()
@@ -219,6 +231,7 @@ class UnifiedBuilder:
         self.prev_path_idx, self.replace_idx, self.insert_idx = -1, -1, -1
         self.input_headcode.text, self.direction_val, self.input_spawns.text, self.input_change_tt.text = "", "right", "", ""
         self.despawn = False
+        self.show_notification("Loaded a NEW blank workspace.", 120)
 
     def _load_map_nodes(self):
         for y, line in enumerate(self.map_lines):
@@ -227,13 +240,15 @@ class UnifiedBuilder:
 
         anno_path = JSON_PATH / f"{self.scenario}_annotated_segments.json"
         if anno_path.exists():
-            data = json.loads(anno_path.read_text(encoding="utf-8"))
-            for seg in data.get("segments", []):
-                seg_type = "entrance_exit" if seg.get("left") == seg.get("right") else "platform"
-                for key in ["left", "right", "start", "end"]:
-                    if key in seg:
-                        cx, cy = seg[key][0], seg[key][1]
-                        self.nodes[(cx, cy)] = {"type": seg_type, "station": seg.get("station", "Unknown"), "platform": seg.get("platform", ""), "coord": (cx, cy)}
+            try:
+                data = json.loads(anno_path.read_text(encoding="utf-8"))
+                for seg in data.get("segments", []):
+                    seg_type = "entrance_exit" if seg.get("left") == seg.get("right") else "platform"
+                    for key in ["left", "right", "start", "end"]:
+                        if key in seg:
+                            cx, cy = seg[key][0], seg[key][1]
+                            self.nodes[(cx, cy)] = {"type": seg_type, "station": seg.get("station", "Unknown"), "platform": seg.get("platform", ""), "coord": (cx, cy)}
+            except json.JSONDecodeError: pass
 
     def _refresh_available_tts(self):
         timetable_path = JSON_PATH / f"{self.scenario}_timetable.json"
@@ -261,10 +276,15 @@ class UnifiedBuilder:
     def load_existing_timetable(self):
         idx_str = self.input_load_tt.text.strip()
         if idx_str == "NEW": return self.load_new_timetable_workspace()
-        if not idx_str.isdigit(): return
+        if not idx_str.isdigit(): 
+            self.show_notification("Error: Invalid Timetable Index to load.")
+            return
+        
         tt_idx = int(idx_str)
         timetable_path, ars_path = JSON_PATH / f"{self.scenario}_timetable.json", JSON_PATH / f"{self.scenario}_ars_routes.json"
-        if not timetable_path.exists(): return
+        if not timetable_path.exists(): 
+            self.show_notification(f"Error: Timetable file not found.")
+            return
         
         try:
             tt_data = json.loads(timetable_path.read_text(encoding="utf-8"))
@@ -273,23 +293,31 @@ class UnifiedBuilder:
         except json.JSONDecodeError: return
             
         tt_entry = next((t for t in tt_data if t.get("index") == tt_idx), None)
-        if not tt_entry: return
+        if not tt_entry: 
+            self.show_notification(f"Error: Timetable {tt_idx} not found in file.")
+            return
+            
         ars_entry = next((r for r in ars_data if r.get("timetable_index") == tt_idx), None)
 
         self.save_state()
         self.station_path = []
         start_loc = tt_entry.get("start_location", {})
         if start_node := self._find_node_by_station(start_loc.get("station"), start_loc.get("platform")):
-            self.station_path.append(start_node)
+            # Copy it to ensure we don't accidentally link dicts
+            start_copy = dict(start_node)
+            start_copy["platform"] = start_loc.get("platform", "")
+            self.station_path.append(start_copy)
 
         for stop_entry in tt_entry.get("stops", []):
-            if stop_entry.get("type") == "signal": continue # Strict separation: Ignore legacy signals in timetable
-
+            if stop_entry.get("type") == "signal": continue 
             if node := self._find_node_by_station(stop_entry.get("station"), stop_entry.get("platform")):
                 node_copy = dict(node)
                 node_copy["platform"] = stop_entry.get("platform", "")
                 if stop_entry.get("change_direction"): node_copy["change_dir"] = True
-                self.station_path.append(node_copy)
+                
+                # Prevent duplication if the start_node was also saved as the first stop
+                if not (len(self.station_path) == 1 and self.station_path[0]["coord"] == node_copy["coord"]):
+                    self.station_path.append(node_copy)
 
         self.signal_paths = [[]]
         if ars_entry and ars_entry.get("signal_paths"):
@@ -304,147 +332,120 @@ class UnifiedBuilder:
 
         self.active_signal_path_idx, self.active_mode = 0, "timetable"
         self.prev_path_idx, self.replace_idx, self.insert_idx, self.node_list_scroll_y = -1, -1, -1, 0
+        self.show_notification(f"Successfully loaded Timetable {tt_idx}.")
 
     def save_unified_data(self, is_new=False):
-        print("\n=== SAVING TIMETABLE AND ARS DATA ===")
-        
-        # 1. Validation Checks
-        if len(self.station_path) < 1 and len(self.signal_paths[0]) < 1:
-            print("Error: No nodes in path. Add a start location and at least one stop or signal.")
+        if len(self.station_path) < 1 and len(self.signal_paths[0]) < 1: 
+            self.show_notification("Error: Path must have a start location.")
             return
-        if len(self.station_path) == 1 and len(self.signal_paths[0]) == 0:
-            print("Error: Path is too short. Must include at least one stop or signal after the start.")
-            return
-
+            
         change_tt_text = self.input_change_tt.text.strip()
-        if not self.despawn and not change_tt_text:
-            print("Error: You must select 'Despawn' or input a 'Change TT Index' for the final stop before saving!")
+        if not self.despawn and not change_tt_text: 
+            self.show_notification("Error: Final stop must Despawn or Change TT!")
             return
 
-        # --- 2. PREPARE TIMETABLE DATA ---
         start_node = self.station_path[0] if self.station_path else self.signal_paths[0][0]
         
-        start_location = {
-            "type": "entrance_exit" if start_node["type"] == "entrance_exit" else "platform",
-            "station": start_node.get("station", ""),
-            "platform": start_node.get("platform", "")
-        }
+        # --- Handle 'Any Platform' at spawn ---
+        actual_start_platform = start_node.get("platform", "")
+        if start_node["type"] == "platform" and actual_start_platform == "":
+            station_name = start_node.get("station", "")
+            platforms = sorted({n['platform'] for n in self.nodes.values() if n.get('station') == station_name and n.get('platform')})
+            actual_start_platform = platforms[0] if platforms else "1"
 
+        start_location = {
+            "type": "entrance_exit" if start_node["type"] == "entrance_exit" else "platform", 
+            "station": start_node.get("station", ""), 
+            "platform": actual_start_platform
+        }
+        
         stops = []
         temp_display_path = self._get_display_path()
-        
         start_node_index = next((i for i, n in enumerate(temp_display_path) if n['coord'] == start_node['coord']), 0)
         
+        # --- Start Station as First Stop logic ---
         current_time = 0
-        for i in range(start_node_index + 1, len(temp_display_path)):
-            node = temp_display_path[i]
-            prev_node = temp_display_path[i-1]
-            
-            # Use Manhattan distance (dx + dy) for accurate physical track timing
-            dx = abs(node["coord"][0] - prev_node["coord"][0])
-            dy = abs(node["coord"][1] - prev_node["coord"][1])
-            current_time += (dx + dy)
+        if start_node["type"] == "platform":
+            original_start_node = next((n for n in self.station_path if n['coord'] == start_node['coord']), start_node)
+            first_stop = {
+                "station": original_start_node.get("station", ""),
+                "platform": original_start_node.get("platform", ""), # Keeps "" for stops block
+                "arrival_offset": 0,
+                "departure_offset": 30
+            }
+            if original_start_node.get("change_dir"): 
+                first_stop["change_direction"] = True
+            stops.append(first_stop)
+            current_time = 30 # Time starts at departure from platform
 
-            # We only write nodes to timetable.json if they exist in station_path
-            is_manual_stop = any(n['coord'] == node['coord'] for n in self.station_path)
+        for i in range(start_node_index + 1, len(temp_display_path)):
+            node, prev_node = temp_display_path[i], temp_display_path[i-1]
+            current_time += abs(node["coord"][0] - prev_node["coord"][0]) + abs(node["coord"][1] - prev_node["coord"][1])
             
-            if is_manual_stop and node['coord'] != start_node['coord']:
-                arrival_time = current_time
-                departure_time = arrival_time
-                if node["type"] == "platform":
-                    departure_time += 30 # Standard dwell time
-                
-                # Find the matching original node from station_path to get the correct 'platform' string (e.g. "")
-                original_node = next(n for n in self.station_path if n['coord'] == node['coord'])
+            if any(n['coord'] == node['coord'] for n in self.station_path) and node['coord'] != start_node['coord']:
+                original_node = next((n for n in self.station_path if n['coord'] == node['coord']), node)
                 
                 stop_entry = {
                     "station": original_node.get("station", ""), 
                     "platform": original_node.get("platform", ""), 
-                    "arrival_offset": arrival_time, 
-                    "departure_offset": departure_time
+                    "arrival_offset": current_time, 
+                    "departure_offset": current_time + (30 if node["type"] == "platform" else 0)
                 }
+                if original_node.get("change_dir"): stop_entry["change_direction"] = True
+                if node['type'] == 'signal': stop_entry.update({'type': 'signal', 'coord': node['coord']})
                 
-                if original_node.get("change_dir"): 
-                    stop_entry["change_direction"] = True
-                
-                # Prevent duplicates
-                if not any(s.get('station') == stop_entry.get('station') and s.get('platform') == stop_entry.get('platform') for s in stops): 
+                if not any(s.get('station') == stop_entry.get('station') and s.get('platform') == stop_entry.get('platform') and s.get('coord') == stop_entry.get('coord') for s in stops): 
                     stops.append(stop_entry)
+            
+            # Increment current time by dwell if we pass through a node that has a dwell
+            if node["type"] == "platform":
+                current_time += 30
 
         if stops:
-            if self.despawn:
-                stops[-1]["despawn"] = True
-            elif change_tt_text.isdigit():
-                stops[-1]["change_timetable"] = int(change_tt_text)
+            if self.despawn: stops[-1]["despawn"] = True
+            elif change_tt_text.isdigit(): stops[-1]["change_timetable"] = int(change_tt_text)
             
-        timetable_path = JSON_PATH / f"{self.scenario}_timetable.json"
-        tt_data = []
+        timetable_path, tt_data = JSON_PATH / f"{self.scenario}_timetable.json", []
         if timetable_path.exists():
-            try: 
-                tt_data = json.loads(timetable_path.read_text(encoding="utf-8"))
-            except Exception: 
-                pass
+            try: tt_data = json.loads(timetable_path.read_text(encoding="utf-8"))
+            except Exception: pass
             
-        loaded_idx_str = self.input_load_tt.text.strip()
-        if is_new or not loaded_idx_str.isdigit():
-            new_index = max([t.get("index", 0) for t in tt_data], default=0) + 1
-        else:
-            new_index = int(loaded_idx_str)
-            tt_data = [t for t in tt_data if t.get("index") != new_index]
-
-        new_tt_entry = {
-            "index": new_index,
-            "headcode_prefix": self.input_headcode.text.strip().upper(),
-            "start_location": start_location,
-            "direction": self.direction_val,
-            "stops": stops,
-            "spawn_times": [t.strip() for t in self.input_spawns.text.split(",") if t.strip()]
-        }
-        tt_data.append(new_tt_entry)
+        loaded_idx = self.input_load_tt.text.strip()
+        new_index = max([t.get("index", 0) for t in tt_data], default=0) + 1 if is_new or not loaded_idx.isdigit() else int(loaded_idx)
+        tt_data = [t for t in tt_data if t.get("index") != new_index]
+        tt_data.append({"index": new_index, "headcode_prefix": self.input_headcode.text.strip().upper(), "start_location": start_location, "direction": self.direction_val, "stops": stops, "spawn_times": [t.strip() for t in self.input_spawns.text.split(",") if t.strip()]})
         tt_data.sort(key=lambda x: x.get("index", 999))
         
-        # --- 3. PREPARE ARS DATA ---
-        ars_path = JSON_PATH / f"{self.scenario}_ars_routes.json"
-        ars_data = []
+        ars_path, ars_data = JSON_PATH / f"{self.scenario}_ars_routes.json", []
         if ars_path.exists():
             try:
-                raw_payload = json.loads(ars_path.read_text(encoding="utf-8"))
-                ars_data = raw_payload.get("routes", []) if isinstance(raw_payload, dict) else raw_payload
-            except Exception: 
-                pass
-
-        if not is_new and loaded_idx_str.isdigit():
-            ars_data = [r for r in ars_data if r.get("timetable_index") != new_index]
-
-        new_ars_entry = {
-            "name": str(new_index),
-            "timetable_index": new_index,
-            "signal_paths": [[[n['coord'][0], n['coord'][1]] for n in path] for path in self.signal_paths]
-        }
-        if new_ars_entry["signal_paths"] and new_ars_entry["signal_paths"][0]:
-            new_ars_entry["signals"] = new_ars_entry["signal_paths"][0]
+                raw = json.loads(ars_path.read_text(encoding="utf-8"))
+                ars_data = raw.get("routes", []) if isinstance(raw, dict) else raw
+            except: pass
+        if not is_new and loaded_idx.isdigit(): ars_data = [r for r in ars_data if r.get("timetable_index") != new_index]
         
-        ars_data.append(new_ars_entry)
-        ars_data.sort(key=lambda x: x.get("timetable_index", 999))
+        new_ars = {"name": str(new_index), "timetable_index": new_index, "signal_paths": [[[n['coord'][0], n['coord'][1]] for n in p] for p in self.signal_paths]}
+        if new_ars["signal_paths"] and new_ars["signal_paths"][0]: new_ars["signals"] = new_ars["signal_paths"][0]
+        ars_data.append(new_ars); ars_data.sort(key=lambda x: x.get("timetable_index", 999))
 
-        # --- 4. WRITE TO FILES ---
-        try:
+        try: 
             timetable_path.write_text(json.dumps(tt_data, indent=4), encoding="utf-8")
-            print(f"SUCCESS! Timetable Index {new_index} saved to timetable file.")
-        except Exception as e:
-            print(f"CRITICAL ERROR saving Timetable: {e}")
-
-        try:
+        except Exception as e: 
+            self.show_notification(f"CRITICAL ERROR saving Timetable: {e}")
+            return
+            
+        try: 
             ars_path.write_text(json.dumps({"routes": ars_data}, indent=4), encoding="utf-8")
-            print(f"SUCCESS! ARS Index {new_index} saved to ARS file.")
-        except Exception as e:
-            print(f"CRITICAL ERROR saving ARS: {e}")
-
+        except Exception as e: 
+            self.show_notification(f"CRITICAL ERROR saving ARS: {e}")
+            return
+            
         self.input_load_tt.text = str(new_index)
         self._refresh_available_tts()
+        self.show_notification(f"SUCCESS! Timetable and ARS {new_index} saved.")
 
     def run_needle_threader(self):
-        pass # Placeholder for future logic
+        self.show_notification("Needle Threader Logic not currently implemented.")
 
     def draw(self):
         self.screen.fill(COL_BG)
@@ -577,6 +578,16 @@ class UnifiedBuilder:
             current_y += 25
             
         self.screen.set_clip(None)
+        
+        # --- UI Notification Drawing ---
+        if self.notification_timer > 0:
+            notif_surf = self.font_ui.render(self.notification_text, True, (255, 255, 255))
+            notif_rect = notif_surf.get_rect(center=(SIDEBAR_WIDTH + (self.width - SIDEBAR_WIDTH)//2, self.height - 40))
+            bg_col = (40, 180, 40) if "SUCCESS" in self.notification_text else (180, 40, 40)
+            pygame.draw.rect(self.screen, bg_col, notif_rect.inflate(30, 15), border_radius=5)
+            self.screen.blit(notif_surf, notif_rect)
+            self.notification_timer -= 1
+            
         pygame.display.flip()
 
     def run(self):
@@ -641,7 +652,6 @@ class UnifiedBuilder:
                                             node_copy = dict(node_to_add)
                                             node_copy["platform"] = platform
                                             
-                                            # Apply Insert/Replace Logic to station_path
                                             if self.replace_idx != -1 and 0 <= self.replace_idx < len(active_display_path):
                                                 self.station_path[self.replace_idx] = node_copy
                                                 self.replace_idx = -1
@@ -660,7 +670,6 @@ class UnifiedBuilder:
                             if (gx, gy) in self.nodes:
                                 node_clicked, mods = self.nodes[(gx, gy)], pygame.key.get_mods()
                                 
-                                # Strict Tab Rules
                                 if self.active_mode == "timetable":
                                     if node_clicked["type"] == "signal": continue
                                     if node_clicked["type"] == "platform":
@@ -720,7 +729,6 @@ class UnifiedBuilder:
                             elif self.btn_insert_node.collidepoint(event.pos):
                                 if self.replace_idx != -1: self.insert_idx, self.replace_idx = self.replace_idx, -1
                             elif self.btn_del_node.collidepoint(event.pos): self.run(pygame.event.Event(pygame.KEYDOWN, key=pygame.K_DELETE))
-                            elif self.btn_calculate.collidepoint(event.pos): self.run_needle_threader()
                             elif self.btn_save_update.collidepoint(event.pos): self.save_unified_data(is_new=False)
                             elif self.btn_save_new.collidepoint(event.pos): self.save_unified_data(is_new=True)
                             else:
@@ -743,7 +751,8 @@ class UnifiedBuilder:
                                         node_to_toggle = active_display_path[i]
                                         if node_to_toggle["type"] in ("platform", "entrance_exit"):
                                             self.save_state()
-                                            self.station_path[i]["change_dir"] = not self.station_path[i].get("change_dir", False)
+                                            idx = next((j for j, n in enumerate(self.station_path) if n['coord'] == node_to_toggle['coord']), -1)
+                                            if idx != -1: self.station_path[idx]["change_dir"] = not self.station_path[idx].get("change_dir", False)
                                         break
 
                 elif event.type == pygame.MOUSEBUTTONUP:
@@ -767,6 +776,7 @@ class UnifiedBuilder:
             self.draw()
             self.clock.tick(60)
         pygame.quit()
+
 
 
 if __name__ == "__main__":

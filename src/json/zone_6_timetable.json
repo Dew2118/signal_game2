@@ -2547,27 +2547,33 @@
         "start_location": {
             "type": "platform",
             "station": "HAMPTON HARGATE",
-            "platform": ""
+            "platform": "1"
         },
         "direction": "left",
         "stops": [
             {
+                "station": "HAMPTON HARGATE",
+                "platform": "",
+                "arrival_offset": 0,
+                "departure_offset": 30
+            },
+            {
                 "station": "MORGANSTOWN",
                 "platform": "",
-                "arrival_offset": 91,
-                "departure_offset": 121
+                "arrival_offset": 131,
+                "departure_offset": 161
             },
             {
                 "station": "BEAULIEU PARK",
                 "platform": "2",
-                "arrival_offset": 164,
-                "departure_offset": 194
+                "arrival_offset": 256,
+                "departure_offset": 286
             },
             {
                 "station": "ZONE 3",
                 "platform": "DOWN SLOW",
-                "arrival_offset": 173,
-                "departure_offset": 173,
+                "arrival_offset": 295,
+                "departure_offset": 295,
                 "despawn": true
             }
         ],
@@ -3512,21 +3518,27 @@
         "start_location": {
             "type": "platform",
             "station": "MORGANSTOWN",
-            "platform": ""
+            "platform": "1"
         },
         "direction": "left",
         "stops": [
             {
+                "station": "MORGANSTOWN",
+                "platform": "",
+                "arrival_offset": 0,
+                "departure_offset": 30
+            },
+            {
                 "station": "MORGANSTOWN DOCKS",
                 "platform": "2",
-                "arrival_offset": 82,
-                "departure_offset": 112
+                "arrival_offset": 128,
+                "departure_offset": 158
             },
             {
                 "station": "ZONE 5",
                 "platform": "DOWN WL",
-                "arrival_offset": 91,
-                "departure_offset": 91,
+                "arrival_offset": 167,
+                "departure_offset": 167,
                 "despawn": true
             }
         ],
@@ -5166,9 +5178,9 @@
         "direction": "left",
         "stops": [
             {
-                "station": "ZONE 7",
-                "platform": "UP FAST",
-                "arrival_offset": 30,
+                "station": "HAMPTON HARGATE",
+                "platform": "1",
+                "arrival_offset": 0,
                 "departure_offset": 30,
                 "despawn": true
             }
@@ -5209,21 +5221,27 @@
         "start_location": {
             "type": "platform",
             "station": "MORGANSTOWN",
-            "platform": ""
+            "platform": "1"
         },
         "direction": "left",
         "stops": [
             {
+                "station": "MORGANSTOWN",
+                "platform": "",
+                "arrival_offset": 0,
+                "departure_offset": 30
+            },
+            {
                 "station": "BEAULIEU PARK",
                 "platform": "2",
-                "arrival_offset": 73,
-                "departure_offset": 103
+                "arrival_offset": 119,
+                "departure_offset": 149
             },
             {
                 "station": "ZONE 3",
                 "platform": "DOWN SLOW",
-                "arrival_offset": 82,
-                "departure_offset": 82,
+                "arrival_offset": 158,
+                "departure_offset": 158,
                 "despawn": true
             }
         ],
