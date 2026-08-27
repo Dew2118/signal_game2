@@ -1,852 +1,885 @@
+"""
+ARS v1 - predictive Automatic Route Setting.
+
+Architecture
+============
+
+Startup:
+    1. Load game.ars_routes.
+    2. Force-build/load the ARS predictive schedule.
+    3. Build a conflict index from the cached schedule.
+    4. Live ticks only inspect the precomputed data.
+
+The live ARS tick deliberately does NOT:
+    - calculate station dwell times
+    - call pathfinding to predict timings
+    - rebuild conflicts
+    - enumerate physical coordinates
+    - use timetable stop offsets
+
+The ARS schedule is authoritative for predicted timing.
+"""
+
 import json
-import time
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
+
 from src.assets.python.layout.ars_schedule import ensure_schedule
+
 Coord = Tuple[int, int]
+HORIZON_SECONDS = 60
 
 
-def _coerce_coord(value: Any) -> Coord:
+# ============================================================================
+# Generic helpers
+# ============================================================================
+
+def _coord(value: Any) -> Coord:
+    """Convert a coordinate-like object into (x, y)."""
     if isinstance(value, dict):
         if "coord" in value:
-            return _coerce_coord(value["coord"])
-
+            return _coord(value["coord"])
         if "x" in value and "y" in value:
-            return (
-                int(value["x"]),
-                int(value["y"]),
-            )
+            return (int(value["x"]), int(value["y"]))
 
     if isinstance(value, str):
-        value = (
-            value
-            .strip()
-            .replace("(", "")
-            .replace(")", "")
-        )
-
+        value = value.strip().replace("(", "").replace(")", "")
         if "," in value:
-            x_text, y_text = value.split(",", 1)
+            x, y = value.split(",", 1)
+            return (int(x.strip()), int(y.strip()))
 
-            return (
-                int(x_text.strip()),
-                int(y_text.strip()),
-            )
+    if isinstance(value, (list, tuple)):
+        if len(value) >= 2:
+            return (int(value[0]), int(value[1]))
 
-    if isinstance(value, (list, tuple)) and len(value) >= 2:
-        return (
-            int(value[0]),
-            int(value[1]),
-        )
+    raise ValueError(f"Cannot convert {value!r} to coordinate")
 
-    raise ValueError(
-        f"Unable to coerce signal coordinate: {value!r}"
+
+def _signal_key(entry: Coord, exit: Coord) -> Tuple[Coord, Coord]:
+    return (tuple(entry), tuple(exit))
+
+
+def _find_signal(game, coord: Coord, caches=None):
+    """Find a signal by its actual signal coordinate, utilizing fast cache if available."""
+    wanted = tuple(coord)
+    if caches and "signals" in caches:
+        return caches["signals"].get(wanted)
+
+    # Fallback if cache not provided
+    for signal in getattr(game, "signals", []):
+        if tuple(getattr(signal, "coord", ())) == wanted:
+            return signal
+    return None
+
+
+def _is_manual(signal) -> bool:
+    return (
+        signal is not None
+        and getattr(signal, "signal_type", None) == "manual"
     )
 
 
-def _normalise_signal_path(
-    path: Any,
-) -> List[Coord]:
-    """Convert one signal path into a clean list of coordinates."""
-
-    if not isinstance(path, (list, tuple)):
-        return []
-
-    coords: List[Coord] = []
-
-    for item in path:
-        try:
-            coord = _coerce_coord(item)
-        except (ValueError, TypeError, IndexError):
-            continue
-
-        if coord not in coords:
-            coords.append(coord)
-
-    return coords
-
-
-def _get_route_paths(
-    route: Dict[str, Any],
-) -> List[List[Coord]]:
-    """Return every signal path belonging to a route.
-
-    New format:
-        signal_paths = [
-            [[x, y], [x, y]],
-            [[x, y], [x, y]],
-        ]
-
-    Old format:
-        signals = [
-            [x, y],
-            [x, y],
-        ]
-
-    Old routes are automatically treated as one path.
-    """
-
-    if not isinstance(route, dict):
-        return []
-
-    signal_paths = route.get("signal_paths")
-
-    if isinstance(signal_paths, list):
-        paths: List[List[Coord]] = []
-
-        for raw_path in signal_paths:
-            path = _normalise_signal_path(raw_path)
-
-            if path:
-                paths.append(path)
-
-        if paths:
-            return paths
-
-    # Backwards compatibility with the old flat format.
-    signals = route.get("signals", [])
-
-    path = _normalise_signal_path(signals)
-
-    if path:
-        return [path]
-
-    return []
-
-
-def _normalise_route(
-    route: Dict[str, Any],
-) -> List[Coord]:
-    """Return the first/primary path for backwards compatibility."""
-
-    paths = _get_route_paths(route)
-
-    if not paths:
-        return []
-
-    return paths[0]
-
-
-def _normalise_route_dict(
-    route: Dict[str, Any],
-) -> Dict[str, Any]:
-    if not isinstance(route, dict):
-        return {
-            "name": "",
-            "signals": [],
-            "signal_paths": [],
-            "timetable_index": None,
-        }
-
-    paths = _get_route_paths(route)
-
-    primary_path = paths[0] if paths else []
-
-    normalised = {
-        "name": route.get("name", ""),
-        "timetable_index": route.get(
-            "timetable_index"
-        ),
-        "signals": [
-            list(coord)
-            for coord in primary_path
-        ],
-        "signal_paths": [
-            [
-                list(coord)
-                for coord in path
-            ]
-            for path in paths
-        ],
-    }
-
-    return normalised
-
-
-def build_ars_lookup(
-    routes: Sequence[Dict[str, Any]],
-) -> Dict[Coord, List[Coord]]:
-    """Build a global signal -> candidate next-signal lookup.
-
-    All signal paths from all routes are merged.
-
-    This means if one route contains:
-
-        A -> B
-        A -> C
-
-    then:
-
-        lookup[A] == [B, C]
-    """
-
-    lookup: Dict[Coord, List[Coord]] = {}
-
-    for route in routes or []:
-        if not isinstance(route, dict):
-            continue
-
-        paths = _get_route_paths(route)
-
-        for sequence in paths:
-            if len(sequence) < 2:
-                continue
-
-            for idx in range(
-                len(sequence) - 1
-            ):
-                current = sequence[idx]
-                nxt = sequence[idx + 1]
-
-                bucket = lookup.setdefault(
-                    current,
-                    [],
-                )
-
-                if nxt not in bucket:
-                    bucket.append(nxt)
-
-    return lookup
-
-
-def build_ars_lookup_by_timetable(
-    routes: Sequence[Dict[str, Any]],
-) -> Dict[Any, Dict[Coord, List[Coord]]]:
-    """Build signal lookup grouped by timetable index.
-
-    Each timetable index can have exactly one route,
-    but that route may contain multiple signal paths.
-
-    Example:
-
-        timetable index 5
-
-            A -> B
-            A -> C
-
-    produces:
-
-        {
-            5: {
-                A: [B, C]
-            }
-        }
-    """
-
-    lookup_by_index: Dict[
-        Any,
-        Dict[Coord, List[Coord]],
-    ] = {}
-
-    for route in routes or []:
-        if not isinstance(route, dict):
-            continue
-
-        timetable_index = route.get(
-            "timetable_index"
-        )
-
-        paths = _get_route_paths(route)
-
-        if not paths:
-            continue
-
-        bucket_lookup = lookup_by_index.setdefault(
-            timetable_index,
-            {},
-        )
-
-        for sequence in paths:
-            if len(sequence) < 2:
-                continue
-
-            for idx in range(
-                len(sequence) - 1
-            ):
-                current = sequence[idx]
-                nxt = sequence[idx + 1]
-
-                bucket = bucket_lookup.setdefault(
-                    current,
-                    [],
-                )
-
-                if nxt not in bucket:
-                    bucket.append(nxt)
-
-    return lookup_by_index
-
-
-def save_ars_routes(
-    path: str | Path,
-    routes: Sequence[Dict[str, Any]],
-) -> str:
-    """Save ARS routes.
-
-    There is one route object per timetable index.
-
-    The primary path is stored in `signals` for compatibility.
-    All paths are stored in `signal_paths`.
-    """
-
-    destination = Path(path)
-
-    destination.parent.mkdir(
-        parents=True,
-        exist_ok=True,
-    )
-
-    serialisable_routes = []
-
-    # Enforce one route per timetable index.
-    routes_by_index: Dict[Any, Dict[str, Any]] = {}
-
-    routes_without_index = []
-
-    for route in routes or []:
-        if not isinstance(route, dict):
-            continue
-
-        timetable_index = route.get(
-            "timetable_index"
-        )
-
-        if timetable_index is None:
-            routes_without_index.append(route)
-        else:
-            routes_by_index[
-                timetable_index
-            ] = route
-
-    unique_routes = list(
-        routes_by_index.values()
-    ) + routes_without_index
-
-    # Sort indexed routes numerically where possible.
-    def sort_key(route):
-        index = route.get(
-            "timetable_index"
-        )
-
-        if index is None:
-            return (
-                1,
-                0,
-            )
-
-        try:
-            return (
-                0,
-                int(index),
-            )
-        except (
-            TypeError,
-            ValueError,
-        ):
-            return (
-                0,
-                str(index),
-            )
-
-    unique_routes.sort(
-        key=sort_key
-    )
-
-    for route in unique_routes:
-        paths = _get_route_paths(route)
-
-        if not paths:
-            continue
-
-        primary_path = paths[0]
-
-        timetable_index = route.get(
-            "timetable_index"
-        )
-
-        # The route name is ALWAYS the timetable index
-        # when an index is present.
-        if timetable_index is not None:
-            route_name = str(
-                timetable_index
-            )
-        else:
-            route_name = route.get(
-                "name",
-                "",
-            )
-
-        serialisable_routes.append(
-            {
-                "name": route_name,
-                "timetable_index": timetable_index,
-
-                # Backwards-compatible primary route.
-                "signals": [
-                    list(coord)
-                    for coord in primary_path
-                ],
-
-                # All alternative paths.
-                "signal_paths": [
-                    [
-                        list(coord)
-                        for coord in path
-                    ]
-                    for path in paths
-                ],
-            }
-        )
-
-    with destination.open(
-        "w",
-        encoding="utf-8",
-    ) as handle:
-        json.dump(
-            {
-                "routes": serialisable_routes
-            },
-            handle,
-            indent=2,
-        )
-
-    return str(destination)
-
-
-def load_ars_routes(
-    path: str | Path,
-) -> List[Dict[str, Any]]:
-    destination = Path(path)
-
-    if not destination.exists():
-        return []
-
-    with destination.open(
-        "r",
-        encoding="utf-8",
-    ) as handle:
-        payload = json.load(handle)
-
-    routes: List[
-        Dict[str, Any]
-    ] = []
-
-    if isinstance(payload, list):
-        items = payload
-
-    elif isinstance(payload, dict):
-        items = payload.get(
-            "routes",
-            [],
-        )
-
-    else:
-        items = []
-
-    # Enforce one route per timetable index while loading too.
-    routes_by_index: Dict[
-        Any,
-        Dict[str, Any],
-    ] = {}
-
-    routes_without_index: List[
-        Dict[str, Any]
-    ] = []
-
-    for route in items:
-        if not isinstance(route, dict):
-            continue
-
-        normalised = _normalise_route_dict(
-            route
-        )
-
-        timetable_index = normalised.get(
-            "timetable_index"
-        )
-
-        if timetable_index is None:
-            routes_without_index.append(
-                normalised
-            )
-        else:
-            routes_by_index[
-                timetable_index
-            ] = normalised
-
-    routes.extend(
-        routes_by_index.values()
-    )
-
-    routes.extend(
-        routes_without_index
-    )
-
-    return routes
-
+# ============================================================================
+# Schedule helpers
+# ============================================================================
+
+def _schedule_relative_coords(schedule_route: Dict[str, Any]) -> Sequence[Any]:
+    return schedule_route.get("coords") or []
+
+
+def _schedule_time(schedule_coord: Any) -> Optional[float]:
+    """Extract the relative schedule time."""
+    if not isinstance(schedule_coord, (list, tuple)) or len(schedule_coord) < 3:
+        return None
+    try:
+        return float(schedule_coord[2])
+    except (TypeError, ValueError):
+        return None
+
+
+def _schedule_entry_signal(schedule_coord: Any) -> Optional[Coord]:
+    if not isinstance(schedule_coord, (list, tuple)) or len(schedule_coord) < 4:
+        return None
+    value = schedule_coord[3]
+    if value is None:
+        return None
+    try:
+        return _coord(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _schedule_exit_signal(schedule_coord: Any) -> Optional[Coord]:
+    if not isinstance(schedule_coord, (list, tuple)) or len(schedule_coord) < 5:
+        return None
+    value = schedule_coord[4]
+    if value is None:
+        return None
+    try:
+        return _coord(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _absolute_schedule_time(train, relative_time: float) -> float:
+    """Convert cached schedule time into game time."""
+    return float(getattr(train, "game_seconds_at_spawn", 0)) + relative_time
+
+
+# ============================================================================
+# ARS Manager
+# ============================================================================
 
 class ARSManager:
+
     def __init__(
         self,
-        routes: Sequence[Dict[str, Any]] | None = None,
+        routes: Optional[Sequence[Dict[str, Any]]] = None,
         routes_path: str | Path | None = None,
         map_path: str | Path | None = None,
     ):
         self.routes = list(routes or [])
+        self.routes_path = Path(routes_path) if routes_path is not None else None
+        self.map_path = Path(map_path) if map_path is not None else None
 
-        self.routes_path = (
-            Path(routes_path)
-            if routes_path is not None
-            else None
-        )
+        if self.map_path is not None:
+            self.routes_path = self._routes_path_from_map(self.map_path)
 
-        if map_path is not None:
-            self.map_path = Path(map_path)
+        self.schedule: Dict[str, Any] = {}
+        self.conflicts: Dict[Tuple[Coord, Coord], Dict[str, Any]] = {}
+        self.conflicts_by_route: Dict[Tuple[Coord, Coord], List[Dict[str, Any]]] = {} # <-- CHANGED
+        self.routes_by_timetable: Dict[Any, Dict[str, Any]] = {}
 
-            self.routes_path = self._routes_path_from_map(
-                self.map_path
-            )
-        else:
-            self.map_path = None
+        self._prepared = False
+        self.is_ready = False
+        self.last_attempt_second: Optional[float] = None
+        self.debug = False
 
-    
-
-        # Automatically load the matching JSON when
-        # map_path/routes_path was supplied.
         if self.routes_path is not None:
-            self.routes = load_ars_routes(
-                self.routes_path
-            )
+            self.load(self.routes_path)
+        self.path_hop_coords: Dict[Tuple[Any, Any, Coord, Coord], set[Coord]] = {}
 
-        self.lookup = build_ars_lookup(
-            self.routes
-        )
+    def print_signal_conflict_summary(self):
+        print("\n=== ROUTE CONFLICT SUMMARY ===")
+        conflict_map = {}
+        
+        for record in self.conflicts.values():
+            a_key = (tuple(record["route_a"]["entry"]), tuple(record["route_a"]["exit"]))
+            b_key = (tuple(record["route_b"]["entry"]), tuple(record["route_b"]["exit"]))
+            
+            conflict_map.setdefault(a_key, set()).add(b_key)
+            conflict_map.setdefault(b_key, set()).add(a_key)
+            
+        if not conflict_map:
+            print("No cross-route conflicts found.")
+            
+        for route_key, conflicts in sorted(conflict_map.items()):
+            entry, exit_sig = route_key
+            # Format the conflicting routes nicely
+            conflicts_str = ", ".join([f"({c[0]}->{c[1]})" for c in sorted(conflicts)])
+            # print(f"Route {entry} -> {exit_sig} conflicts with: {conflicts_str}")
+            
+        print("==============================\n")
 
-        self.lookup_by_index = (
-            build_ars_lookup_by_timetable(
-                self.routes
-            )
-        )
-
-        self.retry_times: Dict[
-            Tuple[Any, Coord],
-            float,
-        ] = {}
-
-        self.retry_interval_seconds = 10.0
-
-    def prepare_schedule(self, game):
-        schedule = ensure_schedule(
-            game,
-            "zone_6_ars_routes.json",
-            game.ars_routes,
-            force=True,
-        )
 
     @staticmethod
-    def _routes_path_from_map(
-        map_path: str | Path,
-    ) -> Path:
-        """Derive the ARS route JSON from a map filename.
-
-        Example:
-
-            zone_6_map.txt
-                ->
-            zone_6_ars_routes.json
-        """
-
+    def _routes_path_from_map(map_path: str | Path) -> Path:
         map_path = Path(map_path)
+        stem = map_path.stem
+        scenario = stem[:-4] if stem.endswith("_map") else stem
 
-        map_stem = map_path.stem
-
-        if map_stem.endswith("_map"):
-            scenario = map_stem[:-4]
-        else:
-            scenario = map_stem
-
-        project_root = map_path.resolve().parents[0]
-
+        project_root = map_path.resolve().parent
         while project_root != project_root.parent:
-            if (
-                (project_root / "src").is_dir()
-                and (project_root / "src" / "json").is_dir()
-            ):
+            if (project_root / "src").is_dir() and (project_root / "src" / "json").is_dir():
                 break
-
             project_root = project_root.parent
 
-        return (
-            project_root
-            / "src"
-            / "json"
-            / f"{scenario}_ars_routes.json"
-        )
+        return project_root / "src" / "json" / f"{scenario}_ars_routes.json"
 
     def load(
         self,
         path: str | Path | None = None,
         map_path: str | Path | None = None,
     ) -> List[Dict[str, Any]]:
-        """Load ARS routes.
-
-        Priority:
-
-        1. Explicit `path`
-        2. `map_path`, converted automatically to
-           `<scenario>_ars_routes.json`
-        3. Previously configured routes_path
-        """
 
         if path is not None:
             route_path = Path(path)
-
         elif map_path is not None:
             self.map_path = Path(map_path)
-
-            route_path = self._routes_path_from_map(
-                self.map_path
-            )
-
+            route_path = self._routes_path_from_map(self.map_path)
         else:
             route_path = self.routes_path
 
         if route_path is None:
             self.routes = []
-            self.lookup = {}
-            self.lookup_by_index = {}
+            self.routes_path = None
             return []
-
-        self.routes = load_ars_routes(
-            route_path
-        )
-
-        self.lookup = build_ars_lookup(
-            self.routes
-        )
-
-        self.lookup_by_index = (
-            build_ars_lookup_by_timetable(
-                self.routes
-            )
-        )
 
         self.routes_path = route_path
 
+        if not route_path.exists():
+            self.routes = []
+            return []
+
+        with route_path.open("r", encoding="utf-8") as handle:
+            payload = json.load(handle)
+
+        if isinstance(payload, list):
+            raw_routes = payload
+        elif isinstance(payload, dict):
+            raw_routes = payload.get("routes", [])
+        else:
+            raw_routes = []
+
+        self.routes = [route for route in raw_routes if isinstance(route, dict)]
+        self.routes_by_timetable = {}
+
+        for route in self.routes:
+            index = route.get("timetable_index")
+            if index is not None:
+                self.routes_by_timetable[index] = route
+
         return self.routes
 
-    def get_candidates_for_signal(
-        self,
-        signal_coord: Coord | Sequence[int],
-        timetable_index: Optional[Any] = None,
-    ) -> List[Coord]:
-        """Look up candidate next-signals.
+    def prepare_schedule(self, game, log=print):
+        """Prepare EVERYTHING required by predictive ARS."""
+        self.routes = list(getattr(game, "ars_routes", None) or self.routes or [])
+        routes_path = self.routes_path
 
-        When timetable_index is supplied, only paths belonging
-        to that timetable entry are considered.
-        """
-
-        key = tuple(signal_coord)
-
-        if timetable_index is not None:
-            return list(
-                self.lookup_by_index
-                .get(
-                    timetable_index,
-                    {},
-                )
-                .get(
-                    key,
-                    [],
-                )
-            )
-
-        return list(
-            self.lookup.get(
-                key,
-                [],
-            )
-        )
-
-    def find_signal_for_coord(
-        self,
-        game,
-        coord: Coord,
-    ) -> Any:
-        coord = tuple(coord)
-
-        for signal in getattr(
-            game,
-            "signals",
-            [],
-        ):
-            if tuple(
-                signal.coord
-            ) == coord:
-                return signal
-
-        return None
-
-    def find_intersection_with_headcodes(self, game, coords):
-        if not coords:
-            return True
-        coord_set = set(coords[1:])
-        headcode_list = []
-        for train in game.trains:
-            headcode_list.extend(train.headcode_coords)
-        print(headcode_list)
-        headcode_set = set(headcode_list)
-        print(len(coord_set & headcode_set))
-        if (len(coord_set & headcode_set) > 0):
-            return True
-        return False
-
-    def try_set_route_for_signal(
-        self,
-        game,
-        signal,
-        timetable_index: Optional[Any] = None,
-    ):
-        if not game.ars_on:
-            return False
-        """Attempt to set a route starting at `signal`.
-
-        If a timetable index is provided, only paths associated
-        with that timetable index are considered.
-
-        Multiple candidate next-signals are tried in turn.
-        """
-        print(f"trying to set route from signal at coord  {signal.coord}")
-
-        if (
-            signal is None
-            or getattr(
-                signal,
-                "signal_type",
-                None,
-            )
-            != "manual"
-        ):
-            return False
-
-        if getattr(
-            signal,
-            "route_set",
-            False,
-        ):
-            return False
-        candidates = (
-            self.get_candidates_for_signal(
-                signal.coord,
-                timetable_index,
-            )
-        )
-        if not candidates:
-            return False
-
-        for next_coord in candidates:
-            next_signal = (
-                self.find_signal_for_coord(
-                    game,
-                    next_coord,
-                )
-            )
-
-            if next_signal is None:
-                continue
-
-            existing_entry = getattr(
-                game,
-                "entry_signal",
-                None,
-            )
-
-            existing_exit = getattr(
-                game,
-                "exit_signal",
-                None,
-            )
-
-            game.entry_signal = signal
-            game.exit_signal = next_signal
-            coords = game.set_route(dont_set = True)
-            if not self.find_intersection_with_headcodes(game, coords):
-                game.set_route()
-                game.entry_signal = None
-                game.exit_signal = None
-                return True
+        if routes_path is None:
+            scenario = getattr(game, "scenario", None)
+            if scenario:
+                routes_path = Path(f"{scenario}_ars_routes.json")
+            elif self.map_path is not None:
+                routes_path = self._routes_path_from_map(self.map_path)
             else:
-                game.entry_signal = None
-                game.exit_signal = None
-                print("OUTSIDE")
-        return False
+                routes_path = Path("zone_6_ars_routes.json")
 
-    def predictive_route_setting_try(self, game):
-        if not game.ars_on:
-            return
-        headcode_coord_to_signal_dict = {}
-        for signal in game.signals:
-            coord = signal.coord
-            if signal.mount == "up":
-                headcode_coord_to_signal_dict[(coord[0], coord[1] + 1)] = signal
-            else:
-                headcode_coord_to_signal_dict[(coord[0], coord[1] - 1)] = signal
-            
-        route_coords_master_dict = {}
-        time_to_entry_signal_dict = {}
-        for train in game.trains:
-            train_coord_list = []
-            entry_signal = None
-            for headcode_coord in train.headcode_coords:
-                if headcode_coord in headcode_coord_to_signal_dict:
-                    entry_signal = headcode_coord_to_signal_dict[headcode_coord]
-                    break
+        log("[ARS] preparing predictive schedule and conflict map...")
+        self.schedule = ensure_schedule(game, routes_path, self.routes, force=True, log=log)
 
-            if not entry_signal:
+        predictive_count = sum(1 for _ in (self.schedule.get("routes", []) or []))
+        log(f"[ARS] schedule contains {predictive_count} predictive path(s)")
+
+        self.build_conflicts(game, log=log)
+        self._prepared = True
+        return self.schedule
+
+    def build_conflicts(self, game, log=print):
+        self.conflicts = {}
+        self.conflicts_by_entry = {}
+        route_segments: List[Dict[str, Any]] = []
+        self.path_hop_coords = {}
+        schedule_routes = self.schedule.get("routes", []) or []
+        
+        for schedule_route_index, route in enumerate(schedule_routes):
+            timetable_index = route.get("timetable_index")
+            paths = route.get("paths", []) or []
+
+            for path_index, path in enumerate(paths):
+                coords = path.get("coords", []) if isinstance(path, dict) else []
+                signal_hops: Dict[Tuple[Coord, Coord], set] = {}
+
+                for item in coords:
+                    entry = _schedule_entry_signal(item)
+                    exit_signal = _schedule_exit_signal(item)
+                    if entry is None or exit_signal is None:
+                        continue
+                    try:
+                        position = _coord(item)
+                    except (ValueError, TypeError):
+                        continue
+                    hop = _signal_key(entry, exit_signal)
+                    signal_hops.setdefault(hop, set()).add(position)
+
+                for hop, coordinates in signal_hops.items():
+                    # ⚡ Cache the physical coordinates for this specific path hop
+                    self.path_hop_coords[(timetable_index, path_index, hop[0], hop[1])] = coordinates
+                    
+                    route_segments.append({
+                        "timetable_index": timetable_index,
+                        "path_index": path_index,
+                        "schedule_route_index": schedule_route_index,
+                        "entry_signal": hop[0],
+                        "exit_signal": hop[1],
+                        "coordinates": coordinates,
+                    })
+
+        coordinate_index: Dict[Coord, List[int]] = {}
+        for segment_index, segment in enumerate(route_segments):
+            for position in segment["coordinates"]:
+                coordinate_index.setdefault(position, []).append(segment_index)
+
+        candidate_pairs: set[Tuple[int, int]] = set()
+        for segment_indices in coordinate_index.values():
+            if len(segment_indices) < 2:
                 continue
-            if entry_signal.next_signal and (entry_signal.signal_type == "automatic" or len(entry_signal.route_coords) > 0):
-                entry_signal = entry_signal.next_signal
-            if len(train.headcode_coords) == 0:
+            unique_indices = list(set(segment_indices))
+            for i in range(len(unique_indices)):
+                left = unique_indices[i]
+                for j in range(i + 1, len(unique_indices)):
+                    right = unique_indices[j]
+                    if left == right:
+                        continue
+                    candidate_pairs.add((left, right) if left < right else (right, left))
+
+        for left_index, right_index in candidate_pairs:
+            left = route_segments[left_index]
+            right = route_segments[right_index]
+            overlap = left["coordinates"] & right["coordinates"]
+            if not overlap:
                 continue
-            dx = abs(train.headcode_coords[0][0] - entry_signal.coord[0])
-            dy = abs(train.headcode_coords[0][1] - entry_signal.coord[1])
-            time = dx+dy
-            current_stop = train.timetable[train.current_stop_index]
-            stop_coords = train._get_stop_coord(current_stop)
-            if train._at_stop_coord(stop_coords):
-                dep_offset = current_stop.get('departure_offset', 0)
-                arr_offset = current_stop.get('arrival_offset', 0)
+
+            left_key = _signal_key(left["entry_signal"], left["exit_signal"])
+            right_key = _signal_key(right["entry_signal"], right["exit_signal"])
+
+            if left_key == right_key:
+                continue
+
+            conflict_key = left_key if left_key < right_key else right_key
+            other_key = right_key if left_key < right_key else left_key
+            record_key = (conflict_key, other_key)
+
+            record = self.conflicts.get(record_key)
+            if record is None:
+                record = {
+                    "route_a": {
+                        "entry": list(left["entry_signal"]),
+                        "exit": list(left["exit_signal"]),
+                        "timetable_index": left["timetable_index"],
+                        "path_index": left["path_index"],
+                    },
+                    "route_b": {
+                        "entry": list(right["entry_signal"]),
+                        "exit": list(right["exit_signal"]),
+                        "timetable_index": right["timetable_index"],
+                        "path_index": right["path_index"],
+                    },
+                    "overlap": [],
+                }
+                self.conflicts[record_key] = record
+
+            overlap_list = record["overlap"]
+            existing = {tuple(coord) for coord in overlap_list}
+            for position in overlap:
+                if position not in existing:
+                    overlap_list.append(list(position))
+
+        self.conflicts_by_route = {}
+        for record in self.conflicts.values():
+            for side in ("route_a", "route_b"):
+                route = record[side]
+                route_key = (tuple(route["entry"]), tuple(route["exit"]))
+                self.conflicts_by_route.setdefault(route_key, []).append(record)
+
+        log(f"[ARS] conflict map contains {len(self.conflicts)} conflicting route pair(s)")
+        return self.conflicts
+
+
+    # ======================================================================
+    # Train -> predicted route indexing
+    # ======================================================================
+
+        # ======================================================================
+    # Train -> predicted route indexing
+    # ======================================================================
+
+    def _build_train_predictions(self, game, caches):
+        now = float(getattr(game, "game_seconds", 0))
+        horizon = now + HORIZON_SECONDS
+        by_entry: Dict[Tuple[int, int], List[Dict[str, Any]]] = {}
+
+        schedule_routes = self.schedule.get("routes", []) or []
+        schedule_by_tt = {
+            r.get("timetable_index"): r
+            for r in schedule_routes
+            if r.get("timetable_index") is not None
+        }
+
+        for train in getattr(game, "trains", []) or []:
+            timetable_index = getattr(train, "timetable_index", None)
+            if timetable_index not in schedule_by_tt:
+                continue
+
+            schedule_route = schedule_by_tt[timetable_index]
+            paths = schedule_route.get("paths", []) or []
+            if not paths:
+                continue
+
+            spawn_time = float(getattr(train, "game_seconds_at_spawn", 0))
+
+            # --- SUCCESSIVE PATH ELIMINATION LOGIC ---
+            active_paths = list(enumerate(paths))
+
+            def filter_by_max_intersect(paths_to_filter, target_coords):
+                if not target_coords:
+                    return paths_to_filter
                 
-                time_since_spawn = game.game_seconds - train.game_seconds_at_spawn
-                if dep_offset != arr_offset:
-                    time += max(dep_offset-time_since_spawn,30-train.start_to_stop_time)
-            candidates = self.get_candidates_for_signal(entry_signal.coord,train.timetable_index)
-            for next_coord in candidates:
-                next_signal = (
-                                self.find_signal_for_coord(
-                                    game,
-                                    next_coord,
-                                )
-                            )
-                if next_signal is None:
-                    continue
-                train_coord_list.append((entry_signal, next_signal))
-            route_coords_master_dict[train] = train_coord_list
-            time_to_entry_signal_dict[train] = time
-        sorted_dict = dict(sorted(time_to_entry_signal_dict.items(), key=lambda item: item[1]))
-        for train, time in sorted_dict.items():
-            for signal_tuple in route_coords_master_dict[train]:
-                game.entry_signal, game.exit_signal = signal_tuple
-                coords = game.set_route(dont_set = True)
-                if not self.find_intersection_with_headcodes(game, coords):
-                    game.set_route()
-                    game.entry_signal = None
-                    game.exit_signal = None
-                    break
-                else:
-                    game.entry_signal = None
-                    game.exit_signal = None
-        
-        
+                scores = []
+                for idx, p in paths_to_filter:
+                    path_set = {tuple(_coord(c)) for c in p.get("coords", []) if c}
+                    scores.append((idx, p, len(path_set & target_coords)))
+                    
+                max_score = max((s[2] for s in scores), default=0)
+                
+                if max_score > 0:
+                    return [(idx, p) for idx, p, score in scores if score == max_score]
+                return paths_to_filter
 
+            train_route_coords = {tuple(_coord(c)) for c in getattr(train, "route_coords", []) if c}
+            active_paths = filter_by_max_intersect(active_paths, train_route_coords)
+
+            if len(active_paths) > 1:
+                train_phys_coords = set()
+                for coord_group in getattr(train, "coords", []) or []:
+                    if isinstance(coord_group, (list, tuple)):
+                        for c in coord_group:
+                            if c:
+                                try: train_phys_coords.add(tuple(_coord(c)))
+                                except (ValueError, TypeError): pass
+                    elif coord_group:
+                        try: train_phys_coords.add(tuple(_coord(coord_group)))
+                        except (ValueError, TypeError): pass
+                active_paths = filter_by_max_intersect(active_paths, train_phys_coords)
+
+            head_coord = None
+            train_coords_raw = getattr(train, "coords", [])
+            if train_coords_raw and isinstance(train_coords_raw[0], (list, tuple)) and train_coords_raw[0]:
+                try: head_coord = tuple(_coord(train_coords_raw[0][0]))
+                except (IndexError, TypeError, ValueError): pass
+
+            entry_time_lock: Dict[Tuple[int, int], float] = {}
             
+            for path_index, path in active_paths:
+                coords = path.get("coords", []) if isinstance(path, dict) else []
+                head_index = -1
+                
+                if head_coord:
+                    for i, item in enumerate(coords):
+                        try:
+                            if tuple(_coord(item)) == head_coord:
+                                head_index = i; break
+                        except (ValueError, TypeError): continue
+                
+                if head_index == -1:
+                    if getattr(train, "status", "") == "spawning" or spawn_time >= now:
+                        head_index = 0
+                    else: continue
+
+                # --- NEW: Mid-Hop Elimination ---
+                # If the train is already physically past the entry signal of its current block, 
+                # we flag this hop and completely ignore it from contention.
+                active_mid_hop = None
+                if 0 <= head_index < len(coords):
+                    head_item = coords[head_index]
+                    e_sig = _schedule_entry_signal(head_item)
+                    x_sig = _schedule_exit_signal(head_item)
+                    if e_sig and x_sig:
+                        # If the train's head is NOT exactly on the entry signal, it has passed it.
+                        if tuple(_coord(head_item)) != tuple(e_sig):
+                            active_mid_hop = (tuple(e_sig), tuple(x_sig))
+
+                delay = 0.0
+                if 0 <= head_index < len(coords):
+                    head_relative_time = _schedule_time(coords[head_index])
+                    if head_relative_time is not None:
+                        expected_absolute_time = spawn_time + head_relative_time
+                        if now > expected_absolute_time:
+                            delay = now - expected_absolute_time
+
+                seen_hops = set()
+                # Pre-add the mid-hop to seen_hops so the loop below instantly skips it!
+                if active_mid_hop:
+                    seen_hops.add((path_index, active_mid_hop[0], active_mid_hop[1]))
+                # --------------------------------
+
+                for item_index, item in enumerate(coords):
+                    if item_index < head_index: continue
+
+                    relative_time = _schedule_time(item)
+                    if relative_time is None: continue
+
+                    scheduled_time = spawn_time + relative_time
+                    projected_time = scheduled_time + delay
+                    
+                    entry = _schedule_entry_signal(item)
+                    exit_signal = _schedule_exit_signal(item)
+
+                    if projected_time < now: continue
+                    if projected_time > horizon: break
+                    if entry is None or exit_signal is None: continue
+
+                    entry_tuple = tuple(entry)
+                    exit_tuple = tuple(exit_signal)
+
+                    hop_key = (path_index, entry_tuple, exit_tuple)
+                    
+                    # If this is the mid-hop we flagged earlier, this skips it completely.
+                    if hop_key in seen_hops: continue
+                    seen_hops.add(hop_key)
+
+                    if entry_tuple not in entry_time_lock:
+                        entry_time_lock[entry_tuple] = scheduled_time
+                    sync_time = entry_time_lock[entry_tuple]
+
+                    by_entry.setdefault(entry_tuple, []).append({
+                        "train": train,
+                        "timetable_index": timetable_index,
+                        "path_index": path_index,
+                        "entry_signal": entry_tuple,
+                        "exit_signal": exit_tuple,
+                        "absolute_time": sync_time, 
+                        "projected_time": projected_time, 
+                        "delay": delay,
+                        "coord_index": item_index,
+                    })
+
+        return by_entry
+
+
+    # ======================================================================
+    # Route ordering / dependency helpers
+    # ======================================================================
+
+
+    def _previous_hop_is_set(self, game, prediction: Dict[str, Any], caches) -> bool:
+        train = prediction["train"]
+        timetable_index = prediction["timetable_index"]
+        path_index = prediction["path_index"]
+        current_index = prediction.get("coord_index", -1)
+
+        # If this is the very first signal in the route, there is no previous hop
+        if current_index <= 0:
+            return True
+
+        schedule_routes = self.schedule.get("routes", []) or []
+        target_path = None
+        for route in schedule_routes:
+            if route.get("timetable_index") == timetable_index:
+                paths = route.get("paths", []) or []
+                if path_index < len(paths):
+                    target_path = paths[path_index]
+                break
+
+        if not target_path:
+            return True
+
+        coords = target_path.get("coords", []) or []
+
+        # Scan backwards to find the exact boundary of the previous hop
+        previous_hop = None
+        previous_entry_first_index = -1
+        
+        for i in range(current_index - 1, -1, -1):
+            e = _schedule_entry_signal(coords[i])
+            x = _schedule_exit_signal(coords[i])
+            if e is not None and x is not None:
+                if previous_hop is None:
+                    previous_hop = (tuple(e), tuple(x))
+                    previous_entry_first_index = i
+                elif (tuple(e), tuple(x)) == previous_hop:
+                    # Keep moving the boundary back to the start of the hop
+                    previous_entry_first_index = i
+                else:
+                    # Hit an even older hop, stop scanning
+                    break
+
+        if previous_hop is None:
+            return True
+
+        # Robustly determine how far the train is along the path
+        train_body_coords = set()
+        for coord_group in getattr(train, "coords", []) or []:
+            if isinstance(coord_group, (list, tuple)):
+                for c in coord_group:
+                    if c:
+                        try: train_body_coords.add(tuple(_coord(c)))
+                        except (ValueError, TypeError): pass
+            else:
+                if coord_group:
+                    try: train_body_coords.add(tuple(_coord(coord_group)))
+                    except (ValueError, TypeError): pass
+
+        max_train_index = -1
+        for i, item in enumerate(coords):
+            try:
+                if tuple(_coord(item)) in train_body_coords:
+                    max_train_index = i
+            except (ValueError, TypeError): continue
+
+        # FIX: If any part of the train has reached or passed the start of the previous hop,
+        # it is physically inside (or past) the previous hop. It does NOT need the signal behind it to be green.
+        if max_train_index >= previous_entry_first_index:
+            return True
+
+        # Otherwise, the train is still approaching. 
+        # The previous hop MUST be set for us to safely project forward.
+        previous_entry, previous_exit = previous_hop
+        return self._route_is_already_set(game, previous_entry, previous_exit, caches)
+
+
+
+    # ======================================================================
+    # Physical safety check
+    # ======================================================================
+
+
+    def _route_has_conflict(self, route_key: Tuple[Coord, Coord]) -> bool:
+        # Since the dictionary is now keyed by the exact Entry->Exit pair,
+        # we can just check if the list has any records in it!
+        return len(self.conflicts_by_route.get(route_key, [])) > 0
+
+    def print_conflicts(self, limit: Optional[int] = None):
+        records = list(self.conflicts.values())
+        if limit is not None:
+            records = records[:limit]
+        print(f"[ARS] {len(self.conflicts)} precomputed conflict(s)")
+        for index, record in enumerate(records):
+            a = record["route_a"]
+            b = record["route_b"]
+            print(
+                f"[ARS CONFLICT {index}] "
+                f"T{a['timetable_index']}/P{a['path_index']} "
+                f"{tuple(a['entry'])} -> {tuple(a['exit'])}  <->  "
+                f"T{b['timetable_index']}/P{b['path_index']} "
+                f"{tuple(b['entry'])} -> {tuple(b['exit'])}"
+            )
+
+    def save_conflicts(self, path: str | Path) -> str:
+        destination = Path(path)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        payload = {
+            "version": 1,
+            "horizon_seconds": HORIZON_SECONDS,
+            "conflicts": list(self.conflicts.values()),
+        }
+        with destination.open("w", encoding="utf-8") as handle:
+            json.dump(payload, handle, indent=2)
+        return str(destination)
+
+
+    # ======================================================================
+    # Route attempt
+    # ======================================================================
+
+    def _route_is_already_set(self, game, entry: Coord, exit_signal: Coord, caches) -> bool:
+        signal = _find_signal(game, entry, caches)
+        if signal is None:
+            return False
+
+        # Check for commitment using route_coords array length instead of boolean flag
+        signal_route_coords = getattr(signal, "route_coords", None)
+        if signal_route_coords is not None and len(signal_route_coords) > 0:
+            next_signal = getattr(signal, "next_signal", None)
+            if next_signal is None:
+                return True
+            return tuple(getattr(next_signal, "coord", ())) == tuple(exit_signal)
+
+        return False
+
+    def _try_route(self, game, prediction: Dict[str, Any], caches: Dict) -> Tuple[bool, str]:
+        train = prediction["train"]
+        headcode = getattr(train, "headcode", "UNKNOWN")
+        
+        # --- NEW: Flag to isolate 9R00 prints ---
+        is_9R00 = (headcode == "9R00")
+        
+        entry_coord = prediction["entry_signal"]
+        exit_coord = prediction["exit_signal"]
+        timetable_index = prediction["timetable_index"]
+        path_index = prediction["path_index"]
+
+        hop_key = (timetable_index, path_index, entry_coord, exit_coord)
+        hop_coords = getattr(self, "path_hop_coords", {}).get(hop_key, set())
+
+        # 1. PHYSICAL SUCCESS: Train is already inside this hop!
+        train_body_coords = set()
+        for coord_group in getattr(train, "coords", []) or []:
+            if isinstance(coord_group, (list, tuple)):
+                for c in coord_group:
+                    if c:
+                        try: train_body_coords.add(tuple(_coord(c)))
+                        except (ValueError, TypeError): pass
+            else:
+                if coord_group:
+                    try: train_body_coords.add(tuple(_coord(coord_group)))
+                    except (ValueError, TypeError): pass
+
+        if hop_coords and (hop_coords & train_body_coords):
+            if is_9R00: print(f"[ARS DEBUG 9R00] Success/Skip: Already physically inside route {entry_coord} -> {exit_coord}")
+            return True, "ALREADY_IN_ROUTE"
+
+        # 2. INSTANT COLLISION CHECK
+        if hop_coords and (hop_coords & caches["collisions"]):
+            if is_9R00: print(f"[ARS DEBUG 9R00] FAILED: Collision detected on coordinates {hop_coords & caches['collisions']}")
+            return False, "COLLISION_DETECTED"
+
+        # 3. PREVIOUS HOP CHECK
+        if not self._previous_hop_is_set(game, prediction, caches):
+            if is_9R00: print(f"[ARS DEBUG 9R00] FAILED: The previous signal hop is not set yet.")
+            return False, "PREVIOUS_HOP_NOT_SET"
+
+        entry_signal = _find_signal(game, entry_coord, caches)
+        exit_signal = _find_signal(game, exit_coord, caches)
+
+        # 4 & 5. SIGNAL VALIDATION CHECKS
+        if entry_signal is None: 
+            if is_9R00: print(f"[ARS DEBUG 9R00] FAILED: Entry signal at {entry_coord} is missing from the map.")
+            return False, "NO_ENTRY_SIGNAL"
+        if exit_signal is None: 
+            if is_9R00: print(f"[ARS DEBUG 9R00] FAILED: Exit signal at {exit_coord} is missing from the map.")
+            return False, "NO_EXIT_SIGNAL"
+        if not _is_manual(entry_signal): 
+            if is_9R00: print(f"[ARS DEBUG 9R00] FAILED: Entry signal at {entry_coord} is automatic (ARS only sets manual signals).")
+            return False, "ENTRY_NOT_MANUAL"
+
+        # 6. ALREADY SET LOGIC (UPDATED)
+        signal_route_coords = getattr(entry_signal, "route_coords", None)
+        if signal_route_coords is not None and len(signal_route_coords) > 0:
+            if self._route_is_already_set(game, entry_coord, exit_coord, caches):
+                if is_9R00: print(f"[ARS DEBUG 9R00] Success/Skip: Route {entry_coord} -> {exit_coord} is already correctly set.")
+                return True, "ALREADY_SET"
+            else:
+                if is_9R00: print(f"[ARS DEBUG 9R00] FAILED: Signal {entry_coord} is already committed to a DIFFERENT conflicting route.")
+                return False, "ROUTE_SET_FOR_OTHER_PATH"
+
+        old_entry = getattr(game, "entry_signal", None)
+        old_exit = getattr(game, "exit_signal", None)
+
+        try:
+            game.entry_signal = entry_signal
+            game.exit_signal = exit_signal
+            
+            if is_9R00: print(f"[ARS DEBUG 9R00] All checks passed. Attempting to set route {entry_coord} -> {exit_coord} via game engine...")
+            coords = game.set_route()
+
+            # 7. ENGINE SET ROUTE FAILURE
+            if not coords:
+                if is_9R00: print(f"[ARS DEBUG 9R00] FAILED: game.set_route() returned empty/False for {entry_coord} -> {exit_coord}.")
+                return False, "SET_ROUTE_FAILED"
+
+            absolute_time = prediction["absolute_time"]
+            now = float(getattr(game, "game_seconds", 0))
+            if is_9R00: print(f"[ARS DEBUG 9R00] SUCCESS! Route set {entry_coord} -> {exit_coord} (ETA: {absolute_time - now:.1f}s)")
+            return True, "SUCCESS"
+
+        except Exception as exc:
+            # 8. PYTHON EXCEPTION
+            if is_9R00: print(f"[ARS DEBUG 9R00] FAILED: Python Exception occurred: {exc}")
+            return False, "EXCEPTION"
+            
+        finally:
+            game.entry_signal = old_entry
+            game.exit_signal = old_exit
+
+
+
+    def tick(self, game):
+        if not getattr(game, "ars_on", False): return
+        if not self._prepared:
+            if not hasattr(self, "is_ready") or not self.is_ready: return
+
+        now = float(getattr(game, "game_seconds", 0))
+        if self.last_attempt_second is not None and now - self.last_attempt_second < 0.9: return
+        self.last_attempt_second = now
+
+        # Build Master Collision Set
+        collision_set = set()
+        for signal in getattr(game, "signals", []):
+            for coord in getattr(signal, "route_coords", []) or []:
+                try: collision_set.add(tuple(_coord(coord)))
+                except (ValueError, TypeError): pass
+
+        for train in getattr(game, "trains", []):
+            for coord_group in getattr(train, "coords", []) or []:
+                if isinstance(coord_group, (list, tuple)):
+                    for coord in coord_group:
+                        try: collision_set.add(tuple(_coord(coord)))
+                        except (ValueError, TypeError): pass
+                else:
+                    try: collision_set.add(tuple(_coord(coord_group)))
+                    except (ValueError, TypeError): pass
+            for coord in getattr(train, "route_coords", []) or []:
+                try: collision_set.add(tuple(_coord(coord)))
+                except (ValueError, TypeError): pass
+
+        caches = {
+            "signals": {tuple(s.coord): s for s in getattr(game, "signals", [])},
+            "collisions": collision_set
+        }
+
+        predictions_by_entry = self._build_train_predictions(game, caches)
+        if not predictions_by_entry: return
+
+        set_count = 0
+        fail_count = 0
+
+        # --- Master set to track entry signals that have had a route set this tick ---
+        processed_entry_signals = set()
+
+        # Process each entry signal independently, sorting so we process earlier-arriving trains first
+        sorted_entries = sorted(
+            predictions_by_entry.items(),
+            key=lambda item: min(p["absolute_time"] for p in item[1])
+        )
+        
+        for entry, candidates in sorted_entries:
+            # If a route has already been successfully set from this entry signal, skip it.
+            if entry in processed_entry_signals:
+                continue
+
+            # Sort to establish Train Priority for this specific signal
+            candidates.sort(
+                key=lambda prediction: (
+                    prediction["absolute_time"],
+                    -prediction.get("delay", 0.0),
+                    getattr(prediction["train"], "game_seconds_at_spawn", 0),
+                    prediction["path_index"],
+                )
+            )
+
+            # Group candidates by Train
+            train_queue = []
+            train_paths = {}
+            for pred in candidates:
+                t = pred["train"]
+                if t not in train_paths:
+                    train_queue.append(t)
+                    train_paths[t] = []
+                train_paths[t].append(pred)
+
+            if not train_queue:
+                continue
+
+            # Flag to break out of the outer Train loop when a path succeeds
+            signal_was_processed = False
+
+            # --- Iterate through queued trains until one succeeds ---
+            for train_to_process in train_queue:
+                if signal_was_processed:
+                    break
+
+                # Loop through the current train's paths (Path 0, Path 1, etc.)
+                for prediction in train_paths[train_to_process]:
+                    success, reason = self._try_route(game, prediction, caches)
+                    
+                    if success:
+                        if reason == "SUCCESS":
+                            set_count += 1
+                        
+                        # Add the entry signal to the processed set
+                        processed_entry_signals.add(entry)
+                        signal_was_processed = True
+                        break # Break out of the current train's path loop
+                    else:
+                        fail_count += 1
+                        if hasattr(game, "display_class") and hasattr(game.display_class, "add_log"):
+                            headcode = getattr(train_to_process, "headcode", "UNKNOWN")
+                            path_idx = prediction["path_index"]
+                            path_type = "Primary" if path_idx == 0 else f"Alt Path {path_idx}"
+                            # print(f"ARS: {headcode} {path_type} failed ({reason}).")
+
+
+
+
+

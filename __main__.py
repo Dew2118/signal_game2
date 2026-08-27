@@ -16,7 +16,7 @@ import easygui
 import math
 import tkinter as tk
 from pathlib import Path
-from src.assets.python.layout.ars1 import ARSManager
+from src.assets.python.layout.ars import ARSManager
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 JSON_PATH = os.path.join(BASE_DIR, "src", "json")
@@ -327,7 +327,6 @@ class Game:
             spawn_coords.append((x,y))
             for signal in self.signals:
                 if signal.overlap == (x,y) and signal.direction == direction:
-                    print("done")
                     return spawn_coords
 
 
@@ -406,7 +405,6 @@ class Game:
             game_seconds = self.game_seconds
         if not annotated_segments:
             annotated_segments = self.annotated_segments
-        print(f"{headcode} going to find first spawn signal")
         signal_coords = self.find_first_spawn_signal(start_coord, direction)
         
         if start_coord in self.spawned_start_coords:

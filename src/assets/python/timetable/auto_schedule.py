@@ -11,7 +11,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 JSON_PATH = PROJECT_ROOT / "src" / "json"
 
-MAX_SPAWNS_PER_DAY = 96
+MAX_SPAWNS_PER_DAY = 288
 MIN_GAP_SECONDS = 86400 // MAX_SPAWNS_PER_DAY  # ~900 seconds (15 minutes)
 SAFETY_PADDING = 15 # Seconds to pad before and after a train occupies a tile
 MIN_SPAWN_SECONDS = 3 # Train spawn times must be >= 00:00:03 to avoid loading race conditions
@@ -155,6 +155,9 @@ def run_auto_scheduler(scenario):
         return True
 
     # Process all timetables
+    total_spawns_added = 0
+    spawns_summary = {}
+    
     for tt in tt_data:
         idx = tt.get("index")
         
@@ -185,6 +188,7 @@ def run_auto_scheduler(scenario):
         if not safe_times:
             print(f"    [!] NO SAFE SPAWN TIMES FOUND for Timetable {idx}. Network is congested.")
             tt["spawn_times"] = []
+            spawns_summary[idx] = 0
             continue
             
         # Filter the safe times to spread them out evenly
@@ -199,10 +203,12 @@ def run_auto_scheduler(scenario):
                 if len(picked_spawns) >= MAX_SPAWNS_PER_DAY:
                     break
                     
-        print(f"    [+] Successfully threaded {len(picked_spawns)} spawn times (Target: {MAX_SPAWNS_PER_DAY}).")
+        print(f"    [+] Timetable {idx}: Successfully threaded {len(picked_spawns)} spawn times (Target: {MAX_SPAWNS_PER_DAY}).")
         
         # Format and apply back to the timetable dictionary
         tt["spawn_times"] = [sec_to_time(s) for s in picked_spawns]
+        total_spawns_added += len(picked_spawns)
+        spawns_summary[idx] = len(picked_spawns)
         
         # Claim this footprint on the master map so the next timetable weaves around it!
         for sp in picked_spawns:
@@ -210,9 +216,15 @@ def run_auto_scheduler(scenario):
 
     # Save to the final live game file
     output_path.write_text(json.dumps(tt_data, indent=4), encoding="utf-8")
+    
     print(f"\n=== SUCCESS! ===")
+    print("Spawn Summary per Route:")
+    for r_idx, count in spawns_summary.items():
+        print(f"  - Timetable {r_idx}: {count} spawns added")
+    print(f"\nTotal spawn times added across all timetables: {total_spawns_added}")
     print(f"Optimized schedule saved to {output_path.name}")
     print(f"Your game is now ready to play.")
+
 
 
 if __name__ == "__main__":
