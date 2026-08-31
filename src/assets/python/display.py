@@ -45,6 +45,16 @@ class Display_Class:
         self.cached_char_rects = None
         self.cached_lines = None
         self.cached_color_state = None
+        # Pre-bake virtual TRTS white circle surface for instant blitting
+        char_w = self.font.size('M')[0]
+        circ_size = max(char_w, self.line_height)
+        self.trts_circle_surf = pygame.Surface((circ_size, circ_size), pygame.SRCALPHA)
+        pygame.draw.circle(
+            self.trts_circle_surf, 
+            (255, 255, 255), 
+            (circ_size // 2, circ_size // 2), 
+            min(char_w, self.line_height) // 2
+        )
 
     def color_name_to_rgb(self, name):
         colors = {
@@ -133,6 +143,9 @@ class Display_Class:
         idx = 0
         y = 0
 
+        # Alphanumeric platform characters allowed (0-9, A-Z)
+        platform_chars_set = set("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
         for line in lines:
             x = 0
             line_chars = list(line)
@@ -146,14 +159,15 @@ class Display_Class:
                 elif char == self.orange_char:
                     color = (255, 165, 0)
 
-                elif char in "1234567890":
+                # Recognized platform character (digits and capital letters) between platform bars
+                elif char in platform_chars_set:
                     left_has_orange_marker = char_index > 0 and line_chars[char_index - 1] == self.orange_char
                     right_has_orange_marker = char_index < len(line_chars) - 1 and line_chars[char_index + 1] == self.orange_char
                     if left_has_orange_marker or right_has_orange_marker:
-                        color = (0, 0, 0)          # black number
+                        color = (0, 0, 0)          # black number/letter
                         bg = (255, 165, 0)         # orange background
                     else:
-                        color = (128, 128, 128)    # default gray number
+                        color = (128, 128, 128)    # default gray character
 
                 else:
                     color = (128, 128, 128)
@@ -164,7 +178,6 @@ class Display_Class:
                     self.char_cache[key] = font.render(char, True, color, bg)
 
                 char_surf = self.char_cache[key]
-
 
                 char_rects.append((idx, pygame.Rect(x, y, char_width, line_height)))
                 
@@ -189,7 +202,7 @@ class Display_Class:
             y += line_height
 
         return surf, width, height, char_rects
-    
+
     def display_game_time(self, game_time_text, font):
         game_time_surface = font.render(game_time_text, True, (255, 255, 255))  # White color
         self.screen.blit(game_time_surface, (0, 0))  # Top-left corner with a small padding of 10 pixels
@@ -209,9 +222,10 @@ class Display_Class:
         if not self.handle_events(game, signals, autos, lines, text_width, text_height, char_rects, font):
             return False
 
-        self.draw(text_surface, text_width, text_height, time, font)
+        self.draw(text_surface, text_width, text_height, time, font, game=game)
 
         return True
+
 
 
     def handle_events(self, game, signals, autos, lines, text_width, text_height, char_rects, font):
@@ -319,7 +333,6 @@ class Display_Class:
                 max_scroll_x
             )
 
-
     def handle_left_click(self, event, game, signals, autos, lines, char_rects, font):
 
         mx, my = event.pos
@@ -340,22 +353,35 @@ class Display_Class:
         x = adjusted_x // (font.size('M')[0] + self.char_spacing)
         y = adjusted_y // self.line_height - (self.max_log_lines + 1)
 
+        # 1. Check for Via Button click first (if an entry signal is already selected)
+        if game.entry_signal is not None:
+            for via in getattr(game, "via_buttons", []):
+                if via.coord in [(x, y), (x + 1, y), (x - 1, y)]:
+                    if via not in getattr(game, "selected_via_buttons", []):
+                        game.selected_via_buttons.append(via)
+                        via.prepare_flash(self, lines)
+                        self.add_log(f"via button selected at {via.coord}")
+                    return
+
+        # 2. Check for Signal click
         for signal in signals:
 
             if signal.coord in [(x, y), (x + 1, y), (x - 1, y)]:
 
-                if game.entry_signal is not None and game.entry_signal is not signal:
-                    game.entry_signal.clear_entry_flash(self, lines)
-
                 if game.entry_signal is None and signal.signal_type == "manual":
                     game.entry_signal = signal
+                    game.selected_via_buttons = []
                     signal.prepare_entry_flash(self, lines)
                     self.add_log("entry signal selected")
 
-                else:
+                elif game.entry_signal is not None:
                     game.exit_signal = signal
                     self.add_log("exit signal selected")
+                    # Trigger set_route right away on exit signal click
+                    game.set_route()
+                return
 
+        # 3. Check for Auto button click
         for auto in autos:
 
             if auto.coord in [(x, y), (x + 1, y), (x - 1, y)]:
@@ -369,6 +395,7 @@ class Display_Class:
 
                 break
 
+        # 4. Check for Train click
         for train in game.trains:
 
             if (adjusted_x // (font.size('M')[0] + self.char_spacing),
@@ -376,7 +403,6 @@ class Display_Class:
 
                 game.open_timetable_window(train)
                 break
-
 
     def handle_right_click(self, event, game, signals, autos, lines, char_rects, font):
 
@@ -414,7 +440,7 @@ class Display_Class:
                 break
 
 
-    def draw(self, text_surface, text_width, text_height, time, font):
+    def draw(self, text_surface, text_width, text_height, time, font, game=None):
 
         self.screen.fill(self.BLACK)
 
@@ -434,6 +460,10 @@ class Display_Class:
             (-self.scroll_x, reserved_height - self.scroll_y)
         )
 
+        # Draw any virtual TRTS circle overlays on top of the text
+        if game:
+            self.draw_virtual_trts_indicators(game, font)
+
         self.screen.set_clip(None)
 
         self.display_game_time(time, font)
@@ -448,6 +478,14 @@ class Display_Class:
             )
 
         pygame.display.flip()
+
+    def display_via_button_color(self, via_buttons, game):
+        for via in via_buttons:
+            if getattr(via, "colored", False):
+                continue
+            x, y = via.coord
+            self.set_char_color_at_coord(x, y, "light blue", game)
+            via.colored = True
 
     def display_signal_color(self, signals, game):
         """
@@ -473,15 +511,28 @@ class Display_Class:
             signal.route_highlight_color = target_color
 
     def update_entry_signal_flash(self, game, lines):
+        flash_color = "white" if int(game.game_seconds * 2) % 2 == 0 else "black"
+
+        # 1. Update Entry Signal Overlap Flash
         for signal in game.signals:
             if signal is game.entry_signal:
                 if signal.entry_flash_coord is None:
                     signal.prepare_entry_flash(self, lines)
                 x, y = signal.entry_flash_coord
-                flash_color = "white" if int(game.game_seconds * 2) % 2 == 0 else "black"
                 self.set_char_color_at_coord(x, y, flash_color, game, is_flashing_call=True)
             elif signal.entry_flash_coord is not None:
                 signal.clear_entry_flash(self, lines)
+
+        # 2. Update Selected Via Buttons Track Flashes (x, y + 1)
+        selected_vias = getattr(game, "selected_via_buttons", [])
+        for via in getattr(game, "via_buttons", []):
+            if via in selected_vias and game.entry_signal is not None:
+                if via.flash_original_color is None:
+                    via.prepare_flash(self, lines)
+                vx, vy = via.flash_coord
+                self.set_char_color_at_coord(vx, vy, flash_color, game, is_flashing_call=True)
+            elif via.flash_original_color is not None:
+                via.clear_flash(self, lines)
 
     def display_auto_button_color(self, autos, game):
         for auto in autos:
@@ -495,3 +546,27 @@ class Display_Class:
             self.set_char_color_at_coord(x, y, "light blue", game)
             self.set_char_color_at_coord(x1, y, "light blue", game)
             auto.colored = True
+
+    def draw_virtual_trts_indicators(self, game, font):
+        active_trts = getattr(game, "active_virtual_trts", None)
+        if not active_trts:
+            return
+
+        char_width = font.size('M')[0]
+        char_w_space = char_width + self.char_spacing
+        line_height = self.line_height
+        reserved_height = line_height * 5
+        radius = min(char_width, line_height) // 2
+
+        for gx, gy, flash_on in active_trts.values():
+            if not flash_on:
+                continue  # Transparent state
+
+            # Exact pixel center of character (gx, gy) in text display coordinates
+            center_x = gx * char_w_space + (char_width // 2) - self.scroll_x
+            center_y = reserved_height + (gy * line_height) + (line_height // 2) - self.scroll_y
+
+            # Draw circle only when visible in the viewport
+            if (0 <= center_x <= self.SCREEN_WIDTH and 
+                reserved_height <= center_y <= self.SCREEN_HEIGHT):
+                pygame.draw.circle(self.screen, (255, 255, 255), (center_x, center_y), radius)

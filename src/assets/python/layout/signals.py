@@ -65,7 +65,7 @@ class Signal:
         else:
             self.color = "red"
 
-    def build_route_cache(self, game, switches, filename, signals, max_depth=2000):
+    def build_route_cache(self, game, switches, filename, signals, via_buttons=None, max_depth=2000):
         with open(filename, "r", encoding="utf-8") as f:
             original_text = f.read()
         base_lines = [list(line.rstrip('\n')) for line in original_text.splitlines()]
@@ -76,6 +76,15 @@ class Signal:
         else:
             start_x -= 1
 
+        # Pre-calculate via button track coordinate lookup: (x, y+1) -> (x, y)
+        via_track_map = {}
+        if via_buttons:
+            for vb in via_buttons:
+                via_track_map[vb.track_coord] = vb.coord
+        elif hasattr(game, "via_buttons") and game.via_buttons:
+            for vb in game.via_buttons:
+                via_track_map[vb.track_coord] = vb.coord
+
         queue = deque([(
             start_x, start_y, self.direction, "F", "F", 
             base_lines, 
@@ -84,12 +93,13 @@ class Signal:
             None, 
             {}, 
             0,
-            [] # temp_chars tracking
+            [], # temp_chars tracking
+            []  # vias_passed tracking (ordered list of via track coords or via coords)
         )])
 
         while queue:
             (x, y, current_dir, last_char, last_last_char, current_lines, 
-             coords_path, dir_dict, dir_change, required_switches, depth, temp_chars) = queue.popleft()
+             coords_path, dir_dict, dir_change, required_switches, depth, temp_chars, vias_passed) = queue.popleft()
 
             if depth > max_depth:
                 continue
@@ -113,7 +123,8 @@ class Signal:
                     "dir_dict": dir_dict,
                     "dir_change": dir_change,
                     "required_switches": required_switches,
-                    "temp_chars": temp_chars
+                    "temp_chars": temp_chars,
+                    "vias_passed": tuple(vias_passed)  # Ordered tuple of via buttons traversed
                 })
                 continue 
 
@@ -137,8 +148,11 @@ class Signal:
                             new_coords_n = coords_path + [(nx_n, ny_n)]
                             new_dir_dict_n = dir_dict.copy()
                             new_dir_dict_n[(nx_n, ny_n)] = ndir_n
+                            new_vias_n = list(vias_passed)
+                            if (nx_n, ny_n) in via_track_map:
+                                new_vias_n.append(via_track_map[(nx_n, ny_n)])
                             queue.append((nx_n, ny_n, ndir_n, nlc_n, nllc_n, 
-                                          lines_norm, new_coords_n, new_dir_dict_n, ndc_n or dir_change, req_sw_norm, depth + 1, tc_norm))
+                                          lines_norm, new_coords_n, new_dir_dict_n, ndc_n or dir_change, req_sw_norm, depth + 1, tc_norm, new_vias_n))
 
                         # Branch B: Reverse
                         req_sw_rev = required_switches.copy()
@@ -154,8 +168,11 @@ class Signal:
                             new_coords_r = coords_path + [(nx_r, ny_r)]
                             new_dir_dict_r = dir_dict.copy()
                             new_dir_dict_r[(nx_r, ny_r)] = ndir_r
+                            new_vias_r = list(vias_passed)
+                            if (nx_r, ny_r) in via_track_map:
+                                new_vias_r.append(via_track_map[(nx_r, ny_r)])
                             queue.append((nx_r, ny_r, ndir_r, nlc_r, nllc_r, 
-                                          lines_rev, new_coords_r, new_dir_dict_r, ndc_r or dir_change, req_sw_rev, depth + 1, tc_rev))
+                                          lines_rev, new_coords_r, new_dir_dict_r, ndc_r or dir_change, req_sw_rev, depth + 1, tc_rev, new_vias_r))
                         break
                     else:
                         req_sw_trail = required_switches.copy()
@@ -184,11 +201,14 @@ class Signal:
             new_dir_dict = dir_dict.copy()
             new_dir_dict[(new_x, new_y)] = new_dir
             current_dir_change = new_dir_change if new_dir_change else dir_change
+            new_vias_std = list(vias_passed)
+            if (new_x, new_y) in via_track_map:
+                new_vias_std.append(via_track_map[(new_x, new_y)])
             
             queue.append((new_x, new_y, new_dir, new_last_char, new_last_last_char, 
-                          current_lines, new_coords_path, new_dir_dict, current_dir_change, required_switches, depth + 1, tc_standard))
+                          current_lines, new_coords_path, new_dir_dict, current_dir_change, required_switches, depth + 1, tc_standard, new_vias_std))
 
-    def get_coords_to_next_signal(self, exit_signal, game, switches, filename, signals, trains, dont_set=False, ordered=False):
+    def get_coords_to_next_signal(self, exit_signal, game, switches, filename, signals, trains, dont_set=False, ordered=False, selected_vias=None):
         try:
             import copy
             
@@ -200,11 +220,44 @@ class Signal:
             if not exit_signal or exit_signal not in self.cached_routes_to_signals:
                 return []
 
-            # 2. Scan pre-calculated cache to find the first safe, collision-free route permutation
-            available_routes = self.cached_routes_to_signals[exit_signal]
-            valid_route = None
+            # 2. Filter available routes by matching via sequence
+            all_available = self.cached_routes_to_signals[exit_signal]
             
-            for route in available_routes:
+            # Normalise selected_vias into a list of via coords
+            normalized_selected_vias = []
+            if selected_vias:
+                for v in selected_vias:
+                    coord = v.coord if hasattr(v, "coord") else v
+                    normalized_selected_vias.append(coord)
+
+            def matches_via_sequence(route_vias, wanted_vias):
+                it = iter(route_vias)
+                return all(item in it for item in wanted_vias)
+
+            if normalized_selected_vias:
+                # User pressed via button(s): candidate must traverse all selected vias in sequence
+                candidate_routes = [
+                    r for r in all_available 
+                    if matches_via_sequence(r.get("vias_passed", ()), normalized_selected_vias)
+                ]
+            else:
+                # User did NOT press any via button: candidate must NOT traverse ANY via button (direct route only)
+                candidate_routes = [
+                    r for r in all_available 
+                    if len(r.get("vias_passed", ())) == 0
+                ]
+
+            if not candidate_routes:
+                if not dont_set and hasattr(game, "display_class"):
+                    if normalized_selected_vias:
+                        game.display_class.add_log(f"No valid route found between {self.coord} and {exit_signal.coord} via specified waypoints.")
+                    else:
+                        game.display_class.add_log(f"No direct route without via buttons exists between {self.coord} and {exit_signal.coord}.")
+                return []
+
+            # 3. Find first safe collision-free permutation
+            valid_route = None
+            for route in candidate_routes:
                 collision = False
                 
                 # Check each tile of the route against train positions and directions
@@ -227,7 +280,9 @@ class Signal:
                     break
 
             if not valid_route:
-                return [] # No safe path currently available
+                if not dont_set and hasattr(game, "display_class"):
+                    game.display_class.add_log(f"Route setting failed: path blocked or collision detected between {self.coord} and {exit_signal.coord}.")
+                return []
 
             # --- Build return variables independently of game state ---
             ordered_coords_to_return = []
@@ -237,18 +292,15 @@ class Signal:
             unordered_coords_to_return = list(set(valid_route["coords"]))
             # --------------------------------------------------------
 
-            # 3. Apply the valid route configuration ONLY if we are actually setting it
+            # 4. Apply route switches & temp characters if not dont_set
             if not dont_set:
-                # Instantly align all switches along the calculated path
                 for switch_idx, state in valid_route["required_switches"].items():
                     game.lines = game.change_switch(switch_idx, state, game.lines)
                 
-                # Bind the route coordinates to the signal's live state
                 self.route_coords = unordered_coords_to_return
                 self.ordered_route_coords = ordered_coords_to_return
                 self.route_coords_direction_dict = valid_route["dir_dict"]
 
-                # Restore and map temporary characters (curves, crossovers, etc.)
                 self.temporary_characters = copy.deepcopy(valid_route["temp_chars"])
                 for temporary_character in self.temporary_characters.copy():
                     if temporary_character[0] not in valid_route["coords"]:
@@ -256,7 +308,6 @@ class Signal:
                 
                 game.handle_temporary_characters(self.temporary_characters)
 
-                # Handle direction change logic and ensure trailing switch alignments
                 direction_to_test_change = False
                 for coord in valid_route["coords"]:
                     x, y = coord
@@ -267,26 +318,21 @@ class Signal:
                         else:
                             direction_to_test = self.direction
                             
-                        # Ensure exit trailing switches are aligned in reverse if required
                         if x == switch[0] and y == switch[1] and switch[3] == direction_to_test and i not in valid_route["required_switches"]:
                              game.lines = game.change_switch(i, "reverse", game.lines)
-
             else:
-                # If dont_set is true, explicitly guarantee temporary_characters is empty/unaffected
                 self.temporary_characters = []
 
-            # If the caller (like ARS timing route-setting) needs the chronological path
             if ordered:
                 return ordered_coords_to_return
                 
             return unordered_coords_to_return
 
         except Exception as e:
-            if not dont_set:
-                game.display_class.add_log("route setting failed, please try again error message: ", str(e))
+            if not dont_set and hasattr(game, "display_class"):
+                game.display_class.add_log("route setting failed error message: ", str(e))
             print(f"signal get coords to next signal error from {self.coord} to {exit_signal.coord}, {e}")
             return []
-
 
     # --- SIMPLIFIED COLLISION CHECKER (replaces the messy backtracker) ---
     def check_signal_route_collision(self, coords, dir_dict, exit_signal, signals):

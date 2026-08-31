@@ -114,7 +114,8 @@ class DefinePlatforms:
     # -------------------------
     def extract_segments(self, text):
         lines = text.splitlines()
-        width = max(len(line) for line in lines)
+        height = len(lines)
+        width = max(len(line) for line in lines) if lines else 0
         grid = [line.ljust(width) for line in lines]
 
         segments = []
@@ -125,14 +126,27 @@ class DefinePlatforms:
 
                 if char == '¯':
                     start_x = x
-                    digits = ""
+                    platform_chars = ""
 
-                    while x < len(line) and (line[x] == '¯' or line[x].isdigit()):
-                        if line[x].isdigit():
-                            digits += line[x]
+                    # Accept both digits and uppercase letters (0-9, A-Z) inside platform segments
+                    while x < len(line) and (line[x] == '¯' or line[x].isdigit() or (line[x].isupper() and line[x].isalpha())):
+                        if line[x].isdigit() or (line[x].isupper() and line[x].isalpha()):
+                            platform_chars += line[x]
                         x += 1
 
                     end_x = x - 1
+
+                    # VALIDATION: Only consider platform segment if ANY coordinate in its length
+                    # has track 'a' directly above (y - 1) or directly below (y + 1)
+                    has_track_adjacent = False
+                    for col in range(start_x, end_x + 1):
+                        if (y - 1 >= 0 and grid[y - 1][col] == 'a') or (y + 1 < height and grid[y + 1][col] == 'a'):
+                            has_track_adjacent = True
+                            break
+
+                    if not has_track_adjacent:
+                        continue  # Skip invalid platform segment with no adjacent track
+
                     center_x = (start_x + end_x) // 2
                     platform_width = end_x - start_x
                     radius = max(10, platform_width)
@@ -155,9 +169,8 @@ class DefinePlatforms:
                             f"Platform coords: ({start_x}, {y}) -> ({end_x}, {y})"
                         )
 
-                    # Set prefill_station to "" if no station is found (leave it blank)
                     prefill_station = station_data["name"] if station_data else ""
-                    prefill_platform = digits if digits else ""
+                    prefill_platform = platform_chars if platform_chars else ""
 
                     segments.append({
                         'left': (start_x, y),
@@ -168,11 +181,16 @@ class DefinePlatforms:
                     })
 
                 elif char == 'x':
-                    segments.append({
-                        'left': (x, y),
-                        'right': (x, y),
-                        'type': 'entrance_exit'
-                    })
+                    # VALIDATION: Only consider 'x' if either immediate left or right is track 'a'
+                    left_is_track = (x > 0 and line[x - 1] == 'a')
+                    right_is_track = (x + 1 < len(line) and line[x + 1] == 'a')
+
+                    if left_is_track or right_is_track:
+                        segments.append({
+                            'left': (x, y),
+                            'right': (x, y),
+                            'type': 'entrance_exit'
+                        })
                     x += 1
                 else:
                     x += 1
@@ -339,7 +357,7 @@ class DefinePlatforms:
             pygame.draw.rect(self.screen, self.RED, (0, self.SCREEN_HEIGHT - 30, self.SCREEN_WIDTH, 30))
             self.screen.blit(self.font.render(prompt, True, self.WHITE), (10, self.SCREEN_HEIGHT - 28))
 
-    def save_to_json(self, filename="zone_9_annotated_segments.json"):
+    def save_to_json(self, filename="zone_10_unfinished_annotated_segments.json"):
         with open("../../../json/" + filename, "w") as f:
             json.dump({
                 "segments": self.annotated_segments,
@@ -392,5 +410,5 @@ class DefinePlatforms:
 
 
 if __name__ == "__main__":
-    app = DefinePlatforms("zone_9_map.txt")
+    app = DefinePlatforms("zone_10_unfinished_map.txt")
     app.run()

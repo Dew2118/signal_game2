@@ -1,0 +1,9 @@
+{
+ "version": 2,
+ "scenario": "zone_A",
+ "segments": {},
+ "physical_continuations": {},
+ "routes": [],
+ "routes_mtime": 1787112598.4613235,
+ "routes_file": "zone_A_ars_routes.json"
+}

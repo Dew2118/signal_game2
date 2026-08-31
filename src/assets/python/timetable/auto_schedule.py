@@ -11,9 +11,9 @@ if str(PROJECT_ROOT) not in sys.path:
 
 JSON_PATH = PROJECT_ROOT / "src" / "json"
 
-MAX_SPAWNS_PER_DAY = 288
+MAX_SPAWNS_PER_DAY = 60
 MIN_GAP_SECONDS = 86400 // MAX_SPAWNS_PER_DAY  # ~900 seconds (15 minutes)
-SAFETY_PADDING = 15 # Seconds to pad before and after a train occupies a tile
+SAFETY_PADDING = 30 # Seconds to pad before and after a train occupies a tile
 MIN_SPAWN_SECONDS = 3 # Train spawn times must be >= 00:00:03 to avoid loading race conditions
 
 def choose_scenario():
@@ -83,14 +83,12 @@ def run_auto_scheduler(scenario):
     ars_routes = ars_data.get("routes", [])
 
     print("\n=== STAGE 1: SYNCHRONIZING TIMETABLE OFFSETS ===")
-    # Find all timetables that act as chained continuations
     chained_targets = set()
     for tt in tt_data:
         for stop in tt.get("stops", []):
             if "change_timetable" in stop:
                 chained_targets.add(stop["change_timetable"])
 
-    # Synchronize the stops in timetable1 with the physical reality of ARS Schedule
     for tt in tt_data:
         idx = tt.get("index")
         route = next((r for r in ars_routes if r.get("timetable_index") == idx), None)
@@ -100,19 +98,17 @@ def run_auto_scheduler(scenario):
         sched_stops = route["paths"][0].get("stops", [])
         tt_stops = tt.get("stops", [])
         
-        # If lengths match, sync the precise physical times
         if len(sched_stops) == len(tt_stops):
             for t_stop, s_stop in zip(tt_stops, sched_stops):
                 t_stop["arrival_offset"] = s_stop["arrive"]
                 t_stop["departure_offset"] = s_stop["depart"]
             print(f" -> Timetable {idx} synced with ARS physical timings.")
 
-    print("\n=== STAGE 2: BUILDING OCCUPANCY AND THREADING NEEDLE ===")
-    master_occupancy = {} # (x,y) -> list of (abs_start, abs_end)
-
     def get_footprint(tt_idx, base_sec, visited=None):
-        if visited is None: visited = set()
-        if tt_idx in visited: return []
+        if visited is None: 
+            visited = set()
+        if tt_idx in visited: 
+            return []
         visited.add(tt_idx)
         
         footprint = []
@@ -125,11 +121,10 @@ def run_auto_scheduler(scenario):
                     try:
                         cx, cy = int(item[0]), int(item[1])
                         rel_t = float(item[2])
-                        # Pad the footprint with the safety window
-                        footprint.append( ((cx, cy), base_sec + rel_t - SAFETY_PADDING, base_sec + rel_t + SAFETY_PADDING) )
-                    except (ValueError, TypeError): pass
+                        footprint.append(((cx, cy), base_sec + rel_t - SAFETY_PADDING, base_sec + rel_t + SAFETY_PADDING))
+                    except (ValueError, TypeError): 
+                        pass
                     
-        # Trace chained timetables
         if tt_entry and tt_entry.get("stops"):
             last_stop = tt_entry["stops"][-1]
             if "change_timetable" in last_stop:
@@ -139,11 +134,75 @@ def run_auto_scheduler(scenario):
                 
         return footprint
 
-    def add_to_occupancy(footprint, abs_spawn_time):
+    # Filter candidate timetables that spawn trains at entrance/exits
+    active_candidates = []
+    for tt in tt_data:
+        idx = tt.get("index")
+        if idx in chained_targets:
+            tt["spawn_times"] = []
+            continue
+        start_type = tt.get("start_location", {}).get("type", "")
+        if start_type != "entrance_exit":
+            print(f" -> Timetable {idx} (Station Spawn): Removing spawn times as requested.")
+            tt["spawn_times"] = []
+            continue
+
+        footprint = get_footprint(idx, 0)
+        active_candidates.append({
+            "tt": tt,
+            "index": idx,
+            "footprint": footprint,
+            "pass1_spawns_count": 0
+        })
+
+    # =========================================================================
+    # PASS 1: Trial schedule generation to measure spawn counts per timetable
+    # =========================================================================
+    print("\n=== STAGE 2: PASS 1 - MEASURING INITIAL SPAWNS ADDED PER TIMETABLE ===")
+    pass1_occupancy = {}
+
+    def is_safe_pass1(spawn_time, footprint):
         for (cx, cy), rel_start, rel_end in footprint:
-            master_occupancy.setdefault((cx, cy), []).append(
+            my_start = spawn_time + rel_start
+            my_end = spawn_time + rel_end
+            for occ_start, occ_end in pass1_occupancy.get((cx, cy), []):
+                if my_start <= occ_end and my_end >= occ_start:
+                    return False
+        return True
+
+    def add_to_pass1_occupancy(footprint, abs_spawn_time):
+        for (cx, cy), rel_start, rel_end in footprint:
+            pass1_occupancy.setdefault((cx, cy), []).append(
                 (abs_spawn_time + rel_start, abs_spawn_time + rel_end)
             )
+
+    for item in active_candidates:
+        footprint = item["footprint"]
+        safe_times = [t for t in range(MIN_SPAWN_SECONDS, 86400, 30) if is_safe_pass1(t, footprint)]
+        
+        picked = []
+        last_s = -99999
+        for t in safe_times:
+            if t - last_s >= MIN_GAP_SECONDS:
+                picked.append(t)
+                last_s = t
+                if len(picked) >= MAX_SPAWNS_PER_DAY:
+                    break
+
+        item["pass1_spawns_count"] = len(picked)
+        for sp in picked:
+            add_to_pass1_occupancy(footprint, sp)
+        print(f" -> Pass 1: Timetable {item['index']} could fit {len(picked)} spawns.")
+
+    # Sort strictly by least number able to be added to the most
+    active_candidates.sort(key=lambda item: (item["pass1_spawns_count"], item["index"]))
+    print(f"\n -> Pass 2 Ordering (Least to Most): {[item['index'] for item in active_candidates]} with counts {[item['pass1_spawns_count'] for item in active_candidates]}")
+
+    # =========================================================================
+    # PASS 2: Re-thread master occupancy starting with the least spawns first
+    # =========================================================================
+    print("\n=== STAGE 3: PASS 2 - FINAL THREADING IN LEAST-TO-MOST ORDER ===")
+    master_occupancy = {}
 
     def is_safe(spawn_time, footprint):
         for (cx, cy), rel_start, rel_end in footprint:
@@ -154,78 +213,56 @@ def run_auto_scheduler(scenario):
                     return False
         return True
 
-    # Process all timetables
+    def add_to_occupancy(footprint, abs_spawn_time):
+        for (cx, cy), rel_start, rel_end in footprint:
+            master_occupancy.setdefault((cx, cy), []).append(
+                (abs_spawn_time + rel_start, abs_spawn_time + rel_end)
+            )
+
     total_spawns_added = 0
     spawns_summary = {}
-    
-    for tt in tt_data:
-        idx = tt.get("index")
-        
-        # Skip chained routes (they don't spawn independently)
-        if idx in chained_targets:
-            tt["spawn_times"] = [] # Clear spawns just to be safe
-            continue
-            
-        start_type = tt.get("start_location", {}).get("type", "")
-        
-        # If the start location is not an entrance/exit, empty the spawns and skip
-        if start_type != "entrance_exit":
-            print(f" -> Timetable {idx} (Station Spawn): Removing all spawn times as requested.")
-            tt["spawn_times"] = []
-            continue
 
-        footprint = get_footprint(idx, 0)
+    for item in active_candidates:
+        tt = item["tt"]
+        idx = item["index"]
+        footprint = item["footprint"]
         
-        print(f" -> Timetable {idx} (Entrance/Exit): Scanning 24h clock to thread {MAX_SPAWNS_PER_DAY} spawns...")
+        safe_times = [t for t in range(MIN_SPAWN_SECONDS, 86400, 30) if is_safe(t, footprint)]
         
-        safe_times = []
-        
-        # Scan every 30 seconds
-        for t in range(MIN_SPAWN_SECONDS, 86400, 30):
-            if is_safe(t, footprint):
-                safe_times.append(t)
-                
         if not safe_times:
             print(f"    [!] NO SAFE SPAWN TIMES FOUND for Timetable {idx}. Network is congested.")
             tt["spawn_times"] = []
             spawns_summary[idx] = 0
             continue
             
-        # Filter the safe times to spread them out evenly
         picked_spawns = []
         last_spawn = -99999
         
         for t in safe_times:
-            # Only pick a time if it respects our MIN_GAP (e.g., 15 mins) from the last train
             if t - last_spawn >= MIN_GAP_SECONDS:
                 picked_spawns.append(t)
                 last_spawn = t
                 if len(picked_spawns) >= MAX_SPAWNS_PER_DAY:
                     break
                     
-        print(f"    [+] Timetable {idx}: Successfully threaded {len(picked_spawns)} spawn times (Target: {MAX_SPAWNS_PER_DAY}).")
+        print(f"    [+] Timetable {idx}: Successfully threaded {len(picked_spawns)} spawn times.")
         
-        # Format and apply back to the timetable dictionary
         tt["spawn_times"] = [sec_to_time(s) for s in picked_spawns]
         total_spawns_added += len(picked_spawns)
         spawns_summary[idx] = len(picked_spawns)
         
-        # Claim this footprint on the master map so the next timetable weaves around it!
         for sp in picked_spawns:
             add_to_occupancy(footprint, sp)
 
-    # Save to the final live game file
+    # Save to disk
     output_path.write_text(json.dumps(tt_data, indent=4), encoding="utf-8")
     
     print(f"\n=== SUCCESS! ===")
-    print("Spawn Summary per Route:")
-    for r_idx, count in spawns_summary.items():
+    print("Final Spawn Summary per Route:")
+    for r_idx, count in sorted(spawns_summary.items()):
         print(f"  - Timetable {r_idx}: {count} spawns added")
     print(f"\nTotal spawn times added across all timetables: {total_spawns_added}")
     print(f"Optimized schedule saved to {output_path.name}")
-    print(f"Your game is now ready to play.")
-
-
 
 if __name__ == "__main__":
     scenario_name = choose_scenario()

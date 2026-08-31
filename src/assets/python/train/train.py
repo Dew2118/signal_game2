@@ -25,7 +25,7 @@ class Train:
         self.annotated_segments = annotated_segments
         self.current_stop_index = 0
         self.start_to_stop_time = 0
-        
+        self.reversed_direction = False
         self.route_coords = []
         self.movement_path = [] # NEW
         self.route_coords_direction_dict = {}
@@ -37,6 +37,21 @@ class Train:
         self.despawn = False
         self.temporary_characters = []
         self.last_ars_time = 0
+
+        self._station_platform_cache = {}  # (station, platform) -> segment
+        self._station_y_cache = {}         # (station, y) -> segment
+        for seg in (annotated_segments or []):
+            st = seg.get("station")
+            if st:
+                plat = str(seg.get("platform", "")).strip()
+                self._station_platform_cache[(st, plat)] = seg
+                
+                # Index by Y coordinate of start/end
+                p = seg.get("left") or seg.get("right") or seg.get("start") or seg.get("end")
+                if p:
+                    self._station_y_cache[(st, p[1])] = seg
+                    self._station_y_cache[(st, p[1] - 1)] = seg
+                    self._station_y_cache[(st, p[1] + 1)] = seg
 
     def _get_stop_coord(self, stop):
         """
@@ -88,97 +103,200 @@ class Train:
     
     def TRTS(self, time_difference, signals, game, display, lines):
         if time_difference >= 30:
+            if hasattr(game, "active_virtual_trts") and self.headcode in game.active_virtual_trts:
+                del game.active_virtual_trts[self.headcode]
             return
+            
         if signals:
             x, y = self.coords[0][0]
             for signal in signals:
-                if self.signal_condition_check(signal, x, y, self.direction):
+                if signal.overlap == (x, y) and signal.direction == self.direction:
                     if not self.notify_TRTS:
                         threading.Thread(target=winsound.PlaySound, args=(TRTS_SOUND, winsound.SND_FILENAME)).start()
                         display.add_log(f"{self.headcode} train TRTS at {signal.coord}")
                         self.notify_TRTS = True
-                    if int(time_difference) % 2 == 1:
-                        signal.activate_TRTS(game, display)
+                    
+                    # 1. Physical TRTS button exists on map
+                    if signal.TRTS_button_coord:
+                        if int(time_difference) % 2 == 1:
+                            signal.activate_TRTS(game, display)
+                        else:
+                            signal.deactivate_TRTS(game, display)
+                    
+                    # 2. Virtual TRTS Indicator: Anchor to the exact platform of this stop
                     else:
-                        signal.deactivate_TRTS(game, display)
+                        current_stop = self.timetable[self.current_stop_index]
+                        target_station = current_stop.get("station")
+                        target_platform = str(current_stop.get("platform", "")).strip()
+
+                        # Gather all train body coordinates
+                        train_body = [c for chunk in self.coords for c in chunk]
+                        train_xs = [c[0] for c in train_body]
+                        train_ys = [c[1] for c in train_body]
+                        min_train_x, max_train_x = min(train_xs), max(train_xs)
+                        train_y = y  # Y level of the track
+
+                        matched_segment = None
+
+                        # Filter segments belonging to this station
+                        station_segments = [s for s in self.annotated_segments if s.get("station") == target_station]
+
+                        # Pass 1: If timetable explicitly specifies a platform name/number, try exact match
+                        if target_platform != "":
+                            for seg in station_segments:
+                                if str(seg.get("platform", "")).strip() == target_platform:
+                                    matched_segment = seg
+                                    break
+
+                        # Pass 2: If no explicit platform or not found, match the physical platform segment
+                        # whose X span overlaps with the train and whose Y is within 1 tile of the train
+                        if matched_segment is None:
+                            best_overlap = -1
+                            for seg in station_segments:
+                                seg_left = seg.get("left", seg.get("start", (0, 0)))
+                                seg_right = seg.get("right", seg.get("end", (0, 0)))
+                                
+                                seg_min_x = min(seg_left[0], seg_right[0])
+                                seg_max_x = max(seg_left[0], seg_right[0])
+                                seg_y = seg_left[1]
+
+                                # Platform must be on the train's line or adjacent track (within 1 tile vertically)
+                                if abs(seg_y - train_y) <= 1:
+                                    # Calculate horizontal overlap between platform span and train body
+                                    overlap = max(0, min(max_train_x, seg_max_x) - max(min_train_x, seg_min_x) + 1)
+                                    if overlap > best_overlap:
+                                        best_overlap = overlap
+                                        matched_segment = seg
+
+                        if matched_segment:
+                            seg_left = matched_segment.get("left", matched_segment.get("start"))
+                            seg_right = matched_segment.get("right", matched_segment.get("end"))
+
+                            # Left-most platform character for "left" direction, Right-most platform character for "right" direction
+                            if self.direction == "left":
+                                anchor_coord = seg_left if seg_left[0] <= seg_right[0] else seg_right
+                            else:
+                                anchor_coord = seg_right if seg_right[0] >= seg_left[0] else seg_left
+
+                            if not hasattr(game, "active_virtual_trts"):
+                                game.active_virtual_trts = {}
+
+                            flash_on = (int(time_difference) % 2 == 1)
+                            game.active_virtual_trts[self.headcode] = (
+                                anchor_coord[0], 
+                                anchor_coord[1], 
+                                flash_on
+                            )
+                    return
 
     def timetable_check(self, game, lines, display, signals):
         current_stop = self.timetable[self.current_stop_index]
-        stop_coords = self._get_stop_coord(current_stop)  # defined below
-        # Only apply timing logic if head is at the stop
+        stop_coords = self._get_stop_coord(current_stop)
+        
+        # Only apply timing logic if train is at the stop
         if self._at_stop_coord(stop_coords):
-            
             current_game_time = game.game_seconds
             time_since_spawn = current_game_time - self.game_seconds_at_spawn
             if not self.start_to_stop_time:
                 self.start_to_stop_time = time_since_spawn
+                
             dep_offset = current_stop.get('departure_offset', 0)
             arr_offset = current_stop.get('arrival_offset', 0)
             despawn = current_stop.get('despawn', False)
+            
+            # Instant pass-through stop
             if dep_offset == arr_offset and not despawn:
                 self.current_stop_index += 1
                 return True
+                
             if self.last_action == "move train":
                 last_last_signal = self.last_last_signal_check(game)
                 self.delete_train_tail(display, game, last_last_signal)
                 lines = game.clone_lines(game.lines)
                 self.last_action = "remove train tail"
+                
+            # Handle change_timetable (new headcode, new direction, new timetable)
             if "change_timetable" in current_stop:
                 self.delete_train_tail(display, game, last_last_signal)
                 tt_index = current_stop["change_timetable"]
                 self.timetable, tt_headcode_prefix, new_direction, self.timetable_index = game.get_tt_from_index(tt_index)
+                
+                # Clean up any active TRTS from previous direction/signal
+                if hasattr(game, "active_virtual_trts") and self.headcode in game.active_virtual_trts:
+                    del game.active_virtual_trts[self.headcode]
+                for s in signals:
+                    s.deactivate_TRTS(game, display)
+                    
                 if self.direction != new_direction:
                     self.direction = new_direction
                     self.coords[0].reverse()
-                    # print(f"{self.headcode} from change timetable train direction changed to {self.direction}")
+                    
                 self.headcode = game.get_headcode_from_prefix(tt_headcode_prefix)
                 self.current_stop_index = 0
                 self.route_coords = []
                 self.route_coords_direction_dict = {}
                 self.temporary_characters = []
-                # self.last_signal = []
                 self.direction_change = None
                 self.game_seconds_at_spawn += dep_offset
                 time_since_spawn = current_game_time - self.game_seconds_at_spawn
                 self.start_to_stop_time = time_since_spawn
                 self.notified = False
                 self.notify_TRTS = False
-                # print(f"{self.headcode} timetable changed will call move headcode")
                 self.move_headcode(game, game.signals, display)
+                self.reversed_direction = False
 
-            elif current_stop.get("reverse_direction"):
-                if self.direction == "right":
-                    self.direction = "left"
-                else:
-                    self.direction = "right"
-                # print(f"{self.headcode} train direction reversed to {self.direction}")
+            # Handle reverse_direction at current platform
+            elif current_stop.get("reverse_direction") and not self.reversed_direction:
+                # Clean up any active TRTS from previous direction/signal
+                if hasattr(game, "active_virtual_trts") and self.headcode in game.active_virtual_trts:
+                    del game.active_virtual_trts[self.headcode]
+                for s in signals:
+                    s.deactivate_TRTS(game, display)
+                    
+                self.direction = "left" if self.direction == "right" else "right"
                 self.coords[0].reverse()
+                self.move_headcode(game, game.signals, display)
+                self.reversed_direction = True
+                self.notify_TRTS = False  # Reset TRTS notification for the new forward signal
+                
             elif current_stop.get("despawn"):
+                self.reversed_direction = False
                 self.despawn = True
                 return False
-            self.TRTS(dep_offset-time_since_spawn, game.signals, game, display, lines)
+
+            # Calculate remaining dwell time until departure
+            time_difference = dep_offset - time_since_spawn
+            
+            # Execute TRTS for the signal in the NEW direction
+            self.TRTS(time_difference, signals, game, display, lines)
+            
             if time_since_spawn < dep_offset:
                 return False
-            
             elif (time_since_spawn - self.start_to_stop_time) < 30:
-                self.TRTS(dep_offset-time_since_spawn, game.signals, game, display, lines)
                 return False
+                
             x, y = self.coords[0][0]
             for signal in signals:
                 if self.signal_condition_check(signal, x, y, self.direction) and signal.color == "red":
                     if (current_game_time - self.last_ars_time) > 1:
-                        # game.ars_manager.try_set_route_for_signal(game, signal, self.timetable_index)
                         self.last_ars_time = current_game_time
                     return False
-                    
-                
+
+            # Clear virtual TRTS indicator upon successful stop completion/departure
+            if hasattr(game, "active_virtual_trts") and self.headcode in game.active_virtual_trts:
+                del game.active_virtual_trts[self.headcode]
+
             self.current_stop_index += 1
+            
         elif self._past_stop_coord(stop_coords, self.direction):
+            self.reversed_direction = False
             self.current_stop_index += 1
             display.add_log(f"{self.headcode} missed stop at {current_stop.get('station')}")
             return False
         else:
+            self.reversed_direction = False
             self.start_to_stop_time = 0
+            
         return True
     
     def move(self, lines, game, signals, display):
@@ -427,7 +545,18 @@ class Train:
 
 
     def signal_condition_check(self, signal, x, y, direction):
-        return (signal.overlap == (x,y) and signal.direction == direction)
+        if signal.direction != direction:
+            return False
+        # Direct overlap match
+        if signal.overlap == (x, y):
+            return True
+        # Track-level match for signal mounted directly ahead of train head
+        if direction == "right" and signal.overlap == (x + 1, y):
+            return True
+        elif direction == "left" and signal.overlap == (x - 1, y):
+            return True
+        return False
+
 
     def move_headcode(self, game, signals, display):
         direction = self.direction

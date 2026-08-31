@@ -1,0 +1,448 @@
+{
+    "segments": [
+        {
+            "left": [
+                9,
+                5
+            ],
+            "right": [
+                22,
+                5
+            ],
+            "type": "platform",
+            "station": "LLYN-BY-THE-SEA",
+            "platform": "10"
+        },
+        {
+            "left": [
+                9,
+                8
+            ],
+            "right": [
+                22,
+                8
+            ],
+            "type": "platform",
+            "station": "LLYN-BY-THE-SEA",
+            "platform": "9"
+        },
+        {
+            "left": [
+                180,
+                8
+            ],
+            "right": [
+                180,
+                8
+            ],
+            "type": "entrance_exit",
+            "station": "NORTHSHORE STATION SIDING",
+            "platform": "1"
+        },
+        {
+            "left": [
+                9,
+                9
+            ],
+            "right": [
+                22,
+                9
+            ],
+            "type": "platform",
+            "station": "LLYN-BY-THE-SEA",
+            "platform": "8"
+        },
+        {
+            "left": [
+                159,
+                11
+            ],
+            "right": [
+                165,
+                11
+            ],
+            "type": "platform",
+            "station": "NORTHSHORE",
+            "platform": "4"
+        },
+        {
+            "left": [
+                9,
+                13
+            ],
+            "right": [
+                22,
+                13
+            ],
+            "type": "platform",
+            "station": "LLYN-BY-THE-SEA",
+            "platform": "7"
+        },
+        {
+            "left": [
+                159,
+                13
+            ],
+            "right": [
+                165,
+                13
+            ],
+            "type": "platform",
+            "station": "NORTHSHORE",
+            "platform": "3A"
+        },
+        {
+            "left": [
+                293,
+                13
+            ],
+            "right": [
+                299,
+                13
+            ],
+            "type": "platform",
+            "station": "WESTWYVERN",
+            "platform": "4"
+        },
+        {
+            "left": [
+                9,
+                14
+            ],
+            "right": [
+                22,
+                14
+            ],
+            "type": "platform",
+            "station": "LLYN-BY-THE-SEA",
+            "platform": "6"
+        },
+        {
+            "left": [
+                159,
+                14
+            ],
+            "right": [
+                165,
+                14
+            ],
+            "type": "platform",
+            "station": "NORTHSHORE",
+            "platform": "3"
+        },
+        {
+            "left": [
+                219,
+                14
+            ],
+            "right": [
+                225,
+                14
+            ],
+            "type": "platform",
+            "station": "STARRYLOCH",
+            "platform": "2"
+        },
+        {
+            "left": [
+                392,
+                14
+            ],
+            "right": [
+                398,
+                14
+            ],
+            "type": "platform",
+            "station": "MILLCASTLE",
+            "platform": "4"
+        },
+        {
+            "left": [
+                293,
+                15
+            ],
+            "right": [
+                299,
+                15
+            ],
+            "type": "platform",
+            "station": "WESTWYVERN",
+            "platform": "3"
+        },
+        {
+            "left": [
+                410,
+                15
+            ],
+            "right": [
+                410,
+                15
+            ],
+            "type": "entrance_exit",
+            "station": "ZONE 9",
+            "platform": "DOWN SLOW"
+        },
+
+        {
+            "left": [
+                293,
+                16
+            ],
+            "right": [
+                299,
+                16
+            ],
+            "type": "platform",
+            "station": "WESTWYVERN",
+            "platform": "2"
+        },
+        {
+            "left": [
+                410,
+                17
+            ],
+            "right": [
+                410,
+                17
+            ],
+            "type": "entrance_exit",
+            "station": "ZONE 9",
+            "platform": "DOWN FAST"
+        },
+        {
+            "left": [
+                9,
+                18
+            ],
+            "right": [
+                22,
+                18
+            ],
+            "type": "platform",
+            "station": "LLYN-BY-THE-SEA",
+            "platform": "5"
+        },
+        {
+            "left": [
+                159,
+                18
+            ],
+            "right": [
+                165,
+                18
+            ],
+            "type": "platform",
+            "station": "NORTHSHORE",
+            "platform": "2"
+        },
+        {
+            "left": [
+                392,
+                18
+            ],
+            "right": [
+                398,
+                18
+            ],
+            "type": "platform",
+            "station": "MILLCASTLE",
+            "platform": "3"
+        },
+        {
+            "left": [
+                9,
+                19
+            ],
+            "right": [
+                22,
+                19
+            ],
+            "type": "platform",
+            "station": "LLYN-BY-THE-SEA",
+            "platform": "4"
+        },
+        {
+            "left": [
+                159,
+                19
+            ],
+            "right": [
+                165,
+                19
+            ],
+            "type": "platform",
+            "station": "NORTHSHORE",
+            "platform": "1"
+        },
+        {
+            "left": [
+                392,
+                19
+            ],
+            "right": [
+                398,
+                19
+            ],
+            "type": "platform",
+            "station": "MILLCASTLE",
+            "platform": "2"
+        },
+        {
+            "left": [
+                410,
+                20
+            ],
+            "right": [
+                410,
+                20
+            ],
+            "type": "entrance_exit",
+            "station": "ZONE 9",
+            "platform": "UP FAST"
+        },
+        {
+            "left": [
+                293,
+                21
+            ],
+            "right": [
+                299,
+                21
+            ],
+            "type": "platform",
+            "station": "WESTWYVERN",
+            "platform": "1"
+        },
+        {
+            "left": [
+                410,
+                22
+            ],
+            "right": [
+                410,
+                22
+            ],
+            "type": "entrance_exit",
+            "station": "ZONE 9",
+            "platform": "UP SLOW"
+        },
+        {
+            "left": [
+                9,
+                23
+            ],
+            "right": [
+                22,
+                23
+            ],
+            "type": "platform",
+            "station": "LLYN-BY-THE-SEA",
+            "platform": "3"
+        },
+        {
+            "left": [
+                145,
+                23
+            ],
+            "right": [
+                145,
+                23
+            ],
+            "type": "entrance_exit",
+            "station": "NORTHSHORE SIDING",
+            "platform": "1"
+        },
+        {
+            "left": [
+                159,
+                23
+            ],
+            "right": [
+                165,
+                23
+            ],
+            "type": "platform",
+            "station": "NORTHSHORE",
+            "platform": "0"
+        },
+        {
+            "left": [
+                219,
+                23
+            ],
+            "right": [
+                225,
+                23
+            ],
+            "type": "platform",
+            "station": "STARRYLOCH",
+            "platform": "1"
+        },
+        {
+            "left": [
+                392,
+                23
+            ],
+            "right": [
+                398,
+                23
+            ],
+            "type": "platform",
+            "station": "MILLCASTLE",
+            "platform": "1"
+        },
+        {
+            "left": [
+                9,
+                24
+            ],
+            "right": [
+                22,
+                24
+            ],
+            "type": "platform",
+            "station": "LLYN-BY-THE-SEA",
+            "platform": "2"
+        },
+        {
+            "left": [
+                145,
+                25
+            ],
+            "right": [
+                145,
+                25
+            ],
+            "type": "entrance_exit",
+            "station": "NORTHSHORE SIDING",
+            "platform": "2"
+        },
+        {
+            "left": [
+                9,
+                28
+            ],
+            "right": [
+                22,
+                28
+            ],
+            "type": "platform",
+            "station": "LLYN-BY-THE-SEA",
+            "platform": "1"
+        },
+        {
+            "left": [
+                9,
+                29
+            ],
+            "right": [
+                22,
+                29
+            ],
+            "type": "platform",
+            "station": "LLYN-BY-THE-SEA",
+            "platform": "0"
+        }
+    ],
+    "portals": []
+}

@@ -232,18 +232,20 @@ def walk_to_first_manual_signal(
         print(f"[ARS] targeted physical walk failed: {exc}")
         return None, []
 
-
-def _coords_between(game, entry_signal, exit_signal, pair_cache) -> Optional[List[Coord]]:
-    """Get the physical route between two signals via set_route()."""
-    key = (tuple(entry_signal.coord), tuple(exit_signal.coord))
+def _coords_between(game, entry_signal, exit_signal, pair_cache, selected_vias=None) -> Optional[List[Coord]]:
+    """Get the physical route between two signals via set_route(), honoring selected_vias."""
+    vias_tuple = tuple(tuple(v.coord if hasattr(v, "coord") else v) for v in (selected_vias or []))
+    key = (tuple(entry_signal.coord), tuple(exit_signal.coord), vias_tuple)
     if key in pair_cache:
         return pair_cache[key]
 
     previous_entry = getattr(game, "entry_signal", None)
     previous_exit = getattr(game, "exit_signal", None)
+    previous_vias = getattr(game, "selected_via_buttons", [])
 
     game.entry_signal = entry_signal
     game.exit_signal = exit_signal
+    game.selected_via_buttons = list(selected_vias or [])
 
     try:
         coords = game.set_route(dont_set=True, ordered=True)
@@ -253,6 +255,7 @@ def _coords_between(game, entry_signal, exit_signal, pair_cache) -> Optional[Lis
     finally:
         game.entry_signal = previous_entry
         game.exit_signal = previous_exit
+        game.selected_via_buttons = previous_vias
 
     if coords:
         coords = [_normalise_coord(coord) for coord in coords]
@@ -261,7 +264,6 @@ def _coords_between(game, entry_signal, exit_signal, pair_cache) -> Optional[Lis
 
     pair_cache[key] = coords
     return coords
-
 
 def _find_physical_path_to_manual(game, automatic_signal, target_manual, pair_cache) -> Optional[List[Coord]]:
     """Physically continue from an automatic signal to a manual signal."""
@@ -702,6 +704,10 @@ def _apply_times(
 # Main schedule builder
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Main schedule builder
+# ---------------------------------------------------------------------------
+
 def build_schedule(
     game,
     routes: Sequence[Dict[str, Any]],
@@ -759,6 +765,31 @@ def build_schedule(
 
             if not _is_manual(entry_signal):
                 continue
+
+            # --- NEW CAVEAT: Reversing Teleport ---
+            # If two manual signals face opposite directions and share the exact same Y overlap
+            if _is_manual(exit_signal) and entry_signal.direction != exit_signal.direction:
+                if hasattr(entry_signal, "overlap") and entry_signal.overlap and hasattr(exit_signal, "overlap") and exit_signal.overlap:
+                    entry_y = _normalise_coord(entry_signal.overlap)[1]
+                    exit_y = _normalise_coord(exit_signal.overlap)[1]
+                    
+                    if abs(entry_y - exit_y) == 0:
+                        segment_id = f"{_coord_key(tuple(entry_signal.coord))}->{_coord_key(tuple(exit_signal.coord))}"
+                        if segment_id not in physical_segments:
+                            log(f"[ARS] injecting reversing teleport segment for {segment_id}")
+                            segment = {
+                                "id": segment_id,
+                                "entry_signal": _coord_json(_normalise_coord(entry_signal.coord)),
+                                "exit_signal": _coord_json(_normalise_coord(exit_signal.coord)),
+                                "exit_signal_type": getattr(exit_signal, "signal_type", None),
+                                "coords": [
+                                    _coord_json(_normalise_coord(entry_signal.overlap)), # Triggers the stop dwell time
+                                    _coord_json(_normalise_coord(exit_signal.coord))
+                                ],
+                            }
+                            physical_segments[segment["id"]] = segment
+                        continue # Skip standard physical pathfinding!
+            # --------------------------------------
 
             segment = _build_segment(game, entry_signal, exit_signal, pair_cache, physical_segments)
             if segment is not None:

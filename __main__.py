@@ -36,6 +36,8 @@ class Game:
         self.trains = []
         self.signals = []  # Add signals to Game, not Display_Class
         self.autos = []
+        self.via_buttons = []           # <-- Store all ViaButton objects
+        self.selected_via_buttons = []  # <-- Store active selected ViaButton sequence
         self.entry_signal = None
         self.exit_signal = None
         self.switches = []  # List to store switch coordinates
@@ -345,10 +347,12 @@ class Game:
                     and segment.get('station') == start_station
                     and segment.get('platform') == start_platform
                 ):
+                    
                     if direction == 'right':
                         coord = tuple(segment.get('right', segment.get('left', (0, 0))))
                     else:
                         coord = tuple(segment.get('left', segment.get('right', (0, 0))))
+                    print(f"spawn place {coord}")
                     break
 
         if coord is None:
@@ -747,6 +751,35 @@ class Game:
                     if char == "{":
                         self.display_class.add_log(x,y-1, "{")
 
+    def define_via_buttons(self):
+        self.via_buttons = []
+        self.selected_via_buttons = []
+        f = StringIO(self.text)
+        lines = [line.rstrip('\n') for line in f.readlines()]
+        
+        for y, line in enumerate(lines):
+            for x, char in enumerate(line):
+                if char == "q":
+                    # 1. Check space to left and right
+                    left_is_space = (x > 0 and line[x-1] == " ") or (x == 0)
+                    right_is_space = (x + 1 < len(line) and line[x+1] == " ") or (x + 1 >= len(line))
+                    
+                    # 2. Check track character 'a' directly below (x, y+1)
+                    below_is_track = False
+                    if y + 1 < len(lines) and x < len(lines[y+1]):
+                        below_is_track = (lines[y+1][x] == "a")
+
+                    if left_is_space and right_is_space and below_is_track:
+                        from src.assets.python.layout.via import ViaButton
+                        self.via_buttons.append(ViaButton((x, y)))
+
+    def clear_selection_flashes(self):
+        if self.entry_signal:
+            self.entry_signal.clear_entry_flash(self.display_class, self.lines)
+        for via in getattr(self, "selected_via_buttons", []):
+            via.clear_flash(self.display_class, self.lines)
+        self.selected_via_buttons = []
+
     def change_switch(self, switch_index, switch_direction, lines):
         x, y, new_char, direction = self.switches[switch_index]
         if switch_direction == "normal":
@@ -912,14 +945,46 @@ class Game:
             (x,y), original_char, new_char = temporary_character
             self.lines[y][x] = original_char
 
-    def set_route(self, dont_set = False, ordered = False):
+    def set_route(self, dont_set=False, ordered=False):
+        if not self.entry_signal or not self.exit_signal:
+            return None
+
         print(f"set route between {self.entry_signal.coord} {self.exit_signal.coord}")
-        coords = self.entry_signal.get_coords_to_next_signal(self.exit_signal, self, self.switches, self.layout_file, self.signals, self.trains, dont_set, ordered)
+        
+        # Check if exit_signal is in entry_signal's cached routes
+        if not self.entry_signal.routes_cached:
+            self.entry_signal.build_route_cache(self, self.switches, self.layout_file, self.signals, self.via_buttons)
+            self.entry_signal.routes_cached = True
+
+        exit_in_cache = self.exit_signal in self.entry_signal.cached_routes_to_signals
+        
+        coords = self.entry_signal.get_coords_to_next_signal(
+            self.exit_signal, self, self.switches, self.layout_file, self.signals, self.trains, 
+            dont_set=dont_set, ordered=ordered, selected_vias=self.selected_via_buttons
+        )
+
         if not dont_set:
+            self.clear_selection_flashes()
+            
             if not coords:
-                self.entry_signal = None
-                self.exit_signal = None
-                return
+                # CASE A: Exit signal was not in list of exit signals -> Log error & Hand-off
+                if not exit_in_cache:
+                    self.display_class.add_log(f"Signal {self.exit_signal.coord} is not an exit signal from {self.entry_signal.coord}.")
+                    new_entry = self.exit_signal
+                    self.entry_signal = new_entry
+                    self.exit_signal = None
+                    self.selected_via_buttons = []
+                    # Start flashing the new entry signal
+                    self.entry_signal.prepare_entry_flash(self.display_class, self.lines)
+                    return None
+                else:
+                    # CASE B: Failed for other reasons (collision, switch conflict, no via path) -> Reset, NO hand-off
+                    self.entry_signal = None
+                    self.exit_signal = None
+                    self.selected_via_buttons = []
+                    return None
+
+            # CASE C: Success
             self.entry_signal.next_signal = self.exit_signal
             self.entry_signal.route_set = True
             train_coords = []
@@ -930,8 +995,11 @@ class Game:
             filtered_coords = set(coords) - set(train_coords)
             for coord in filtered_coords:
                 self.display_class.set_char_color_at_coord(coord[0], coord[1], "white", self)
+            
             self.entry_signal = None
             self.exit_signal = None
+            self.selected_via_buttons = []
+
         return coords
 
     def despawn_train(self, train):
@@ -1205,6 +1273,7 @@ class Game:
                 self.update_signals()
                 self.display_class.update_entry_signal_flash(self, self.lines)
                 self.display_class.display_auto_button_color(self.autos, self)
+                self.display_class.display_via_button_color(self.via_buttons, self)
                 self.check_approach()
                 self.color_entry_signal()
                 if self.entry_signal and self.exit_signal:
@@ -1316,18 +1385,19 @@ def main():
     with open(layout_file, "r", encoding="utf-8") as f:
         text = f.read()
     game = Game(text, Display_Class(), layout_file, scenario)
-    signals = game.create_signals_from_file(target_chars, signal_type_map, direction_map, mount_map,buffer_map)
+    signals = game.create_signals_from_file(target_chars, signal_type_map, direction_map, mount_map, buffer_map)
 
     game.load_timetable_and_annotated_segments(os.path.join(CWD, JSON_PATH, timetable_file), annotated_segments_file)
     game.find_next_signals(signals)
     game.define_switches()
     game.define_auto_and_TRTS_buttons()
+    game.define_via_buttons()  # <-- DEFINED HERE BEFORE ROUTE CACHE BUILDING
     
     print("Pre-calculating track routes... this may take a moment.")
     for signal in game.signals:
         if signal.signal_type == "manual":
             print(f" -> Building cache for manual signal at {signal.coord}...")
-            signal.build_route_cache(game, game.switches, layout_file, game.signals)
+            signal.build_route_cache(game, game.switches, layout_file, game.signals, game.via_buttons)
         signal.routes_cached = True 
 
     game.ars_manager.prepare_schedule(game)

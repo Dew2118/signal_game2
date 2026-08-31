@@ -1,0 +1,133 @@
+[
+    {
+        "index": 1,
+        "headcode_prefix": "1L",
+        "start_location": {
+            "type": "entrance_exit",
+            "station": "ZONE 9",
+            "platform": "UP FAST"
+        },
+        "direction": "left",
+        "stops": [
+            {
+                "station": "WESTWYVERN",
+                "platform": "1",
+                "arrival_offset": 123,
+                "departure_offset": 153
+            },
+            {
+                "station": "NORTHSHORE",
+                "platform": "",
+                "arrival_offset": 297,
+                "departure_offset": 327
+            },
+            {
+                "station": "LLYN-BY-THE-SEA",
+                "platform": "",
+                "arrival_offset": 483,
+                "departure_offset": 513,
+                "change_timetable": 2
+            }
+        ],
+        "spawn_times": [
+            "00:00:03",
+            "00:24:03",
+            "00:48:03",
+            "01:12:03",
+            "01:36:03",
+            "02:00:03",
+            "02:24:03",
+            "02:48:03",
+            "03:12:03",
+            "03:36:03",
+            "04:00:03",
+            "04:24:03",
+            "04:48:03",
+            "05:12:03",
+            "05:36:03",
+            "06:00:03",
+            "06:24:03",
+            "06:48:03",
+            "07:12:03",
+            "07:36:03",
+            "08:00:03",
+            "08:24:03",
+            "08:48:03",
+            "09:12:03",
+            "09:36:03",
+            "10:00:03",
+            "10:24:03",
+            "10:48:03",
+            "11:12:03",
+            "11:36:03",
+            "12:00:03",
+            "12:24:03",
+            "12:48:03",
+            "13:12:03",
+            "13:36:03",
+            "14:00:03",
+            "14:24:03",
+            "14:48:03",
+            "15:12:03",
+            "15:36:03",
+            "16:00:03",
+            "16:24:03",
+            "16:48:03",
+            "17:12:03",
+            "17:36:03",
+            "18:00:03",
+            "18:24:03",
+            "18:48:03",
+            "19:12:03",
+            "19:36:03",
+            "20:00:03",
+            "20:24:03",
+            "20:48:03",
+            "21:12:03",
+            "21:36:03",
+            "22:00:03",
+            "22:24:03",
+            "22:48:03",
+            "23:12:03",
+            "23:36:03"
+        ]
+    },
+    {
+        "index": 2,
+        "headcode_prefix": "1S",
+        "start_location": {
+            "type": "platform",
+            "station": "LLYN-BY-THE-SEA",
+            "platform": "0"
+        },
+        "direction": "right",
+        "stops": [
+            {
+                "station": "LLYN-BY-THE-SEA",
+                "platform": "",
+                "arrival_offset": 37,
+                "departure_offset": 67
+            },
+            {
+                "station": "NORTHSHORE",
+                "platform": "",
+                "arrival_offset": 223,
+                "departure_offset": 253
+            },
+            {
+                "station": "WESTWYVERN",
+                "platform": "",
+                "arrival_offset": 389,
+                "departure_offset": 419
+            },
+            {
+                "station": "ZONE 9",
+                "platform": "DOWN FAST",
+                "arrival_offset": 540,
+                "departure_offset": 570,
+                "despawn": true
+            }
+        ],
+        "spawn_times": []
+    }
+]
