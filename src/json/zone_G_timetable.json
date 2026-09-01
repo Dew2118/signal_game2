@@ -3,14 +3,6 @@
         "index": 0,
         "headcode_prefix": "2N",
         "start_location": {
-            "left": [
-                220,
-                8
-            ],
-            "right": [
-                224,
-                8
-            ],
             "type": "platform",
             "station": "ESTERFIELD",
             "platform": "1"
@@ -20,49 +12,41 @@
             {
                 "station": "ESTERFIELD",
                 "platform": "",
-                "arrival_offset": 0,
-                "departure_offset": 1
-},
+                "arrival_offset": 7,
+                "departure_offset": 37
+            },
             {
                 "station": "ROSEDALE VILLAGE",
                 "platform": "2",
-                "arrival_offset": 1,
-                "departure_offset": 2
-},
-            {
-                "station": "JAMES STREET",
-                "platform": "2",
-                "arrival_offset": 3,
-                "departure_offset": 4
-},
+                "arrival_offset": 96,
+                "departure_offset": 126
+            },
             {
                 "station": "FARLEIGH",
                 "platform": "2",
-                "arrival_offset": 5,
-                "departure_offset": 6
-},
+                "arrival_offset": 154,
+                "departure_offset": 184
+            },
+            {
+                "station": "JAMES STREET",
+                "platform": "2",
+                "arrival_offset": 226,
+                "departure_offset": 256
+            },
             {
                 "station": "ZONE C",
                 "platform": "2",
-                "arrival_offset": 8,
-                "departure_offset": 9,
-                
+                "arrival_offset": 354,
+                "departure_offset": 384,
                 "despawn": true
             }
-        ]
+        ],
+        "spawn_times": []
     },
     {
         "index": 1,
         "headcode_prefix": "2Q",
         "start_location": {
-            "left": [
-                1,
-                10
-            ],
-            "right": [
-                1,
-                10
-            ],
             "type": "entrance_exit",
             "station": "ZONE C",
             "platform": "1"
@@ -70,29 +54,28 @@
         "direction": "right",
         "stops": [
             {
-                "station": "FARLEIGH",
-                "platform": "1",
-                "arrival_offset": 20,
-                "departure_offset": 30
-},
-            {
                 "station": "JAMES STREET",
                 "platform": "1",
-                "arrival_offset": 50,
-                "departure_offset": 60
-},
+                "arrival_offset": 98,
+                "departure_offset": 128
+            },
+            {
+                "station": "FARLEIGH",
+                "platform": "1",
+                "arrival_offset": 170,
+                "departure_offset": 200
+            },
             {
                 "station": "ROSEDALE VILLAGE",
                 "platform": "1",
-                "arrival_offset": 80,
-                "departure_offset": 90
-},
+                "arrival_offset": 228,
+                "departure_offset": 258
+            },
             {
                 "station": "ESTERFIELD",
                 "platform": "",
-                "arrival_offset": 100,
-                "departure_offset": 110,
-                
+                "arrival_offset": 312,
+                "departure_offset": 342,
                 "change_timetable": 0
             }
         ],
@@ -200,18 +183,11 @@
         ]
     },
     {
+        "index": 2,
         "headcode_prefix": "2Q",
         "start_location": {
-            "left": [
-                99,
-                11
-            ],
-            "right": [
-                103,
-                11
-            ],
             "type": "platform",
-            "station": "FARLEIGH",
+            "station": "JAMES STREET",
             "platform": "1"
         },
         "direction": "right",
@@ -219,56 +195,40 @@
             {
                 "station": "FARLEIGH",
                 "platform": "1",
-                "arrival_offset": 0,
-                "departure_offset": 10
-},
-            {
-                "station": "JAMES STREET",
-                "platform": "1",
-                "arrival_offset": 20,
-                "departure_offset": 30
-},
+                "arrival_offset": 38,
+                "departure_offset": 68
+            },
             {
                 "station": "ROSEDALE VILLAGE",
                 "platform": "1",
-                "arrival_offset": 40,
-                "departure_offset": 50
-},
+                "arrival_offset": 96,
+                "departure_offset": 126
+            },
             {
                 "station": "ESTERFIELD",
                 "platform": "",
-                "arrival_offset": 60,
-                "departure_offset": 70,
-                
+                "arrival_offset": 180,
+                "departure_offset": 210,
                 "change_timetable": 0
             }
         ],
-        "spawn_times": [],
-        "index": 2
+        "spawn_times": []
     },
     {
+        "index": 3,
         "headcode_prefix": "3Q",
         "start_location": {
-            "left": [
-                39,
-                8
-            ],
-            "right": [
-                39,
-                8
-            ],
             "type": "entrance_exit",
-            "station": "FARLEIGH DEPOT",
+            "station": "FARLEIGH SIDING",
             "platform": "1"
         },
         "direction": "right",
         "stops": [
             {
-                "station": "FARLEIGH",
+                "station": "JAMES STREET",
                 "platform": "1",
-                "arrival_offset": 5,
-                "departure_offset": 15,
-                
+                "arrival_offset": 62,
+                "departure_offset": 92,
                 "change_timetable": 2
             }
         ],
@@ -373,20 +333,12 @@
             "1:37:30",
             "1:38:30",
             "1:39:30"
-        ],
-        "index": 3
+        ]
     },
     {
+        "index": 4,
         "headcode_prefix": "3Q",
         "start_location": {
-            "left": [
-                193,
-                18
-            ],
-            "right": [
-                193,
-                18
-            ],
             "type": "entrance_exit",
             "station": "ESTERFIELD SIDING",
             "platform": "2"
@@ -396,9 +348,8 @@
             {
                 "station": "ESTERFIELD",
                 "platform": "",
-                "arrival_offset": 15,
-                "departure_offset": 25,
-                
+                "arrival_offset": 30,
+                "departure_offset": 60,
                 "change_timetable": 0
             }
         ],
@@ -503,7 +454,6 @@
             "3:14:45",
             "3:16:45",
             "3:18:45"
-        ],
-        "index": 4
+        ]
     }
 ]
