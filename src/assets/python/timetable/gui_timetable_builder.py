@@ -23,6 +23,7 @@ COL_SIGNAL = (111, 201, 255)
 COL_PLATFORM = (107, 211, 139)
 COL_ENTRANCE = (200, 100, 255)
 COL_SELECTED = (255, 255, 0)
+COL_MULTI_SELECTED = (0, 200, 255)
 COL_PREV_SELECTED = (180, 180, 100)
 COL_REPLACE = (255, 50, 50)
 COL_INSERT = (50, 255, 50)
@@ -122,8 +123,6 @@ class UnifiedBuilder:
         pygame.init()
         pygame.key.set_repeat(200, 50) 
         
-        # Made the default starting size smaller. 
-        # pygame.RESIZABLE automatically adds the OS maximize button and drag-to-resize.
         self.width, self.height = 1200, 720
         self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
         pygame.display.set_caption(f"Timetable & ARS Builder - {scenario}")
@@ -142,11 +141,10 @@ class UnifiedBuilder:
         self.pan_start_camera = (0, 0)
         self.node_list_scroll_y = 0 
         
-        # --- UI Notifications ---
         self.notification_text = ""
         self.notification_timer = 0
         
-        # --- UI Elements Layout ---
+        # UI Buttons
         self.btn_prev_tt = pygame.Rect(10, 25, 30, 30)
         self.input_load_tt = TextInput(50, 25, 80, 30, "Load TT #", "")
         self.btn_load_tt = pygame.Rect(140, 25, 60, 30)
@@ -163,7 +161,6 @@ class UnifiedBuilder:
         
         self.btn_save_update = pygame.Rect(10, 180, 195, 35)
         self.btn_save_new = pygame.Rect(215, 180, 195, 35)
-        self.btn_calculate = pygame.Rect(10, 225, 400, 35)
         
         self.btn_new_path = pygame.Rect(10, 275, 120, 30)
         self.btn_clone_path = pygame.Rect(140, 275, 130, 30)
@@ -179,23 +176,20 @@ class UnifiedBuilder:
         self.nodes = {} 
         self._load_map_nodes()
         
-        # --- CLEAN DATA STRUCTURE ---
         self.station_path: list = []             
         self.signal_paths: list[list] = [[]]     
         self.active_signal_path_idx: int = 0
+        self.selected_path_indices: set[int] = {0}  # Set of all selected path indices
+        self.shift_anchor_path_idx: int = 0         # Anchor index for Shift+Click range
         
-        self.active_mode = "timetable" # "timetable" or "signal"
+        self.active_mode = "timetable"
         self.prev_path_idx = -1 
         self.replace_idx = -1 
         self.insert_idx = -1 
         self.dragging_tab_idx = -1 
-
-        # --- Drag-and-Drop Node List State ---
         self.dragging_node_idx = -1
 
-        # --- Platform Selection Menu State ---
         self.platform_menu = {"active": False, "options": [], "rects": [], "station_name": ""}
-        
         self.available_tt_indices = []
         self._refresh_available_tts()
 
@@ -205,7 +199,6 @@ class UnifiedBuilder:
         print(f"[UI NOTIFY]: {text}")
 
     def _get_display_path(self):
-        """Returns ONLY the list corresponding to the currently active tab."""
         if self.active_mode == "timetable":
             return self.station_path
         else:
@@ -224,7 +217,6 @@ class UnifiedBuilder:
     def _activate_platform_menu(self, station_name, position, is_start_location=False):
         platforms = sorted({n['platform'] for n in self.nodes.values() if n.get('station') == station_name and n.get('platform')})
         if len(platforms) > 0:
-            # For start location (index 0), 'Any Platform' is strictly NOT allowed.
             options = []
             if not is_start_location:
                 options.append(("Any Platform", ""))
@@ -246,7 +238,9 @@ class UnifiedBuilder:
         self.undo_stack.append({
             "station_path": [dict(node) for node in self.station_path],
             "signal_paths": [[dict(node) for node in path] for path in self.signal_paths],
-            "active_signal_path_idx": getattr(self, "active_signal_path_idx", 0)
+            "active_signal_path_idx": getattr(self, "active_signal_path_idx", 0),
+            "selected_path_indices": set(getattr(self, "selected_path_indices", {0})),
+            "shift_anchor_path_idx": getattr(self, "shift_anchor_path_idx", 0)
         })
         if len(self.undo_stack) > 50: self.undo_stack.pop(0)
 
@@ -256,6 +250,8 @@ class UnifiedBuilder:
             self.station_path = last_state.get("station_path", [])
             self.signal_paths = last_state.get("signal_paths", [[]])
             self.active_signal_path_idx = last_state.get("active_signal_path_idx", 0)
+            self.selected_path_indices = last_state.get("selected_path_indices", {0})
+            self.shift_anchor_path_idx = last_state.get("shift_anchor_path_idx", 0)
             self.replace_idx, self.insert_idx = -1, -1
             self.dragging_node_idx = -1
             self.show_notification("Undo successful.", 90)
@@ -264,6 +260,8 @@ class UnifiedBuilder:
         self.save_state()
         self.station_path, self.signal_paths = [], [[]]
         self.active_signal_path_idx, self.active_mode = 0, "timetable"
+        self.selected_path_indices = {0}
+        self.shift_anchor_path_idx = 0
         self.prev_path_idx, self.replace_idx, self.insert_idx = -1, -1, -1
         self.dragging_node_idx = -1
         self.input_headcode.text, self.direction_val, self.input_spawns.text, self.input_change_tt.text = "", "right", "", ""
@@ -276,17 +274,11 @@ class UnifiedBuilder:
                 if char in ALL_SIGNALS: 
                     self.nodes[(x, y)] = {"type": "signal", "coord": (x, y), "char": char}
                 elif char == "q":
-                    # Check via criteria
                     left_is_space = (x > 0 and line[x-1] == " ") or (x == 0)
                     right_is_space = (x + 1 < len(line) and line[x+1] == " ") or (x + 1 >= len(line))
                     below_is_track = (y + 1 < len(self.map_lines) and x < len(self.map_lines[y+1]) and self.map_lines[y+1][x] == "a")
                     if left_is_space and right_is_space and below_is_track:
-                        self.nodes[(x, y)] = {
-                            "type": "via", 
-                            "coord": (x, y), 
-                            "track_coord": (x, y + 1),
-                            "char": "q"
-                        }
+                        self.nodes[(x, y)] = {"type": "via", "coord": (x, y), "track_coord": (x, y + 1), "char": "q"}
 
         anno_path = JSON_PATH / f"{self.scenario}_annotated_segments.json"
         if anno_path.exists():
@@ -360,9 +352,7 @@ class UnifiedBuilder:
                 node_copy = dict(node)
                 node_copy["platform"] = stop_entry.get("platform", "")
                 if stop_entry.get("reverse_direction"): node_copy["change_dir"] = True
-                
-                if not (len(self.station_path) == 1 and self.station_path[0]["coord"] == node_copy["coord"]):
-                    self.station_path.append(node_copy)
+                self.station_path.append(node_copy)
 
         self.signal_paths = [[]]
         if ars_entry and ars_entry.get("signal_paths"):
@@ -376,9 +366,80 @@ class UnifiedBuilder:
             elif "change_timetable" in stops[-1]: self.input_change_tt.text = str(stops[-1]["change_timetable"])
 
         self.active_signal_path_idx, self.active_mode = 0, "timetable"
+        self.selected_path_indices = {0}
+        self.shift_anchor_path_idx = 0
         self.prev_path_idx, self.replace_idx, self.insert_idx, self.node_list_scroll_y = -1, -1, -1, 0
         self.dragging_node_idx = -1
         self.show_notification(f"Successfully loaded Timetable {tt_idx}.")
+
+    # --- SYNCHRONIZED BATCH EDITING HELPERS ---
+    def apply_batch_node_replace(self, old_node_coord, new_node_dict, primary_idx):
+        if self.active_mode == "timetable":
+            self.station_path[primary_idx] = new_node_dict
+        else:
+            for p_idx in self.selected_path_indices:
+                if p_idx < len(self.signal_paths):
+                    path = self.signal_paths[p_idx]
+                    for idx, node in enumerate(path):
+                        if node["coord"] == old_node_coord:
+                            path[idx] = dict(new_node_dict)
+
+    def apply_batch_node_insert(self, anchor_node_coord, new_node_dict, primary_insert_after_idx):
+        if self.active_mode == "timetable":
+            self.station_path.insert(primary_insert_after_idx + 1, new_node_dict)
+        else:
+            for p_idx in self.selected_path_indices:
+                if p_idx < len(self.signal_paths):
+                    path = self.signal_paths[p_idx]
+                    match_indices = [idx for idx, node in enumerate(path) if node["coord"] == anchor_node_coord]
+                    for idx in reversed(match_indices):
+                        path.insert(idx + 1, dict(new_node_dict))
+
+    def apply_batch_node_delete(self, node_to_delete_coord, primary_idx):
+        if self.active_mode == "timetable":
+            self.station_path = [n for n in self.station_path if n['coord'] != node_to_delete_coord]
+        else:
+            for p_idx in self.selected_path_indices:
+                if p_idx < len(self.signal_paths):
+                    self.signal_paths[p_idx] = [n for n in self.signal_paths[p_idx] if n['coord'] != node_to_delete_coord]
+
+    def apply_batch_clone_paths(self):
+        if self.active_mode != "signal":
+            return
+        self.save_state()
+        sorted_indices = sorted(list(self.selected_path_indices))
+        new_indices = []
+        for p_idx in sorted_indices:
+            if p_idx < len(self.signal_paths):
+                cloned = [dict(n) for n in self.signal_paths[p_idx]]
+                self.signal_paths.append(cloned)
+                new_indices.append(len(self.signal_paths) - 1)
+        
+        if new_indices:
+            self.selected_path_indices = set(new_indices)
+            self.active_signal_path_idx = new_indices[0]
+            self.shift_anchor_path_idx = new_indices[0]
+            self.replace_idx, self.insert_idx, self.node_list_scroll_y = -1, -1, 0
+            self.show_notification(f"Cloned {len(new_indices)} path(s) -> Path(s) {new_indices}", 90)
+
+    def apply_batch_delete_paths(self):
+        if self.active_mode != "signal" or len(self.signal_paths) <= 1:
+            return
+        self.save_state()
+        sorted_indices = sorted(list(self.selected_path_indices), reverse=True)
+        # Prevent deleting ALL paths down to 0
+        if len(sorted_indices) >= len(self.signal_paths):
+            sorted_indices = sorted_indices[:-1] # Keep at least 1 path
+
+        for p_idx in sorted_indices:
+            if 0 <= p_idx < len(self.signal_paths):
+                self.signal_paths.pop(p_idx)
+
+        self.active_signal_path_idx = max(0, min(self.active_signal_path_idx, len(self.signal_paths) - 1))
+        self.selected_path_indices = {self.active_signal_path_idx}
+        self.shift_anchor_path_idx = self.active_signal_path_idx
+        self.replace_idx, self.insert_idx, self.node_list_scroll_y = -1, -1, 0
+        self.show_notification(f"Deleted selected path(s). {len(self.signal_paths)} path(s) remaining.", 90)
 
     def save_unified_data(self, is_new=False):
         if len(self.station_path) < 1 and len(self.signal_paths[0]) < 1: 
@@ -387,7 +448,6 @@ class UnifiedBuilder:
 
         start_node = self.station_path[0] if self.station_path else self.signal_paths[0][0]
         
-        # --- 1. VALIDATE START LOCATION ---
         start_station = start_node.get("station", "")
         start_platform = str(start_node.get("platform", "")).strip()
         start_type = "entrance_exit" if start_node["type"] == "entrance_exit" else "platform"
@@ -426,7 +486,6 @@ class UnifiedBuilder:
             "platform": start_platform
         }
         
-        # --- 2. BUILD RAW STOPS LIST (station_path[1:]) ---
         stops = []
         for i in range(1, len(self.station_path)):
             node = self.station_path[i]
@@ -448,7 +507,6 @@ class UnifiedBuilder:
             elif change_tt_text.isdigit(): 
                 stops[-1]["change_timetable"] = int(change_tt_text)
             
-        # Determine Timetable Index
         timetable_path = JSON_PATH / f"{self.scenario}_timetable.json"
         tt_data = []
         if timetable_path.exists():
@@ -460,7 +518,6 @@ class UnifiedBuilder:
         loaded_idx = self.input_load_tt.text.strip()
         new_index = max([t.get("index", 0) for t in tt_data], default=0) + 1 if is_new or not loaded_idx.isdigit() else int(loaded_idx)
 
-        # --- 3. SAVE ARS ROUTES JSON ---
         ars_path = JSON_PATH / f"{self.scenario}_ars_routes.json"
         ars_data = []
         if ars_path.exists():
@@ -490,8 +547,7 @@ class UnifiedBuilder:
             self.show_notification(f"CRITICAL ERROR saving ARS routes: {e}")
             return
 
-        # --- 4. COMPUTE EXACT FORWARD TIMINGS (START LOCATION -> STOPS) ---
-        # Resolve start location physical spawn coordinate
+        # Timing forward walk
         start_coord = None
         for seg in all_segments:
             if seg.get("type") == start_type and seg.get("station") == start_station:
@@ -505,12 +561,10 @@ class UnifiedBuilder:
         if start_coord is None and self.station_path:
             start_coord = tuple(self.station_path[0]["coord"])
 
-        # Physical simulation forward from start_location
-        # If multiple signal paths are present, evaluate forward timings across each path and take max
         paths_to_evaluate = self.signal_paths if (self.signal_paths and any(p for p in self.signal_paths)) else [[{"coord": n["coord"]} for n in self.station_path]]
         
         for stop_idx, stop_entry in enumerate(stops):
-            target_station_node = self.station_path[stop_idx + 1] # Corresponding stop node
+            target_station_node = self.station_path[stop_idx + 1]
             target_coord = tuple(target_station_node["coord"])
             
             max_arr_for_stop = 0
@@ -519,17 +573,13 @@ class UnifiedBuilder:
             for sig_path in paths_to_evaluate:
                 curr_t = 0
                 curr_pos = start_coord
-                
-                # Walk through any intermediate signals/vias in this path that precede or lead to this stop
-                # and through previous stops
                 for prev_s_idx in range(1, stop_idx + 1):
                     prev_node = self.station_path[prev_s_idx]
                     prev_coord = tuple(prev_node["coord"])
                     curr_t += abs(prev_coord[0] - curr_pos[0]) + abs(prev_coord[1] - curr_pos[1])
-                    curr_t += 30 # Dwell at intermediate stop
+                    curr_t += 30
                     curr_pos = prev_coord
                 
-                # Travel from last stop/signal position to this target stop
                 curr_t += abs(target_coord[0] - curr_pos[0]) + abs(target_coord[1] - curr_pos[1])
                 arr_time = curr_t
                 dep_time = curr_t + 30
@@ -540,7 +590,6 @@ class UnifiedBuilder:
             stop_entry["arrival_offset"] = max_arr_for_stop
             stop_entry["departure_offset"] = max_dep_for_stop
 
-        # --- 5. WRITE TIMETABLE JSON ---
         tt_data = [t for t in tt_data if t.get("index") != new_index]
         tt_data.append({
             "index": new_index, 
@@ -561,9 +610,6 @@ class UnifiedBuilder:
         self.input_load_tt.text = str(new_index)
         self._refresh_available_tts()
         self.show_notification(f"SUCCESS! Timetable and ARS {new_index} saved (forward timings synced).")
-
-    def run_needle_threader(self):
-        self.show_notification("Needle Threader Logic not currently implemented.")
 
     def draw(self):
         self.screen.fill(COL_BG)
@@ -597,17 +643,14 @@ class UnifiedBuilder:
                     elif node.get("type") == "via":
                         bg_color = (255, 180, 50)
 
-                    # Highlight stations open in platform menu
                     if self.platform_menu['active'] and self.platform_menu['station_name'] == node.get("station"):
                         bg_color = COL_SELECTED
                     
-                    # Highlight nodes in active tab's path
                     if self.active_mode == "timetable" and any(n["coord"] == (x, y) for n in self.station_path):
                         bg_color = COL_SELECTED
                     elif self.active_mode == "signal" and self.active_signal_path_idx < len(self.signal_paths) and any(n["coord"] == (x, y) for n in self.signal_paths[self.active_signal_path_idx]):
                         bg_color = COL_SELECTED
 
-                # Highlight Insert / Replace targets
                 if insert_node and insert_node["coord"] == (x, y): 
                     bg_color = COL_INSERT
                 elif replace_node and replace_node["coord"] == (x, y): 
@@ -631,7 +674,7 @@ class UnifiedBuilder:
 
         self.screen.set_clip(None)
         
-        # --- Draw Popup Menu (if active) ---
+        # Draw Popup Menu
         if self.platform_menu['active']:
             for i, (text, _) in enumerate(self.platform_menu['options']):
                 rect = self.platform_menu['rects'][i]
@@ -639,7 +682,7 @@ class UnifiedBuilder:
                 pygame.draw.rect(self.screen, (150, 150, 200), rect, 1)
                 self.screen.blit(self.font_small.render(text, True, COL_TEXT), (rect.x + 5, rect.y + 5))
         
-        # --- Sidebar Base ---
+        # Sidebar Base
         pygame.draw.rect(self.screen, COL_SIDEBAR_BG, (0, 0, SIDEBAR_WIDTH, self.height))
         
         pygame.draw.rect(self.screen, (100, 100, 100), self.btn_prev_tt, border_radius=4)
@@ -671,10 +714,17 @@ class UnifiedBuilder:
         
         pygame.draw.rect(self.screen, (100, 200, 100), self.btn_new_path, border_radius=4)
         self.screen.blit(self.font_small.render("+ New Path", True, (0,0,0)), (self.btn_new_path.x + 15, self.btn_new_path.y + 8))
+        
+        # Batch Clone Label
+        clone_label = f"++ Clone Path ({len(self.selected_path_indices)})" if (self.active_mode == "signal" and len(self.selected_path_indices) > 1) else "++ Clone Path (C)"
         pygame.draw.rect(self.screen, (100, 150, 255), self.btn_clone_path, border_radius=4)
-        self.screen.blit(self.font_small.render("++ Clone Path (C)", True, (0,0,0)), (self.btn_clone_path.x + 10, self.btn_clone_path.y + 8))
+        self.screen.blit(self.font_small.render(clone_label, True, (0,0,0)), (self.btn_clone_path.x + 5, self.btn_clone_path.y + 8))
+        
+        # Batch Delete Label
+        del_label = f"- Del Path ({len(self.selected_path_indices)})" if (self.active_mode == "signal" and len(self.selected_path_indices) > 1) else "- Delete Path"
         pygame.draw.rect(self.screen, (200, 100, 100), self.btn_del_path, border_radius=4)
-        self.screen.blit(self.font_small.render("- Delete Path", True, (0,0,0)), (self.btn_del_path.x + 15, self.btn_del_path.y + 8))
+        self.screen.blit(self.font_small.render(del_label, True, (0,0,0)), (self.btn_del_path.x + 10, self.btn_del_path.y + 8))
+        
         pygame.draw.rect(self.screen, (100, 150, 255), self.btn_clone_route, border_radius=4)
         self.screen.blit(self.font_small.render("Clone to New TT", True, (0,0,0)), (self.btn_clone_route.x + 10, self.btn_clone_route.y + 8))
         pygame.draw.rect(self.screen, (200, 200, 100), self.btn_undo, border_radius=4)
@@ -684,15 +734,10 @@ class UnifiedBuilder:
         pygame.draw.rect(self.screen, (255, 100, 100), self.btn_del_node, border_radius=4)
         self.screen.blit(self.font_small.render("- Del Node", True, (0,0,0)), (self.btn_del_node.x + 20, self.btn_del_node.y + 8))
 
-        # --- Tabs ---
+        # --- Tabs Rendering ---
         y_off, tab_x, self.tab_rects = 395, 10, []
         
-        tt_color = (100, 100, 100)
-        if self.active_mode == "timetable": 
-            tt_color = COL_SELECTED 
-        elif self.prev_path_idx == "timetable": 
-            tt_color = COL_PREV_SELECTED
-        
+        tt_color = COL_SELECTED if self.active_mode == "timetable" else (100, 100, 100)
         tt_rect = pygame.Rect(tab_x, y_off, 90, 25)
         pygame.draw.rect(self.screen, tt_color, tt_rect, border_radius=4)
         self.screen.blit(self.font_small.render("Timetable", True, (0,0,0)), (tt_rect.x + 5, tt_rect.y + 5))
@@ -700,11 +745,15 @@ class UnifiedBuilder:
         tab_x += 95
 
         for i in range(len(self.signal_paths)):
-            color = (100, 100, 100)
-            if self.active_mode == "signal" and i == self.active_signal_path_idx: 
-                color = COL_SELECTED
-            elif self.prev_path_idx == i: 
-                color = COL_PREV_SELECTED
+            if self.active_mode == "signal":
+                if i == self.active_signal_path_idx:
+                    color = COL_SELECTED
+                elif i in self.selected_path_indices:
+                    color = COL_MULTI_SELECTED # Cyan for other multi-selected tabs
+                else:
+                    color = (100, 100, 100)
+            else:
+                color = (100, 100, 100)
             
             rect = pygame.Rect(tab_x, y_off, 90, 25)
             pygame.draw.rect(self.screen, color, rect, border_radius=4)
@@ -715,13 +764,21 @@ class UnifiedBuilder:
                 tab_x, y_off = 10, y_off + 30
 
         y_off += 35
-        self.screen.blit(self.font_small.render("Select Node on Map/List to Replace. Map: Ctrl = Delete", True, (150,150,150)), (10, y_off))
+        self.screen.blit(self.font_small.render("Tabs: Shift+Click = Multi-Select Paths for Batch Edit/Clone/Delete", True, (150,150,150)), (10, y_off))
         self.screen.blit(self.font_small.render("Right-Click List Node = Toggle Reverse Direction [REV]", True, (150,150,150)), (10, y_off + 20))
         
         # --- Node List Section ---
         y_off += 40
         self.node_list_rects = [] 
-        list_label = "Timetable Sequence:" if self.active_mode == "timetable" else f"Signal Path {self.active_signal_path_idx} Sequence:"
+        
+        if self.active_mode == "timetable":
+            list_label = "Timetable Sequence:"
+        else:
+            if len(self.selected_path_indices) > 1:
+                list_label = f"Editing Primary Path {self.active_signal_path_idx} (Synced with {len(self.selected_path_indices)} paths):"
+            else:
+                list_label = f"Signal Path {self.active_signal_path_idx} Sequence:"
+                
         self.screen.blit(self.font_ui.render(list_label, True, COL_TEXT), (10, y_off))
         y_off += 25
         
@@ -753,15 +810,14 @@ class UnifiedBuilder:
             if node.get("change_dir"): 
                 txt += " [REV]"
             
-            # Text is white by default; turns RED only when actively selected for replacement
             if i == self.replace_idx:
-                color = COL_REPLACE  # Red (255, 50, 50)
+                color = COL_REPLACE
             elif i == self.insert_idx:
-                color = COL_INSERT   # Green (50, 255, 50)
+                color = COL_INSERT
             elif i == self.dragging_node_idx:
                 color = (80, 160, 255)
             else:
-                color = COL_TEXT     # White (240, 240, 240)
+                color = COL_TEXT
 
             lbl = self.font_ui.render(txt, True, color)
             self.screen.blit(lbl, (10, current_y))
@@ -774,7 +830,7 @@ class UnifiedBuilder:
             
         self.screen.set_clip(None)
         
-        # --- UI Notification Banner ---
+        # Notification Banner
         if getattr(self, "notification_timer", 0) > 0:
             notif_surf = self.font_ui.render(self.notification_text, True, (255, 255, 255))
             center_x = SIDEBAR_WIDTH + (self.width - SIDEBAR_WIDTH) // 2
@@ -818,23 +874,14 @@ class UnifiedBuilder:
                             if self.replace_idx != -1:
                                 self.insert_idx = self.replace_idx
                                 self.replace_idx = -1
-                        elif event.key == pygame.K_c:  # HOTKEY: Clone Path
-                            self.save_state() 
-                            self.prev_path_idx = self.active_signal_path_idx if self.active_mode == "signal" else "timetable"
-                            self.signal_paths.append([dict(n) for n in self.signal_paths[self.active_signal_path_idx]])
-                            self.active_mode = "signal"
-                            self.active_signal_path_idx = len(self.signal_paths) - 1
-                            self.replace_idx, self.insert_idx, self.node_list_scroll_y = -1, -1, 0
-                            self.show_notification(f"Cloned to Path {self.active_signal_path_idx}", 90)
+                        elif event.key == pygame.K_c:
+                            self.apply_batch_clone_paths()
                         elif event.key == pygame.K_DELETE:
-                            self.save_state()
                             idx_to_del = self.replace_idx if self.replace_idx != -1 else self.insert_idx if self.insert_idx != -1 else -1
                             if idx_to_del != -1 and 0 <= idx_to_del < len(active_display_path):
+                                self.save_state()
                                 node_to_delete = active_display_path[idx_to_del]
-                                if node_to_delete['type'] in ('signal', 'via'):
-                                    self.signal_paths[self.active_signal_path_idx] = [n for n in self.signal_paths[self.active_signal_path_idx] if n['coord'] != node_to_delete['coord']]
-                                else:
-                                    self.station_path = [n for n in self.station_path if n['coord'] != node_to_delete['coord']]
+                                self.apply_batch_node_delete(node_to_delete['coord'], idx_to_del)
                                 self.replace_idx, self.insert_idx = -1, -1
                 
                 for inp in [self.input_load_tt, self.input_headcode, self.input_change_tt, self.input_spawns]:
@@ -855,7 +902,6 @@ class UnifiedBuilder:
                         if event.button == 3:
                             self.panning, self.pan_start, self.pan_start_camera = True, event.pos, (self.camera_x, self.camera_y)
                         elif event.button == 1:
-                            # --- PLATFORM POPUP SELECTION HANDLING ---
                             if self.platform_menu['active']:
                                 menu_clicked = False
                                 for i, rect in enumerate(self.platform_menu['rects']):
@@ -866,7 +912,6 @@ class UnifiedBuilder:
                                             node_copy = dict(node_to_add)
                                             node_copy["platform"] = platform
                                             
-                                            # Apply Replace / Insert Logic
                                             if self.replace_idx != -1 and 0 <= self.replace_idx < len(self.station_path):
                                                 self.station_path[self.replace_idx] = node_copy
                                                 self.replace_idx = -1
@@ -886,7 +931,6 @@ class UnifiedBuilder:
                             if (gx, gy) in self.nodes:
                                 node_clicked, mods = self.nodes[(gx, gy)], pygame.key.get_mods()
                                 
-                                # Strict Tab Rules
                                 if self.active_mode == "timetable":
                                     if node_clicked["type"] in ("signal", "via"): 
                                         continue
@@ -900,33 +944,41 @@ class UnifiedBuilder:
 
                                 target_list = self.station_path if self.active_mode == "timetable" else self.signal_paths[self.active_signal_path_idx]
                                 
-                                # If replacement is active, replace the target item directly
+                                # 1. Replace Node (Batch Synced)
                                 if self.replace_idx != -1 and 0 <= self.replace_idx < len(target_list):
                                     self.save_state()
-                                    target_list[self.replace_idx] = dict(node_clicked)
+                                    old_coord = target_list[self.replace_idx]["coord"]
+                                    self.apply_batch_node_replace(old_coord, dict(node_clicked), self.replace_idx)
                                     self.replace_idx = -1
-                                # If insert is active, insert right after
+
+                                # 2. Insert Node (Batch Synced)
                                 elif self.insert_idx != -1 and 0 <= self.insert_idx < len(target_list):
                                     self.save_state()
-                                    target_list.insert(self.insert_idx + 1, dict(node_clicked))
+                                    anchor_coord = target_list[self.insert_idx]["coord"]
+                                    self.apply_batch_node_insert(anchor_coord, dict(node_clicked), self.insert_idx)
                                     self.insert_idx += 1
-                                # If clicking an already existing node on the map, select it for replace or delete
+
+                                # 3. Map Node Clicked (Select for replace or Ctrl-Delete)
                                 elif any(n["coord"] == node_clicked["coord"] for n in target_list):
                                     if mods & pygame.KMOD_CTRL:
                                         self.save_state()
-                                        if self.active_mode == "timetable": 
-                                            self.station_path[:] = [n for n in target_list if n['coord'] != node_clicked['coord']]
-                                        else: 
-                                            self.signal_paths[self.active_signal_path_idx][:] = [n for n in target_list if n['coord'] != node_clicked['coord']]
+                                        del_idx = next(i for i, n in enumerate(target_list) if n['coord'] == node_clicked['coord'])
+                                        self.apply_batch_node_delete(node_clicked['coord'], del_idx)
                                         self.replace_idx, self.insert_idx = -1, -1
                                     else:
                                         disp_indices = [i for i, n in enumerate(active_display_path) if n["coord"] == node_clicked["coord"]]
                                         if disp_indices: 
                                             self.replace_idx, self.insert_idx = disp_indices[0], -1
-                                # Standard append
+
+                                # 4. Standard Append
                                 elif not (mods & pygame.KMOD_CTRL):
                                     self.save_state()
-                                    target_list.append(dict(node_clicked))
+                                    if self.active_mode == "timetable":
+                                        self.station_path.append(dict(node_clicked))
+                                    else:
+                                        for p_idx in self.selected_path_indices:
+                                            if p_idx < len(self.signal_paths):
+                                                self.signal_paths[p_idx].append(dict(node_clicked))
 
                     else: # Sidebar Clicks
                         if event.button == 1:
@@ -937,27 +989,16 @@ class UnifiedBuilder:
                             elif self.btn_despawn.collidepoint(event.pos): self.despawn = not self.despawn
                             elif self.btn_new_path.collidepoint(event.pos):
                                 self.save_state() 
-                                self.prev_path_idx = self.active_signal_path_idx if self.active_mode == "signal" else "timetable"
                                 self.signal_paths.append([])
                                 self.active_mode = "signal"
                                 self.active_signal_path_idx = len(self.signal_paths) - 1
+                                self.selected_path_indices = {self.active_signal_path_idx}
+                                self.shift_anchor_path_idx = self.active_signal_path_idx
                                 self.replace_idx, self.insert_idx, self.node_list_scroll_y = -1, -1, 0
                             elif self.btn_clone_path.collidepoint(event.pos):
-                                self.save_state() 
-                                self.prev_path_idx = self.active_signal_path_idx if self.active_mode == "signal" else "timetable"
-                                self.signal_paths.append([dict(n) for n in self.signal_paths[self.active_signal_path_idx]])
-                                self.active_mode = "signal"
-                                self.active_signal_path_idx = len(self.signal_paths) - 1
-                                self.replace_idx, self.insert_idx, self.node_list_scroll_y = -1, -1, 0
-                                self.show_notification(f"Cloned Path {self.active_signal_path_idx - 1} to new Path {self.active_signal_path_idx}", 90)
+                                self.apply_batch_clone_paths()
                             elif self.btn_del_path.collidepoint(event.pos):
-                                if len(self.signal_paths) > 1:
-                                    self.save_state() 
-                                    self.signal_paths.pop(self.active_signal_path_idx)
-                                    self.active_mode = "signal"
-                                    self.active_signal_path_idx = max(0, self.active_signal_path_idx - 1)
-                                    self.prev_path_idx = "timetable"
-                                    self.replace_idx, self.insert_idx, self.node_list_scroll_y = -1, -1, 0
+                                self.apply_batch_delete_paths()
                             elif self.btn_clone_route.collidepoint(event.pos):
                                 self.save_state()
                                 self.input_load_tt.text = "NEW"
@@ -965,14 +1006,41 @@ class UnifiedBuilder:
                             elif self.btn_undo.collidepoint(event.pos): self.undo()
                             elif self.btn_save_update.collidepoint(event.pos): self.save_unified_data(is_new=False)
                             elif self.btn_save_new.collidepoint(event.pos): self.save_unified_data(is_new=True)
+                            elif self.btn_insert_node.collidepoint(event.pos):
+                                if self.replace_idx != -1:
+                                    self.insert_idx = self.replace_idx
+                                    self.replace_idx = -1
+                            elif self.btn_del_node.collidepoint(event.pos):
+                                idx_to_del = self.replace_idx if self.replace_idx != -1 else self.insert_idx if self.insert_idx != -1 else -1
+                                if idx_to_del != -1 and 0 <= idx_to_del < len(active_display_path):
+                                    self.save_state()
+                                    node_to_delete = active_display_path[idx_to_del]
+                                    self.apply_batch_node_delete(node_to_delete['coord'], idx_to_del)
+                                    self.replace_idx, self.insert_idx = -1, -1
                             else:
+                                # --- TAB SELECTION & SHIFT+CLICK MULTI-SELECTION ---
                                 for rect, i in getattr(self, "tab_rects", []):
                                     if rect.collidepoint(event.pos):
-                                        self.prev_path_idx = self.active_signal_path_idx if self.active_mode == "signal" else "timetable"
-                                        self.active_mode = "timetable" if i == "timetable" else "signal"
-                                        if i != "timetable": self.active_signal_path_idx = i
+                                        mods = pygame.key.get_mods()
+                                        if i == "timetable":
+                                            self.active_mode = "timetable"
+                                            self.selected_path_indices = {0}
+                                        else:
+                                            self.active_mode = "signal"
+                                            if mods & pygame.KMOD_SHIFT:
+                                                # Select range from anchor to clicked tab
+                                                start_p = min(self.shift_anchor_path_idx, i)
+                                                end_p = max(self.shift_anchor_path_idx, i)
+                                                self.selected_path_indices = set(range(start_p, end_p + 1))
+                                                self.active_signal_path_idx = i
+                                            else:
+                                                self.selected_path_indices = {i}
+                                                self.active_signal_path_idx = i
+                                                self.shift_anchor_path_idx = i
+
                                         self.replace_idx, self.insert_idx = -1, -1
                                         break
+                                
                                 if event.pos[1] > 400:
                                     for rect, i in getattr(self, "node_list_rects", []):
                                         if rect.collidepoint(event.pos):
@@ -992,17 +1060,6 @@ class UnifiedBuilder:
 
                 elif event.type == pygame.MOUSEBUTTONUP:
                     if event.button == 3: self.panning = False
-                    elif event.button == 1:
-                        if getattr(self, "dragging_tab_idx", -1) != -1:
-                            for rect, i in getattr(self, "tab_rects", []):
-                                if rect.collidepoint(event.pos) and i != "timetable" and self.dragging_tab_idx != "timetable" and i != self.dragging_tab_idx:
-                                    self.save_state()
-                                    self.signal_paths[self.dragging_tab_idx], self.signal_paths[i] = self.signal_paths[i], self.signal_paths[self.dragging_tab_idx]
-                                    self.active_signal_path_idx = i
-                                    self.prev_path_idx = -1
-                                    self.replace_idx, self.insert_idx = -1, -1
-                                    break
-                        self.dragging_tab_idx = -1
 
                 elif event.type == pygame.MOUSEMOTION and self.panning:
                     dx, dy = event.pos[0] - self.pan_start[0], event.pos[1] - self.pan_start[1]
